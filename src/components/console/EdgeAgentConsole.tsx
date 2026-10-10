@@ -3,7 +3,9 @@
 import React, { useMemo, useRef, useEffect, useState } from "react";
 import { Bot, Send, Cpu, Loader2, AlertTriangle } from "lucide-react";
 import { useEdgeEmbeddings, type RankResult } from "@/hooks/useEdgeEmbeddings";
-import { SYSTEM_TOOL, SYSTEM_LABEL } from "@/mcp/semanticEngine";
+import { usePortfolioMcp, type PortfolioMcpTool } from "@/hooks/usePortfolioMcp";
+import { CONTACT_SYSTEM_ID, SYSTEM_TOOL, SYSTEM_LABEL } from "@/mcp/semanticEngine";
+import type { SystemProject } from "@/data/systems";
 import { GenerativeToolArtifact } from "./GenerativeToolArtifact";
 import { SemanticGravityField } from "./SemanticGravityField";
 
@@ -11,7 +13,14 @@ interface MessageItem {
   id: string;
   role: "user" | "agent";
   content: string;
-  tool?: { name: string; systemId: string; evidence?: string };
+  tool?: {
+    name: string;
+    systemId: string;
+    evidence?: string;
+    source: "mcp" | "local";
+    definition?: PortfolioMcpTool;
+    result?: { project?: SystemProject; evidenceStatus?: string };
+  };
   meta?: { engine: RankResult["engine"]; ms: number; top: { id: string; score: number }[] };
 }
 
@@ -24,6 +33,7 @@ const QUICK = [
 
 export function EdgeAgentConsole() {
   const { state, rank } = useEdgeEmbeddings();
+  const { state: mcpState, callTool } = usePortfolioMcp();
   const ids = useMemo(() => Object.keys(SYSTEM_TOOL), []);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -34,7 +44,7 @@ export function EdgeAgentConsole() {
       id: "boot",
       role: "agent",
       content:
-        "Pergunte em linguagem natural. A busca vetorial roda neste navegador e seleciona um módulo local para mostrar evidências do portfólio. Não há LLM nem servidor MCP conectado; os contratos exibidos são demonstrações locais.",
+        "Pergunte em linguagem natural. Embeddings ficam no navegador; a busca seleciona uma ficha e o cliente AI SDK chama um tool read-only no servidor MCP via Streamable HTTP. O servidor retorna conteúdo estático do portfólio. Ainda não há LLM escolhendo tools nem redigindo a resposta.",
     },
   ]);
   const endRef = useRef<HTMLDivElement>(null);
@@ -43,17 +53,65 @@ export function EdgeAgentConsole() {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [messages, busy]);
 
-  const invoke = (systemId: string, evidence?: string, prefix?: string, meta?: MessageItem["meta"]) => {
-    setMessages((prev) => [
-      ...prev,
-      {
+  const invoke = async (systemId: string, evidence?: string, prefix?: string, meta?: MessageItem["meta"]) => {
+    const toolName = SYSTEM_TOOL[systemId];
+    if (!toolName) return;
+
+    if (systemId === CONTACT_SYSTEM_ID) {
+      setMessages((prev) => [...prev, {
         id: `a-${Date.now()}`,
         role: "agent",
-        content: prefix ?? `Invocação manual de ${SYSTEM_LABEL[systemId]}.`,
-        tool: { name: SYSTEM_TOOL[systemId], systemId, evidence },
+        content: prefix ?? "A solicitação de contato exige consentimento explícito.",
+        tool: { name: toolName, systemId, evidence, source: "local" },
         meta,
-      },
-    ]);
+      }]);
+      return;
+    }
+
+    if (mcpState.phase !== "ready") {
+      setMessages((prev) => [...prev, {
+        id: `a-${Date.now()}`,
+        role: "agent",
+        content: `Servidor MCP indisponível: ${mcpState.detail ?? "aguarde a conexão"}. Nenhuma ferramenta foi executada.`,
+        meta,
+      }]);
+      return;
+    }
+
+    const definition = mcpState.tools.find((tool) => tool.name === toolName);
+    if (!definition) {
+      setMessages((prev) => [...prev, {
+        id: `a-${Date.now()}`,
+        role: "agent",
+        content: `A ferramenta ${toolName} não está na lista MCP aprovada. Execução bloqueada.`,
+        meta,
+      }]);
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const response = await callTool(toolName, { projectId: systemId });
+      if (response.isError) throw new Error("MCP server rejected the project lookup.");
+      const result = response.structuredContent as NonNullable<MessageItem["tool"]>["result"];
+      if (result?.project?.id !== systemId) throw new Error("MCP result did not match the requested project.");
+      setMessages((prev) => [...prev, {
+        id: `a-${Date.now()}`,
+        role: "agent",
+        content: prefix ?? `Resultado recebido via MCP: ${SYSTEM_LABEL[systemId]}.`,
+        tool: { name: toolName, systemId, evidence, source: "mcp", definition, result },
+        meta,
+      }]);
+    } catch (error) {
+      setMessages((prev) => [...prev, {
+        id: `a-${Date.now()}`,
+        role: "agent",
+        content: `A chamada MCP falhou: ${error instanceof Error ? error.message : "erro desconhecido"}.`,
+        meta,
+      }]);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const ask = async (text: string) => {
@@ -72,7 +130,7 @@ export function EdgeAgentConsole() {
         top: r.ranking.slice(0, 3).map((x) => ({ id: x.systemId, score: x.score })),
       };
       if (top && top.score >= r.threshold) {
-        invoke(top.systemId, top.bestChunk, `Maior similaridade: ${SYSTEM_LABEL[top.systemId]}.`, meta);
+        await invoke(top.systemId, top.bestChunk, `Maior similaridade: ${SYSTEM_LABEL[top.systemId]}.`, meta);
       } else {
         setMessages((p) => [
           ...p,
@@ -108,6 +166,13 @@ export function EdgeAgentConsole() {
                 : state.phase === "error"
                   ? state.detail
                   : (state.detail ?? "inicializando worker…")}
+            </p>
+            <p className={`text-[9px] truncate font-mono ${mcpState.phase === "ready" ? "text-[#07CA6B]/80" : "text-white/40"}`}>
+              {mcpState.phase === "ready"
+                ? `MCP Streamable HTTP · ${mcpState.serverName} · ${mcpState.tools.length} tools verificadas`
+                : mcpState.phase === "error"
+                  ? `MCP bloqueado · ${mcpState.detail}`
+                  : "MCP: conectando ao servidor do portfólio…"}
             </p>
           </div>
         </div>
@@ -150,7 +215,16 @@ export function EdgeAgentConsole() {
                   {m.meta.ms.toFixed(1)} ms · {m.meta.top.map((t) => `${SYSTEM_LABEL[t.id]} ${t.score.toFixed(3)}`).join(" | ")}
                 </div>
               )}
-              {m.tool && <GenerativeToolArtifact toolName={m.tool.name} systemId={m.tool.systemId} evidence={m.tool.evidence} />}
+              {m.tool && (
+                <GenerativeToolArtifact
+                  toolName={m.tool.name}
+                  systemId={m.tool.systemId}
+                  evidence={m.tool.evidence}
+                  source={m.tool.source}
+                  serverTool={m.tool.definition}
+                  serverResult={m.tool.result}
+                />
+              )}
             </div>
           </div>
         ))}

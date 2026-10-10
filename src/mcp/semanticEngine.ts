@@ -9,13 +9,9 @@ import type { CorpusChunk } from "@/workers/embedding.worker";
 
 export const CONTACT_SYSTEM_ID = "executive-contact";
 
-/** Mapeamento local que associa módulos a artefatos; não implementa uma chamada MCP. */
+/** Association between a retrieved project and its actual MCP tool; contact stays behind its consent action. */
 export const SYSTEM_TOOL: Record<string, string> = {
-  "ai-messaging-broker": "inspectBrokerArchitecture",
-  "zero-trust-mesh": "inspectZeroTrustMesh",
-  "governance-dlp": "inspectSentinelDLP",
-  "pix-ai-engine": "inspectPixAiEngine",
-  "edge-mcp-hub": "inspectEdgeInferenceRuntime",
+  ...Object.fromEntries(SYSTEMS_DATA.map((system) => [system.id, "portfolio_get_project"])),
   [CONTACT_SYSTEM_ID]: "requestExecutiveContact",
 };
 

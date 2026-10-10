@@ -2,33 +2,44 @@
 
 import React, { useState } from "react";
 import { Check, Copy, Cpu, Database, HardDrive, Layers } from "lucide-react";
-import { MCP_REGISTRY, type MCPToolDefinition } from "@/mcp/registry";
+import { LOCAL_ACTIONS } from "@/mcp/registry";
+import type { LocalActionDefinition } from "@/mcp/registry";
 import { SYSTEMS_DATA } from "@/data/systems";
 import { useEdgeEmbeddings } from "@/hooks/useEdgeEmbeddings";
 import { ElicitationContactForm } from "./ElicitationContactForm";
+import type { PortfolioMcpTool } from "@/hooks/usePortfolioMcp";
+
+interface McpProjectResult {
+  project?: (typeof SYSTEMS_DATA)[number];
+  evidenceStatus?: string;
+}
 
 interface GenerativeToolArtifactProps {
   toolName: string;
   systemId: string;
   /** Trecho do currículo recuperado pelo modelo de embeddings que justificou a chamada. */
   evidence?: string;
+  source?: "mcp" | "local";
+  serverTool?: PortfolioMcpTool;
+  serverResult?: McpProjectResult;
 }
 
 /**
- * UI local: o ranking semântico seleciona um artefato do portfólio. O contrato é inspirado
- * em MCP, mas não há chamada a um servidor MCP nem geração de resposta por LLM.
+ * A busca semântica seleciona um artefato. Projeto e schema podem vir do MCP real;
+ * não há resposta gerada por LLM nesta etapa.
  */
-export function GenerativeToolArtifact({ toolName, systemId, evidence }: GenerativeToolArtifactProps) {
+export function GenerativeToolArtifact({ toolName, systemId, evidence, source = "local", serverTool, serverResult }: GenerativeToolArtifactProps) {
   const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState<"ui" | "contract">("ui");
   const { state } = useEdgeEmbeddings();
 
-  const tool: MCPToolDefinition | undefined = MCP_REGISTRY[toolName];
-  const system = SYSTEMS_DATA.find((s) => s.id === systemId);
+  const localTool: LocalActionDefinition | undefined = LOCAL_ACTIONS[toolName];
+  const tool = serverTool ?? localTool;
+  const system = serverResult?.project ?? SYSTEMS_DATA.find((s) => s.id === systemId);
   if (!tool) return null;
 
   const copy = () => {
-    navigator.clipboard.writeText(JSON.stringify(tool, null, 2));
+    navigator.clipboard.writeText(JSON.stringify(serverTool?.inputSchema ?? localTool?.parameters ?? tool, null, 2));
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
@@ -39,20 +50,17 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence }: Generat
     <div className="my-3 rounded-xl border border-white/15 bg-black/40 backdrop-blur-xl overflow-hidden">
       <div className="px-3.5 py-2.5 bg-gradient-to-r from-[#1856FF]/20 via-white/[0.04] to-transparent border-b border-white/10 flex items-center justify-between gap-2">
         <span className="font-mono text-xs font-semibold text-white tracking-wider truncate">
-          ferramenta local → <span className="text-[#38BDF8]">{tool.name}</span>
+          {source === "mcp" ? "MCP tools/call" : "ação local"} → <span className="text-[#38BDF8]">{tool.name}</span>
         </span>
         <div className="flex items-center gap-1.5 font-mono text-[9px] shrink-0">
-          {tool.annotations.readOnlyHint && (
+          {serverTool?.annotations?.readOnlyHint && (
             <span className="px-1.5 py-0.5 rounded bg-[#07CA6B]/10 border border-[#07CA6B]/30 text-[#07CA6B]">readOnly</span>
           )}
-          {tool.annotations.idempotentHint && (
+          {serverTool?.annotations?.idempotentHint && (
             <span className="px-1.5 py-0.5 rounded bg-sky-500/10 border border-sky-500/30 text-sky-400">idempotent</span>
           )}
-          {tool.annotations.destructiveHint && (
+          {serverTool?.annotations?.destructiveHint && (
             <span className="px-1.5 py-0.5 rounded bg-[#EA2143]/10 border border-[#EA2143]/30 text-[#EA2143]">destructive</span>
-          )}
-          {tool.annotations.requiresElicitation && (
-            <span className="px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-amber-300">elicitation</span>
           )}
           <button
             onClick={() => setTab(tab === "ui" ? "contract" : "ui")}
@@ -68,12 +76,14 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence }: Generat
           <button onClick={copy} className="absolute top-2 right-2 p-1.5 rounded bg-white/10 hover:bg-white/20 text-white">
             {copied ? <Check className="w-3.5 h-3.5 text-[#07CA6B]" /> : <Copy className="w-3.5 h-3.5" />}
           </button>
-          <pre>{JSON.stringify(tool, null, 2)}</pre>
+          <pre>{JSON.stringify(serverTool?.inputSchema ?? localTool?.parameters ?? tool, null, 2)}</pre>
         </div>
       ) : (
         <div className="p-3.5 space-y-3">
           <p className="font-mono text-[9px] text-white/40">
-            CONTRATO LOCAL INSPIRADO EM MCP • SEM CONEXÃO A SERVIDOR MCP
+            {source === "mcp"
+              ? `SERVIDOR MCP VERIFICADO · ${serverResult?.evidenceStatus ?? "resultado estruturado"}`
+              : "AÇÃO LOCAL COM CONSENTIMENTO EXPLÍCITO"}
           </p>
           {evidence && (
             <div className="text-[11px] leading-relaxed text-white/75 border-l-2 border-[#1856FF] pl-2.5">
@@ -84,7 +94,7 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence }: Generat
 
           {toolName === "requestExecutiveContact" && <ElicitationContactForm />}
 
-          {toolName === "inspectEdgeInferenceRuntime" && (
+          {systemId === "edge-mcp-hub" && (
             <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
               {[
                 { icon: Layers, k: "modelo", v: rt?.model ?? "carregando…" },
@@ -108,7 +118,7 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence }: Generat
             </div>
           )}
 
-          {system && toolName !== "inspectEdgeInferenceRuntime" && (
+          {system && systemId !== "edge-mcp-hub" && (
             <>
               <div className="grid grid-cols-3 gap-2 text-center font-mono">
                 {system.metrics.slice(0, 3).map((m) => (
