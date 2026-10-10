@@ -1,60 +1,73 @@
 "use client";
 
-import React, { useState } from "react";
-import { AntigravityCanvas } from "@/components/canvas/AntigravityCanvas";
-import { InteractiveDriftingDeck } from "@/components/cards/InteractiveDriftingDeck";
+import React, { useState, useEffect } from "react";
+import { ModeArchitect } from "@/components/modes/ModeArchitect";
+import { ModeKineticGrid } from "@/components/modes/ModeKineticGrid";
 import { LiveArchitectureSandbox } from "@/components/sandbox/LiveArchitectureSandbox";
-import { ArchitectureInspector } from "@/components/inspector/ArchitectureInspector";
 import { EdgeAgentConsole } from "@/components/console/EdgeAgentConsole";
-import { SYSTEMS_DATA, PROFILE_DATA, SystemProject } from "@/data/systems";
+import { AntigravityCanvas } from "@/components/canvas/AntigravityCanvas";
+import { PROFILE_DATA } from "@/data/systems";
 import { 
-  ShieldCheck, 
+  Compass, 
+  Grid3X3, 
+  Activity, 
   Cpu, 
-  Mail, 
-  Sparkles, 
+  Terminal, 
   Layers, 
-  Terminal as TerminalIcon,
-  Activity,
-  ArrowRight,
-  ExternalLink,
-  Code2,
-  CheckCircle,
-  X
+  Share2, 
+  Mail, 
+  Maximize2,
+  Sparkles
 } from "lucide-react";
 
+type StageMode = "architect" | "grid" | "cockpit" | "agent";
+
 export default function Home() {
-  const [selectedSystem, setSelectedSystem] = useState<SystemProject | null>(null);
-  const [activeConsoleTab, setActiveConsoleTab] = useState<"sandbox" | "agent">("sandbox");
+  const [currentMode, setCurrentMode] = useState<StageMode>("architect");
+
+  // Teclas de atalho para alternar modos cinematográficos
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "1") setCurrentMode("architect");
+      if (e.key === "2") setCurrentMode("grid");
+      if (e.key === "3") setCurrentMode("cockpit");
+      if (e.key === "4") setCurrentMode("agent");
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
-    <main className="relative min-h-screen bg-[#07090E] text-[#F8FAFC] selection:bg-[#1856FF]/30 selection:text-white pb-24 overflow-x-hidden font-sans">
+    <main className="relative w-screen h-screen overflow-hidden bg-[#07090E] text-[#F8FAFC] select-none font-sans flex flex-col justify-between">
       {/* 1. Eixo Z Negativo: Orbes Neon e Iluminação Ambiente Cósmica */}
-      <div className="ambient-glow-primary top-10 -left-20" />
-      <div className="ambient-glow-secondary top-48 right-0" />
-      <div className="ambient-glow-primary bottom-32 left-1/3 opacity-30" />
+      <div className={`ambient-glow-primary top-10 -left-20 transition-all duration-700 ${
+        currentMode === "cockpit" ? "scale-125 opacity-40 bg-[#07CA6B]/20" : "opacity-25"
+      }`} />
+      <div className="ambient-glow-secondary top-40 right-0 opacity-30" />
+      <div className="ambient-glow-primary bottom-10 right-1/4 opacity-25" />
 
-      {/* 2. Motor Gráfico Antigravity de Fundo (Partículas Quânticas & Micro-gravidade) */}
+      {/* 2. Motor Gráfico Antigravity de Microgravidade (Canvas Desacoplado) */}
       <AntigravityCanvas />
 
-      {/* 3. Top Navigation Bar com Dark Glassmorphism 3.0 */}
-      <header className="sticky top-0 z-50 px-4 sm:px-6 py-4">
-        <div className="max-w-7xl mx-auto glass-panel rounded-2xl px-6 py-3.5 flex items-center justify-between shadow-2xl border border-white/15">
-          <div className="flex items-center gap-3.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#1856FF] to-[#38BDF8] flex items-center justify-center font-mono font-bold text-sm shadow-[0_0_20px_rgba(24,86,255,0.6)]">
+      {/* 3. Top HUD: Identidade de Engenharia & Telemetria */}
+      <header className="relative z-40 px-6 pt-4 shrink-0">
+        <div className="max-w-7xl mx-auto glass-panel rounded-2xl px-5 py-3 flex items-center justify-between border border-white/15 shadow-2xl">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#1856FF] to-[#38BDF8] flex items-center justify-center font-mono font-bold text-xs shadow-[0_0_20px_rgba(24,86,255,0.6)]">
               TR
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-sm text-white tracking-tight">
-                  Thadeu Castelo Branco Ramos
+                  Thadeu Ramos
                 </span>
-                <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-[#07CA6B]/20 text-[#07CA6B] border border-[#07CA6B]/30 flex items-center gap-1">
+                <span className="font-mono text-[9px] px-2 py-0.5 rounded-full bg-[#07CA6B]/20 text-[#07CA6B] border border-[#07CA6B]/30 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#07CA6B] animate-pulse" />
-                  SR_PLATFORM
+                  RECIPIENTE MUTÁVEL // 100VH
                 </span>
               </div>
-              <p className="text-[11px] text-[#94A3B8]">
-                Senior Software Engineer • Backend & AI Systems Architecture
+              <p className="text-[10px] text-[#94A3B8]">
+                Senior Software Engineer • Platform & AI Architecture (Banco Safra)
               </p>
             </div>
           </div>
@@ -94,125 +107,87 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 4. HERO SECTION: Identidade Disruptiva e Senioridade Bancária */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 pt-12 pb-8">
-        <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-xs font-mono text-[#38BDF8] mb-6">
-            <Sparkles className="w-3.5 h-3.5 text-[#1856FF]" />
-            <span>DISRUPTIVE PLATFORM ARCHITECTURE • BANCO SAFRA</span>
+      {/* 4. PALCO CINEMÁTICO PRINCIPAL (Recipiente Mutável sem Scroll Monótono) */}
+      <section className="relative z-30 flex-1 min-h-0 max-w-7xl w-full mx-auto px-4 sm:px-6 my-auto flex items-center justify-center">
+        {currentMode === "architect" && (
+          <ModeArchitect
+            onExploreGrid={() => setCurrentMode("grid")}
+            onLaunchPipeline={() => setCurrentMode("cockpit")}
+          />
+        )}
+
+        {currentMode === "grid" && (
+          <ModeKineticGrid />
+        )}
+
+        {currentMode === "cockpit" && (
+          <div className="w-full max-h-[82vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-500">
+            <LiveArchitectureSandbox />
           </div>
+        )}
 
-          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-[1.1] mb-6">
-            Engenharia de Plataformas{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1856FF] via-[#38BDF8] to-white">
-              Zero Trust
-            </span>{" "}
-            e Sistemas de IA em Alta Volumetria.
-          </h1>
-
-          <p className="text-base sm:text-lg text-[#94A3B8] leading-relaxed mb-8">
-            Concepção e sustentação de brokers agnósticos de mensageria para Inteligência Artificial, malhas de segurança máquina-a-máquina com tokens criptográficos assinados e canal autônomo 100% IA para o PIX no setor financeiro.
-          </p>
-
-          <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-white/80">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10">
-              <ShieldCheck className="w-4 h-4 text-[#07CA6B]" />
-              <span>Zero Trust M2M / Active Directory</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10">
-              <Layers className="w-4 h-4 text-[#1856FF]" />
-              <span>Agnostic AI Messaging Broker</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10">
-              <Cpu className="w-4 h-4 text-sky-400" />
-              <span>Edge AI & Model Context Protocol (MCP)</span>
-            </div>
+        {currentMode === "agent" && (
+          <div className="w-full max-w-3xl animate-in fade-in zoom-in-95 duration-500">
+            <EdgeAgentConsole />
           </div>
-        </div>
+        )}
       </section>
 
-      {/* 5. SEÇÃO DO SANDBOX INTERATIVO COM TRANSMISSÃO DE FIBRA ÓPTICA EM TEMPO REAL */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-6">
-        <LiveArchitectureSandbox />
-      </section>
+      {/* 5. DOCK DE COMANDO ORBITAL (Navegação Cinemática de Modos) */}
+      <footer className="relative z-40 px-6 pb-4 shrink-0">
+        <div className="max-w-fit mx-auto glass-panel rounded-2xl p-2 flex items-center gap-2 border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
+          <button
+            onClick={() => setCurrentMode("architect")}
+            className={`px-4 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
+              currentMode === "architect"
+                ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)]"
+                : "text-white/60 hover:text-white hover:bg-white/[0.05]"
+            }`}
+          >
+            <Compass className="w-3.5 h-3.5" />
+            <span>1. O Arquiteto</span>
+          </button>
 
-      {/* 6. SEÇÃO DOS DRIFTING CARDS (DARK GLASSMORPHISM 3.0 & SPRING REACTION) */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-10">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-mono text-xs uppercase text-[#38BDF8]">
-                SISTEMAS DE ALTA SENIORIDADE
-              </span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-              Drifting Systems Deck (Física Óptica & Microgravidade)
-            </h2>
-            <p className="text-xs text-[#94A3B8] mt-1">
-              Aproxime o cursor para sentir a física vetorial dos cartões ou clique para inspecionar decisões arquiteturais.
-            </p>
-          </div>
+          <button
+            onClick={() => setCurrentMode("grid")}
+            className={`px-4 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
+              currentMode === "grid"
+                ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)]"
+                : "text-white/60 hover:text-white hover:bg-white/[0.05]"
+            }`}
+          >
+            <Grid3X3 className="w-3.5 h-3.5" />
+            <span>2. Kinetic Grid</span>
+          </button>
 
-          <div className="flex items-center gap-2 text-xs font-mono text-white/60">
-            <span className="w-2 h-2 rounded-full bg-[#07CA6B]" />
-            <span>5 Projetos Reais Validados</span>
-          </div>
-        </div>
+          <button
+            onClick={() => setCurrentMode("cockpit")}
+            className={`px-4 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
+              currentMode === "cockpit"
+                ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)]"
+                : "text-white/60 hover:text-white hover:bg-white/[0.05]"
+            }`}
+          >
+            <Activity className="w-3.5 h-3.5 text-[#07CA6B]" />
+            <span>3. Sandbox Cockpit</span>
+          </button>
 
-        {/* Deck de Cartões Táteis */}
-        <InteractiveDriftingDeck
-          systems={SYSTEMS_DATA}
-          selectedId={selectedSystem?.id || ""}
-          onSelect={(system) => setSelectedSystem(system)}
-        />
-      </section>
+          <button
+            onClick={() => setCurrentMode("agent")}
+            className={`px-4 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
+              currentMode === "agent"
+                ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)]"
+                : "text-white/60 hover:text-white hover:bg-white/[0.05]"
+            }`}
+          >
+            <Cpu className="w-3.5 h-3.5 text-[#38BDF8]" />
+            <span>4. Edge MCP</span>
+          </button>
 
-      {/* 7. CONSOLE DE INTELIGÊNCIA ARTIFICIAL ON-DEVICE (MCP AGENT) */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-6">
-        <div className="mb-4">
-          <span className="font-mono text-xs uppercase text-[#38BDF8]">
-            EDGE COMPUTING PRIVACY-FIRST
-          </span>
-          <h2 className="text-2xl font-bold text-white tracking-tight mt-1">
-            Console de Agente Autônomo Local (MCP Tools)
-          </h2>
-        </div>
-        <EdgeAgentConsole />
-      </section>
+          <div className="w-[1px] h-5 bg-white/10 hidden sm:block mx-1" />
 
-      {/* 8. MODAL HOLOGRÁFICO DE INSPEÇÃO DE ARQUITETURA QUANDO UM CARD É CLICADO */}
-      {selectedSystem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative w-full max-w-3xl h-[600px] max-h-[90vh]">
-            <button
-              onClick={() => setSelectedSystem(null)}
-              className="absolute -top-3 -right-3 z-50 p-2.5 rounded-full bg-black/90 hover:bg-black text-white/80 hover:text-white border border-white/20 shadow-2xl transition-all cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-            <ArchitectureInspector
-              system={selectedSystem}
-              onClose={() => setSelectedSystem(null)}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* 9. RODAPÉ DE TELEMETRIA */}
-      <footer className="relative z-10 max-w-7xl mx-auto px-6 mt-16">
-        <div className="glass-panel-subtle rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 border border-white/10">
-          <div className="text-xs text-[#94A3B8]">
-            <p className="text-white font-medium">Thadeu Castelo Branco Ramos © 2026</p>
-            <p className="mt-0.5">Construído com Next.js 16 • React 19 • Dark Glassmorphism 3.0 • Transformers.js MCP</p>
-          </div>
-
-          <div className="flex items-center gap-3 font-mono text-xs text-white/70">
-            <span className="flex items-center gap-1 text-[#07CA6B]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#07CA6B] animate-pulse" />
-              Zero Third-Party Tracking
-            </span>
-            <span>•</span>
-            <span className="text-[#38BDF8]">WASM / WebGPU Ready</span>
+          <div className="hidden sm:flex items-center text-[10px] font-mono text-white/40 px-2">
+            Pressione 1, 2, 3 ou 4
           </div>
         </div>
       </footer>
