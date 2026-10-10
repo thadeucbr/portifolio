@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { ModeArchitect } from "@/components/modes/ModeArchitect";
 import { ModeKineticGrid } from "@/components/modes/ModeKineticGrid";
+import { ChaosCollisionChamber } from "@/components/chaos/ChaosCollisionChamber";
 import { LiveArchitectureSandbox } from "@/components/sandbox/LiveArchitectureSandbox";
 import { EdgeAgentConsole } from "@/components/console/EdgeAgentConsole";
 import { AntigravityCanvas } from "@/components/canvas/AntigravityCanvas";
@@ -12,15 +13,15 @@ import {
   Grid3X3, 
   Activity, 
   Cpu, 
+  Flame,
   Terminal, 
   Layers, 
   Share2, 
   Mail, 
-  Maximize2,
   Sparkles
 } from "lucide-react";
 
-type StageMode = "architect" | "grid" | "cockpit" | "agent";
+type StageMode = "architect" | "chaos" | "grid" | "cockpit" | "agent";
 
 export default function Home() {
   const [currentMode, setCurrentMode] = useState<StageMode>("architect");
@@ -29,9 +30,10 @@ export default function Home() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "1") setCurrentMode("architect");
-      if (e.key === "2") setCurrentMode("grid");
-      if (e.key === "3") setCurrentMode("cockpit");
-      if (e.key === "4") setCurrentMode("agent");
+      if (e.key === "2") setCurrentMode("chaos");
+      if (e.key === "3") setCurrentMode("grid");
+      if (e.key === "4") setCurrentMode("cockpit");
+      if (e.key === "5") setCurrentMode("agent");
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -41,7 +43,7 @@ export default function Home() {
     <main className="relative w-screen h-screen overflow-hidden bg-[#07090E] text-[#F8FAFC] select-none font-sans flex flex-col justify-between">
       {/* 1. Eixo Z Negativo: Orbes Neon e Iluminação Ambiente Cósmica */}
       <div className={`ambient-glow-primary top-10 -left-20 transition-all duration-700 ${
-        currentMode === "cockpit" ? "scale-125 opacity-40 bg-[#07CA6B]/20" : "opacity-25"
+        currentMode === "chaos" ? "scale-150 opacity-40 bg-purple-600/30" : "opacity-25"
       }`} />
       <div className="ambient-glow-secondary top-40 right-0 opacity-30" />
       <div className="ambient-glow-primary bottom-10 right-1/4 opacity-25" />
@@ -63,7 +65,7 @@ export default function Home() {
                 </span>
                 <span className="font-mono text-[9px] px-2 py-0.5 rounded-full bg-[#07CA6B]/20 text-[#07CA6B] border border-[#07CA6B]/30 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#07CA6B] animate-pulse" />
-                  RECIPIENTE MUTÁVEL // 100VH
+                  V4.0 // ZERO-G RECIPIENTE
                 </span>
               </div>
               <p className="text-[10px] text-[#94A3B8]">
@@ -111,9 +113,13 @@ export default function Home() {
       <section className="relative z-30 flex-1 min-h-0 max-w-7xl w-full mx-auto px-4 sm:px-6 my-auto flex items-center justify-center">
         {currentMode === "architect" && (
           <ModeArchitect
-            onExploreGrid={() => setCurrentMode("grid")}
+            onExploreGrid={() => setCurrentMode("chaos")}
             onLaunchPipeline={() => setCurrentMode("cockpit")}
           />
+        )}
+
+        {currentMode === "chaos" && (
+          <ChaosCollisionChamber />
         )}
 
         {currentMode === "grid" && (
@@ -133,12 +139,12 @@ export default function Home() {
         )}
       </section>
 
-      {/* 5. DOCK DE COMANDO ORBITAL (Navegação Cinemática de Modos) */}
+      {/* 5. DOCK DE COMANDO ORBITAL (Navegação Cinemática dos 5 Modos) */}
       <footer className="relative z-40 px-6 pb-4 shrink-0">
         <div className="max-w-fit mx-auto glass-panel rounded-2xl p-2 flex items-center gap-2 border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
           <button
             onClick={() => setCurrentMode("architect")}
-            className={`px-4 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
               currentMode === "architect"
                 ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)]"
                 : "text-white/60 hover:text-white hover:bg-white/[0.05]"
@@ -149,45 +155,57 @@ export default function Home() {
           </button>
 
           <button
+            onClick={() => setCurrentMode("chaos")}
+            className={`px-3.5 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
+              currentMode === "chaos"
+                ? "bg-gradient-to-r from-purple-600 to-[#1856FF] text-white shadow-[0_0_25px_rgba(168,85,247,0.5)] font-bold"
+                : "text-white/60 hover:text-white hover:bg-white/[0.05]"
+            }`}
+          >
+            <Flame className="w-3.5 h-3.5 text-amber-300" />
+            <span>2. Zero-G Chaos (Física Real)</span>
+          </button>
+
+          <button
             onClick={() => setCurrentMode("grid")}
-            className={`px-4 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
               currentMode === "grid"
                 ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)]"
                 : "text-white/60 hover:text-white hover:bg-white/[0.05]"
             }`}
           >
             <Grid3X3 className="w-3.5 h-3.5" />
-            <span>2. Kinetic Grid</span>
+            <span>3. Kinetic Grid</span>
           </button>
 
           <button
             onClick={() => setCurrentMode("cockpit")}
-            className={`px-4 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
               currentMode === "cockpit"
                 ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)]"
                 : "text-white/60 hover:text-white hover:bg-white/[0.05]"
             }`}
           >
             <Activity className="w-3.5 h-3.5 text-[#07CA6B]" />
-            <span>3. Sandbox Cockpit</span>
+            <span>4. Cockpit Sandbox</span>
           </button>
 
           <button
             onClick={() => setCurrentMode("agent")}
-            className={`px-4 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
               currentMode === "agent"
                 ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)]"
                 : "text-white/60 hover:text-white hover:bg-white/[0.05]"
             }`}
           >
             <Cpu className="w-3.5 h-3.5 text-[#38BDF8]" />
-            <span>4. Edge MCP</span>
+            <span>5. Edge MCP</span>
           </button>
 
           <div className="w-[1px] h-5 bg-white/10 hidden sm:block mx-1" />
 
           <div className="hidden sm:flex items-center text-[10px] font-mono text-white/40 px-2">
-            Pressione 1, 2, 3 ou 4
+            Teclas 1, 2, 3, 4, 5
           </div>
         </div>
       </footer>
