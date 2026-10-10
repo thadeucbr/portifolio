@@ -102,6 +102,17 @@ export const MCP_REGISTRY: Record<string, MCPToolDefinition> = {
       required: ["dataType"],
     },
   },
+  inspectEdgeInferenceRuntime: {
+    name: "inspectEdgeInferenceRuntime",
+    description: "Exibe a telemetria real do runtime de inferência desta página: modelo, backend (WebGPU/WASM), quantização, dimensões e estado do Cache API.",
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      requiresElicitation: false,
+    },
+    parameters: { type: "object", properties: {}, required: [] },
+  },
   requestExecutiveContact: {
     name: "requestExecutiveContact",
     description: "Requer autorização de elicitação prévia para emitir dados executivos de contato e canal direto de contratação.",
