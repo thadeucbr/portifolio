@@ -8,8 +8,8 @@ import type {
   PortfolioChatMessage,
 } from "../ai/localAssistantProtocol";
 
-const MODEL_ID = "onnx-community/Qwen2.5-0.5B-Instruct-ONNX";
-const MODEL_REVISION = "4b32b4541cf2de9d0c0a85125e8fe8d9943f7982";
+const MODEL_ID = "onnx-community/Qwen3.5-0.8B-ONNX";
+const MODEL_REVISION = "d1ea95774d40a29f0479bf9138cdf488a0394b6b";
 const workerScope = globalThis as unknown as {
   navigator: { gpu?: unknown };
   postMessage: (message: LocalAssistantResponse) => void;
@@ -89,7 +89,7 @@ async function ensureModel(forceWasm = false) {
       post({
         type: "status",
         phase: "downloading",
-        detail: candidate.device === "webgpu" ? "Carregando Qwen2.5 0.5B q4f16 no WebGPU…" : "Carregando Qwen2.5 0.5B q4 no fallback WASM…",
+        detail: candidate.device === "webgpu" ? "Carregando Qwen3.5 0.8B q4f16 no WebGPU…" : "Carregando Qwen3.5 0.8B q4 no fallback WASM…",
         model: MODEL_ID,
         revision: MODEL_REVISION,
         device: candidate.device,
@@ -106,7 +106,7 @@ async function ensureModel(forceWasm = false) {
         post({
           type: "status",
           phase: "ready",
-          detail: `Qwen2.5 0.5B pronto em ${candidate.device === "webgpu" ? "WebGPU" : "WASM"}.`,
+          detail: `Qwen3.5 0.8B pronto em ${candidate.device === "webgpu" ? "WebGPU" : "WASM"}.`,
           model: MODEL_ID,
           revision: MODEL_REVISION,
           device: candidate.device,
@@ -163,6 +163,7 @@ async function runGeneration(requestId: string, messages: PortfolioChatMessage[]
     max_new_tokens: 96,
     do_sample: false,
     streamer,
+    tokenizer_encode_kwargs: { enable_thinking: false },
   });
   filter.finish();
   const answer = cleanGeneratedAnswer(extractAnswer(output));
