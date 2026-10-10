@@ -178,18 +178,26 @@ export function EdgeAgentConsole() {
       setMessages((prev) => [...prev, {
         id: messageId,
         role: "agent",
-        content: shouldGenerate ? "Gerando resposta local com fontes…" : prefix ?? `Ficha recebida via MCP: ${SYSTEM_LABEL[resolvedSystemId]}.`,
-        tool: { name: toolName, systemId: resolvedSystemId, evidence, source: "mcp", definition, result },
+        content: shouldGenerate
+          ? "Gerando resposta…"
+          : result?.project?.summary ?? result?.projects?.map((project) => `${project.title}: ${project.summary}`).join("\n") ?? prefix ?? "Não há resumo disponível para este resultado.",
         meta: responseMeta,
       }]);
       if (shouldGenerate && question) {
+        const project = result?.project;
         const primaryEvidence: PortfolioAnswerEvidence = result?.projects
           ? {
               id: "portfolio-index",
               title: "Índice de projetos do MCP",
-              text: result.projects.map((project) => `${project.title} (${project.shortLabel}, ${project.category})`).join("; "),
+              text: result.projects.map((item) => `${item.title} (${item.shortLabel}, ${item.category})`).join("; "),
             }
-          : { id: resolvedSystemId, title: `${result?.project?.title ?? SYSTEM_LABEL[resolvedSystemId]} · ficha MCP`, text: JSON.stringify(result?.project ?? {}) };
+          : {
+              id: resolvedSystemId,
+              title: project?.title ?? SYSTEM_LABEL[resolvedSystemId],
+              text: [project?.summary, ...(project?.architectureHighlights ?? []).map((highlight) => `• ${highlight}`)]
+                .filter(Boolean)
+                .join("\n"),
+            };
         const evidenceForAnswer: PortfolioAnswerEvidence[] = [
           primaryEvidence,
           ...(retrievedEvidence ?? []).filter((source) => source.id !== primaryEvidence.id && source.id !== resolvedSystemId),
@@ -385,7 +393,7 @@ export function EdgeAgentConsole() {
                   {m.meta.toolSelection ? ` · ${m.meta.toolSelection}` : ""}
                 </div>
               )}
-              {m.tool && (
+              {m.tool?.name === "portfolio_request_contact" && (
                 <GenerativeToolArtifact
                   toolName={m.tool.name}
                   systemId={m.tool.systemId}
