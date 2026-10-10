@@ -11,8 +11,10 @@ import {
   Network,
   Share2,
   Lock,
-  ArrowRight
+  ArrowRight,
+  Zap
 } from "lucide-react";
+import { PipelineSimulator } from "./PipelineSimulator";
 
 interface ArchitectureInspectorProps {
   system: SystemProject | null;
@@ -20,7 +22,7 @@ interface ArchitectureInspectorProps {
 }
 
 export function ArchitectureInspector({ system, onClose }: ArchitectureInspectorProps) {
-  const [activeTab, setActiveTab] = useState<"topology" | "highlights" | "telemetry">("topology");
+  const [activeTab, setActiveTab] = useState<"topology" | "simulator" | "highlights" | "telemetry">("topology");
 
   if (!system) {
     return (
@@ -68,6 +70,16 @@ export function ArchitectureInspector({ system, onClose }: ArchitectureInspector
             }`}
           >
             Topologia
+          </button>
+          <button
+            onClick={() => setActiveTab("simulator")}
+            className={`px-3 py-1 text-xs rounded-lg font-mono transition-all ${
+              activeTab === "simulator"
+                ? "bg-[#1856FF] text-white shadow-sm"
+                : "text-white/60 hover:text-white"
+            }`}
+          >
+            Simulador
           </button>
           <button
             onClick={() => setActiveTab("highlights")}
@@ -149,6 +161,10 @@ export function ArchitectureInspector({ system, onClose }: ArchitectureInspector
               </p>
             </div>
           </div>
+        )}
+
+        {activeTab === "simulator" && (
+          <PipelineSimulator system={system} />
         )}
 
         {activeTab === "highlights" && (
