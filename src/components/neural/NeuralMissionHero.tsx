@@ -1,18 +1,8 @@
-"use client";
+﻿"use client";
 
-import React, { useState } from "react";
-import { 
-  Network, 
-  Cpu, 
-  Zap, 
-  Terminal, 
-  ShieldCheck, 
-  Layers, 
-  Sparkles, 
-  ChevronRight,
-  GitBranch,
-  Bot
-} from "lucide-react";
+import React from "react";
+import { Zap, ShieldCheck, Sparkles, ChevronRight } from "lucide-react";
+import { LiveRuntimeHud } from "./LiveRuntimeHud";
 
 interface NeuralMissionHeroProps {
   onGoToSystems: () => void;
@@ -25,27 +15,12 @@ export function NeuralMissionHero({
   onGoToResilience,
   onGoToSecurity,
 }: NeuralMissionHeroProps) {
-  const [activeAttentionLayer, setActiveAttentionLayer] = useState<number>(1);
 
   return (
     <div className="relative w-full h-full flex flex-col justify-between p-4 sm:p-10 animate-in fade-in duration-500">
-      {/* Top HUD: Status da Rede Neural e Parâmetros */}
-      <div className="flex items-center justify-between pb-3 border-b border-white/10 font-mono text-xs">
-        <div className="flex items-center gap-3">
-          <div className="px-3 py-1 rounded-full bg-[#1856FF]/20 border border-[#1856FF]/40 text-[#38BDF8] text-[11px] font-semibold flex items-center gap-2 shadow-[0_0_20px_rgba(24,86,255,0.3)]">
-            <Network className="w-3.5 h-3.5 text-[#38BDF8] animate-pulse" />
-            <span>SYNAPTIC ATTENTION LAYER // ONNX WEBGPU BACKEND</span>
-          </div>
-          <span className="text-white/40 hidden md:inline">95 NODES ACTIVE • 35 ACTION POTENTIALS</span>
-        </div>
-
-        <div className="flex items-center gap-4 text-[11px] text-white/60">
-          <span>PARALELISMO: <strong className="text-white">EXTREME EDGE</strong></span>
-          <span>•</span>
-          <span>LATÊNCIA: <strong className="text-[#07CA6B]">&lt; 45ms</strong></span>
-          <span>•</span>
-          <span className="text-[#38BDF8]">MCP SPEC: v1.0</span>
-        </div>
+      {/* Top HUD: telemetria real do runtime (nada hardcoded) */}
+      <div className="flex items-center justify-between pb-3 border-b border-white/10">
+        <LiveRuntimeHud />
       </div>
 
       {/* Bloco Central Hero: IA e Missão Crítica Convergidas */}
@@ -106,7 +81,7 @@ export function NeuralMissionHero({
         <div className="glass-panel-subtle p-3 rounded-2xl border border-white/10">
           <div className="text-[10px] text-purple-300">SEGURANÇA CORPORATIVA</div>
           <div className="font-bold text-white mt-0.5">Zero Trust M2M</div>
-          <div className="text-[10px] text-white/60">Tokens Ed25519 & AD</div>
+          <div className="text-[10px] text-white/60">Tokens assinados & AD</div>
         </div>
 
         <div className="glass-panel-subtle p-3 rounded-2xl border border-white/10">
