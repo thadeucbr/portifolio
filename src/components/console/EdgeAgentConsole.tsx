@@ -1,198 +1,196 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { Terminal, Bot, Sparkles, Send, ShieldCheck, Zap, Activity, Cpu } from "lucide-react";
-import { searchLocalSemanticMesh } from "@/mcp/semanticEngine";
-import { MCP_REGISTRY } from "@/mcp/registry";
+import React, { useMemo, useRef, useEffect, useState } from "react";
+import { Bot, Send, Cpu, Loader2, AlertTriangle } from "lucide-react";
+import { useEdgeEmbeddings, type RankResult } from "@/hooks/useEdgeEmbeddings";
+import { SYSTEM_TOOL, SYSTEM_LABEL } from "@/mcp/semanticEngine";
 import { GenerativeToolArtifact } from "./GenerativeToolArtifact";
+import { SemanticGravityField } from "./SemanticGravityField";
 
 interface MessageItem {
   id: string;
   role: "user" | "agent";
   content: string;
-  mcpTool?: string;
-  mcpArgs?: Record<string, any>;
-  score?: number;
+  tool?: { name: string; systemId: string; evidence?: string };
+  meta?: { engine: RankResult["engine"]; ms: number; top: { id: string; score: number }[] };
 }
 
+const QUICK = [
+  "Como você desacopla canais de mensagem dos modelos de IA?",
+  "Como garantir que um serviço interno não se passe por outro?",
+  "Proteção contra vazamento de dados sensíveis em atendimento",
+  "Quero falar com ele sobre uma vaga",
+];
+
 export function EdgeAgentConsole() {
+  const { state, rank } = useEdgeEmbeddings();
+  const ids = useMemo(() => Object.keys(SYSTEM_TOOL), []);
   const [input, setInput] = useState("");
-  const [isInferring, setIsInferring] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [scores, setScores] = useState<Record<string, number> | null>(null);
+  const [topId, setTopId] = useState<string>();
   const [messages, setMessages] = useState<MessageItem[]>([
     {
-      id: "initial",
+      id: "boot",
       role: "agent",
-      content: `Agente local de Edge inicializado via MCP (Model Context Protocol).
-A inferência semântica e resolução de ferramentas ocorre nativamente no seu navegador, sem envio de dados a servidores externos.
-O que deseja inspecionar na arquitetura de Thadeu Ramos?`,
+      content:
+        "Pergunte em linguagem natural. Sua pergunta vira um vetor dentro do seu navegador, é comparada com trechos do currículo e a ferramenta MCP do sistema mais próximo é renderizada como interface. Nada é enviado a servidores de IA.",
     },
   ]);
-
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isInferring]);
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [messages, busy]);
 
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isInferring) return;
+  const invoke = (systemId: string, evidence?: string, prefix?: string, meta?: MessageItem["meta"]) => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `a-${Date.now()}`,
+        role: "agent",
+        content: prefix ?? `Invocação manual de ${SYSTEM_LABEL[systemId]}.`,
+        tool: { name: SYSTEM_TOOL[systemId], systemId, evidence },
+        meta,
+      },
+    ]);
+  };
 
-    const userQuery = input.trim();
+  const ask = async (text: string) => {
+    if (!text.trim() || busy) return;
     setInput("");
-
-    const userMsg: MessageItem = {
-      id: `usr-${Date.now()}`,
-      role: "user",
-      content: userQuery,
-    };
-
-    setMessages((prev) => [...prev, userMsg]);
-    setIsInferring(true);
-
-    // Motor de Inferência Vetorial Real no Edge
-    setTimeout(() => {
-      const searchResults = searchLocalSemanticMesh(userQuery);
-      const topMatch = searchResults[0];
-
-      let replyText = "";
-      let mcpToolName: string | undefined = undefined;
-
-      if (topMatch && topMatch.score > 0.08) {
-        mcpToolName = topMatch.document.mcpTool;
-        replyText = `Similaridade vetorial detectada (${(topMatch.score * 100).toFixed(1)}% de match semântico no Edge). Invocando ferramenta tipada via MCP:`;
+    setBusy(true);
+    setMessages((p) => [...p, { id: `u-${Date.now()}`, role: "user", content: text }]);
+    try {
+      const r = await rank(text);
+      const top = r.ranking[0];
+      setScores(Object.fromEntries(r.ranking.map((x) => [x.systemId, x.score])));
+      setTopId(top?.systemId);
+      const meta = {
+        engine: r.engine,
+        ms: r.inferenceMs,
+        top: r.ranking.slice(0, 3).map((x) => ({ id: x.systemId, score: x.score })),
+      };
+      if (top && top.score >= r.threshold) {
+        invoke(top.systemId, top.bestChunk, `Maior similaridade: ${SYSTEM_LABEL[top.systemId]}.`, meta);
       } else {
-        replyText = `Busca semântica executada no navegador. Não encontrei um subsistema de alta convergência para essa consulta. Experimente indagar sobre: "Broker de Mensageria", "Autenticação M2M Zero Trust", "Motor de IA PIX" ou "Sentinel DLP".`;
+        setMessages((p) => [
+          ...p,
+          {
+            id: `a-${Date.now()}`,
+            role: "agent",
+            content:
+              "Nenhum sistema passou do limiar de confiança. Prefiro não chutar: reformule ou toque num dos corpos no campo acima.",
+            meta,
+          },
+        ]);
       }
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `agn-${Date.now()}`,
-          role: "agent",
-          content: replyText,
-          mcpTool: mcpToolName,
-          score: topMatch?.score,
-        },
-      ]);
-
-      setIsInferring(false);
-    }, 380); // Latência de inferência local ultrarrápida (Edge computing)
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const handleQuickPrompt = (prompt: string) => {
-    setInput(prompt);
-  };
+  const rt = state.runtime;
+  const loading = state.phase !== "ready" && state.phase !== "error";
 
   return (
-    <div className="glass-panel rounded-2xl border border-white/15 overflow-hidden flex flex-col h-[540px]">
-      {/* Header do Agente MCP */}
-      <div className="p-4 border-b border-white/10 bg-white/[0.02] flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
+    <div className="glass-panel rounded-2xl border border-white/15 overflow-hidden flex flex-col h-[min(640px,calc(100vh-180px))]">
+      <div className="p-3.5 border-b border-white/10 bg-white/[0.02] flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-1.5 rounded-lg bg-[#1856FF]/20 border border-[#1856FF]/40 text-[#38BDF8]">
             <Bot className="w-4 h-4" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-white">Edge AI Assistant</span>
-              <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-[#07CA6B]/20 text-[#07CA6B] border border-[#07CA6B]/30 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#07CA6B] animate-pulse" />
-                ON-DEVICE EMBEDDINGS
-              </span>
-            </div>
-            <p className="text-[11px] text-white/50">
-              Inferência semântica &amp; Generative UI via Model Context Protocol
+          <div className="min-w-0">
+            <div className="text-xs font-semibold text-white">Agente de busca semântica local</div>
+            <p className="text-[10px] text-white/50 truncate font-mono">
+              {rt
+                ? `${rt.model.split("/")[1]} · ${rt.device.toUpperCase()} · ${rt.dtype} · ${rt.dims}d · cache ${rt.warmCache ? "hit" : "miss"}`
+                : state.phase === "error"
+                  ? state.detail
+                  : (state.detail ?? "inicializando worker…")}
             </p>
           </div>
         </div>
-
-        <div className="flex items-center gap-2 font-mono text-[10px] text-white/60">
-          <span className="flex items-center gap-1 px-2 py-1 rounded bg-white/5 border border-white/10">
-            <Cpu className="w-3 h-3 text-sky-400" />
-            Zero-Cloud Latency
-          </span>
-        </div>
+        <span
+          className={`shrink-0 font-mono text-[10px] px-2 py-1 rounded border flex items-center gap-1 ${
+            rt
+              ? "bg-[#07CA6B]/15 text-[#07CA6B] border-[#07CA6B]/30"
+              : state.phase === "error"
+                ? "bg-[#EA2143]/15 text-[#EA2143] border-[#EA2143]/30"
+                : "bg-amber-500/10 text-amber-300 border-amber-500/30"
+          }`}
+        >
+          {rt ? <Cpu className="w-3 h-3" /> : state.phase === "error" ? <AlertTriangle className="w-3 h-3" /> : <Loader2 className="w-3 h-3 animate-spin" />}
+          {rt ? "MODELO PRONTO" : state.phase === "error" ? "SEM BACKEND" : `${Math.round(state.progress * 100)}%`}
+        </span>
       </div>
 
-      {/* Lista de Mensagens com Generative UI */}
-      <div className="flex-1 p-4 overflow-y-auto space-y-3 font-sans text-xs">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}
-          >
+      {loading && (
+        <div className="h-0.5 bg-white/5">
+          <div className="h-full bg-[#1856FF] transition-[width] duration-300" style={{ width: `${state.progress * 100}%` }} />
+        </div>
+      )}
+
+      <SemanticGravityField ids={ids} scores={scores} topId={topId} onSelect={(id) => invoke(id)} />
+
+      <div className="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
+        {messages.map((m) => (
+          <div key={m.id} className={`flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}>
             <div
-              className={`max-w-[85%] rounded-2xl p-3 leading-relaxed ${
-                msg.role === "user"
-                  ? "bg-[#1856FF] text-white rounded-tr-none shadow-lg shadow-[#1856FF]/20"
-                  : "bg-white/[0.05] border border-white/10 text-white/90 rounded-tl-none backdrop-blur-md"
+              className={`max-w-[90%] rounded-2xl p-3 leading-relaxed ${
+                m.role === "user"
+                  ? "bg-[#1856FF] text-white rounded-tr-none"
+                  : "bg-white/[0.08] border border-white/10 text-white/90 rounded-tl-none"
               }`}
             >
-              <div className="whitespace-pre-wrap">{msg.content}</div>
-
-              {/* Generative UI Transmutation se houver MCP Tool */}
-              {msg.mcpTool && (
-                <GenerativeToolArtifact
-                  toolName={msg.mcpTool}
-                  args={msg.mcpArgs}
-                />
+              <div className="whitespace-pre-wrap">{m.content}</div>
+              {m.meta && (
+                <div className="mt-1.5 font-mono text-[9px] text-white/45">
+                  {m.meta.engine === "neural" ? "embeddings neurais" : "fallback léxico (modelo ainda carregando)"} ·{" "}
+                  {m.meta.ms.toFixed(1)} ms · {m.meta.top.map((t) => `${SYSTEM_LABEL[t.id]} ${t.score.toFixed(3)}`).join(" | ")}
+                </div>
               )}
+              {m.tool && <GenerativeToolArtifact toolName={m.tool.name} systemId={m.tool.systemId} evidence={m.tool.evidence} />}
             </div>
           </div>
         ))}
-
-        {isInferring && (
-          <div className="flex items-center gap-2 font-mono text-[11px] text-[#38BDF8] p-2 rounded-lg bg-sky-950/20 border border-sky-500/20 w-fit">
-            <Activity className="w-3.5 h-3.5 animate-spin" />
-            Computando embeddings locais no Edge &amp; resolvendo contrato MCP...
+        {busy && (
+          <div className="flex items-center gap-2 font-mono text-[11px] text-[#38BDF8]">
+            <Loader2 className="w-3.5 h-3.5 animate-spin" /> gerando embedding da consulta…
           </div>
         )}
-
-        <div ref={messagesEndRef} />
+        <div ref={endRef} />
       </div>
 
-      {/* Sugestões de Prompt Rápidas */}
-      <div className="px-4 py-2 bg-black/40 border-t border-white/5 flex items-center gap-2 overflow-x-auto text-[11px] font-mono text-white/60">
-        <span className="text-white/40 shrink-0">Consultas MCP:</span>
-        <button
-          onClick={() => handleQuickPrompt("Como funciona o Broker de Mensageria com WhatsApp e IA?")}
-          className="shrink-0 px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 hover:text-white border border-white/10 transition-colors cursor-pointer"
-        >
-          ⚡ Broker de Mensageria
-        </button>
-        <button
-          onClick={() => handleQuickPrompt("Auditar segurança Zero Trust e autenticação M2M")}
-          className="shrink-0 px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 hover:text-white border border-white/10 transition-colors cursor-pointer"
-        >
-          🛡️ Malha M2M Zero Trust
-        </button>
-        <button
-          onClick={() => handleQuickPrompt("Testar reconhecimento de intenção no autoatendimento PIX")}
-          className="shrink-0 px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 hover:text-white border border-white/10 transition-colors cursor-pointer"
-        >
-          💳 Canal PIX 100% IA
-        </button>
-        <button
-          onClick={() => handleQuickPrompt("Solicitar contato executivo com autorização de elicitação")}
-          className="shrink-0 px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 hover:text-white border border-white/10 transition-colors cursor-pointer"
-        >
-          📞 Elicitation Request
-        </button>
+      <div className="px-3 py-2 bg-black/30 border-t border-white/5 flex items-center gap-2 overflow-x-auto text-[10px] font-mono text-white/60">
+        {QUICK.map((q) => (
+          <button
+            key={q}
+            onClick={() => ask(q)}
+            className="shrink-0 px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 hover:text-white border border-white/10 cursor-pointer"
+          >
+            {q}
+          </button>
+        ))}
       </div>
 
-      {/* Formulário de Envio */}
-      <form onSubmit={handleSend} className="p-3 border-t border-white/10 bg-white/[0.01] flex gap-2">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void ask(input);
+        }}
+        className="p-3 border-t border-white/10 flex gap-2"
+      >
         <input
-          type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Consulte o catálogo semântico de sistemas ou invoque ferramentas MCP..."
-          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/40 focus:outline-none focus:border-[#1856FF] transition-colors"
+          placeholder="Ex.: como ele lida com falhas de um provedor de LLM?"
+          className="flex-1 bg-white/[0.06] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/40 focus:outline-none focus:border-[#1856FF]"
         />
         <button
           type="submit"
-          disabled={!input.trim() || isInferring}
-          className="p-2.5 rounded-xl bg-[#1856FF] hover:bg-[#1856FF]/90 disabled:opacity-50 text-white transition-all cursor-pointer shadow-lg shadow-[#1856FF]/20"
+          disabled={!input.trim() || busy}
+          className="p-2.5 rounded-xl bg-[#1856FF] hover:bg-[#1856FF]/90 disabled:opacity-50 text-white cursor-pointer"
         >
           <Send className="w-4 h-4" />
         </button>

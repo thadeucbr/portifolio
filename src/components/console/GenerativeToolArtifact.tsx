@@ -1,225 +1,138 @@
 "use client";
 
 import React, { useState } from "react";
-import { CheckCircle2, ShieldCheck, Zap, Activity, Copy, Check, ExternalLink, RefreshCw } from "lucide-react";
-import { MCP_REGISTRY, MCPToolDefinition } from "@/mcp/registry";
-import { PROFILE_DATA } from "@/data/systems";
+import { Check, Copy, Cpu, Database, HardDrive, Layers } from "lucide-react";
+import { MCP_REGISTRY, type MCPToolDefinition } from "@/mcp/registry";
+import { SYSTEMS_DATA } from "@/data/systems";
+import { useEdgeEmbeddings } from "@/hooks/useEdgeEmbeddings";
+import { ElicitationContactForm } from "./ElicitationContactForm";
 
 interface GenerativeToolArtifactProps {
   toolName: string;
-  args?: Record<string, any>;
-  onTriggerAction?: (actionName: string) => void;
+  systemId: string;
+  /** Trecho do currículo recuperado pelo modelo de embeddings que justificou a chamada. */
+  evidence?: string;
 }
 
-export function GenerativeToolArtifact({ toolName, args = {}, onTriggerAction }: GenerativeToolArtifactProps) {
+/**
+ * Generative UI: a resposta do agente não é texto, é um componente montado a partir do
+ * resultado da ferramenta MCP. Todo conteúdo vem de src/data/systems.ts ou da telemetria
+ * real do runtime — nenhum número é inventado aqui.
+ */
+export function GenerativeToolArtifact({ toolName, systemId, evidence }: GenerativeToolArtifactProps) {
   const [copied, setCopied] = useState(false);
-  const [elicitationResolved, setElicitationResolved] = useState<"pending" | "accepted" | "declined">("pending");
-  const [activeTab, setActiveTab] = useState<"ui" | "contract">("ui");
+  const [tab, setTab] = useState<"ui" | "contract">("ui");
+  const { state } = useEdgeEmbeddings();
 
-  const toolMeta: MCPToolDefinition = MCP_REGISTRY[toolName] || {
-    name: toolName,
-    description: "Operação executada via protocolo MCP tipado.",
-    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
-    parameters: { type: "object", properties: {}, required: [] },
-  };
+  const tool: MCPToolDefinition | undefined = MCP_REGISTRY[toolName];
+  const system = SYSTEMS_DATA.find((s) => s.id === systemId);
+  if (!tool) return null;
 
-  const copyContract = () => {
-    navigator.clipboard.writeText(JSON.stringify(toolMeta, null, 2));
+  const copy = () => {
+    navigator.clipboard.writeText(JSON.stringify(tool, null, 2));
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 1500);
   };
+
+  const rt = state.runtime;
 
   return (
-    <div className="my-3 rounded-xl border border-white/20 bg-black/40 backdrop-blur-xl overflow-hidden shadow-2xl transition-all duration-300">
-      {/* Header do Componente Generativo com Badges MCP */}
-      <div className="px-3.5 py-2.5 bg-gradient-to-r from-[#1856FF]/20 via-white/[0.04] to-transparent border-b border-white/10 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#1856FF] animate-ping" />
-          <span className="font-mono text-xs font-semibold text-white tracking-wider flex items-center gap-1.5">
-            MCP_TOOL: <span className="text-[#38BDF8]">{toolMeta.name}</span>
-          </span>
-        </div>
-
-        {/* Hints Rigorosos do MCP */}
-        <div className="flex items-center gap-1.5 font-mono text-[9px]">
-          {toolMeta.annotations.readOnlyHint && (
-            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-              readOnly
-            </span>
+    <div className="my-3 rounded-xl border border-white/15 bg-black/40 backdrop-blur-xl overflow-hidden">
+      <div className="px-3.5 py-2.5 bg-gradient-to-r from-[#1856FF]/20 via-white/[0.04] to-transparent border-b border-white/10 flex items-center justify-between gap-2">
+        <span className="font-mono text-xs font-semibold text-white tracking-wider truncate">
+          tools/call → <span className="text-[#38BDF8]">{tool.name}</span>
+        </span>
+        <div className="flex items-center gap-1.5 font-mono text-[9px] shrink-0">
+          {tool.annotations.readOnlyHint && (
+            <span className="px-1.5 py-0.5 rounded bg-[#07CA6B]/10 border border-[#07CA6B]/30 text-[#07CA6B]">readOnly</span>
           )}
-          {toolMeta.annotations.idempotentHint && (
-            <span className="px-1.5 py-0.5 rounded bg-sky-500/10 border border-sky-500/30 text-sky-400">
-              idempotent
-            </span>
+          {tool.annotations.idempotentHint && (
+            <span className="px-1.5 py-0.5 rounded bg-sky-500/10 border border-sky-500/30 text-sky-400">idempotent</span>
           )}
-          {toolMeta.annotations.requiresElicitation && (
-            <span className="px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-amber-300 animate-pulse">
-              elicitation_required
-            </span>
+          {tool.annotations.destructiveHint && (
+            <span className="px-1.5 py-0.5 rounded bg-[#EA2143]/10 border border-[#EA2143]/30 text-[#EA2143]">destructive</span>
+          )}
+          {tool.annotations.requiresElicitation && (
+            <span className="px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-amber-300">elicitation</span>
           )}
           <button
-            onClick={() => setActiveTab(activeTab === "ui" ? "contract" : "ui")}
-            className="ml-2 px-1.5 py-0.5 rounded bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
-            title="Alternar entre visualização UI viva e contrato JSON tipado"
+            onClick={() => setTab(tab === "ui" ? "contract" : "ui")}
+            className="ml-1 px-1.5 py-0.5 rounded bg-white/10 text-white/70 hover:text-white cursor-pointer"
           >
-            {activeTab === "ui" ? "{ JSON }" : "UI Live"}
+            {tab === "ui" ? "{ schema }" : "UI"}
           </button>
         </div>
       </div>
 
-      {/* Conteúdo Dinâmico Generativo */}
-      {activeTab === "contract" ? (
+      {tab === "contract" ? (
         <div className="p-3 bg-black/60 font-mono text-[11px] text-white/80 overflow-x-auto relative">
-          <button
-            onClick={copyContract}
-            className="absolute top-2 right-2 p-1.5 rounded bg-white/10 hover:bg-white/20 text-white transition-colors"
-          >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+          <button onClick={copy} className="absolute top-2 right-2 p-1.5 rounded bg-white/10 hover:bg-white/20 text-white">
+            {copied ? <Check className="w-3.5 h-3.5 text-[#07CA6B]" /> : <Copy className="w-3.5 h-3.5" />}
           </button>
-          <pre>{JSON.stringify(toolMeta, null, 2)}</pre>
+          <pre>{JSON.stringify(tool, null, 2)}</pre>
         </div>
       ) : (
-        <div className="p-3.5">
-          {/* Artefato: Broker de Mensageria */}
-          {toolName === "inspectBrokerArchitecture" && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-3 gap-2 text-center font-mono text-xs">
-                <div className="p-2 rounded-lg bg-white/5 border border-white/10">
-                  <div className="text-[10px] text-white/50 uppercase">Canal Ingest</div>
-                  <div className="text-emerald-400 font-bold mt-0.5">Meta Cloud WhatsApp</div>
-                </div>
-                <div className="p-2 rounded-lg bg-white/5 border border-white/10">
-                  <div className="text-[10px] text-white/50 uppercase">Buffer Core</div>
-                  <div className="text-sky-400 font-bold mt-0.5">Agnostic Dispatcher</div>
-                </div>
-                <div className="p-2 rounded-lg bg-white/5 border border-white/10">
-                  <div className="text-[10px] text-white/50 uppercase">Latência P99</div>
-                  <div className="text-white font-bold mt-0.5">&lt; 42 ms</div>
-                </div>
-              </div>
-
-              {/* Diagrama de Nós em Tempo Real */}
-              <div className="p-2.5 rounded-lg bg-black/50 border border-white/10 flex items-center justify-between font-mono text-[11px]">
-                <div className="flex items-center gap-1.5 text-white/80">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  Meta Webhook
-                </div>
-                <span className="text-white/30 text-xs">──►</span>
-                <div className="flex items-center gap-1.5 text-sky-300 bg-sky-950/60 px-2 py-0.5 rounded border border-sky-500/30">
-                  <Activity className="w-3 h-3 text-sky-400 animate-spin" />
-                  Async Buffer
-                </div>
-                <span className="text-white/30 text-xs">──►</span>
-                <div className="flex items-center gap-1.5 text-emerald-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  Multi-LLM Engine
-                </div>
-              </div>
+        <div className="p-3.5 space-y-3">
+          {evidence && (
+            <div className="text-[11px] leading-relaxed text-white/75 border-l-2 border-[#1856FF] pl-2.5">
+              <span className="font-mono text-[9px] text-white/40 block">EVIDÊNCIA RECUPERADA DO CURRÍCULO</span>
+              {evidence}
             </div>
           )}
 
-          {/* Artefato: Zero Trust M2M */}
-          {toolName === "inspectZeroTrustMesh" && (
-            <div className="space-y-3">
-              <div className="p-2.5 rounded-lg bg-sky-950/30 border border-sky-500/30 flex items-center justify-between font-mono text-xs">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <span className="text-white/90">M2M Asymmetric Signature</span>
+          {toolName === "requestExecutiveContact" && <ElicitationContactForm />}
+
+          {toolName === "inspectEdgeInferenceRuntime" && (
+            <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
+              {[
+                { icon: Layers, k: "modelo", v: rt?.model ?? "carregando…" },
+                { icon: Cpu, k: "backend", v: rt ? `${rt.device.toUpperCase()} · ${rt.dtype}` : state.phase },
+                { icon: Database, k: "índice", v: rt ? `${rt.chunks} trechos × ${rt.dims} dims` : "—" },
+                {
+                  icon: HardDrive,
+                  k: "Cache API",
+                  v: rt ? (rt.warmCache ? "hit (pesos do disco)" : "miss (1º download)") : "—",
+                },
+                { icon: Cpu, k: "load", v: rt ? `${Math.round(rt.loadMs)} ms` : "—" },
+                { icon: Database, k: "indexação", v: rt ? `${Math.round(rt.indexMs)} ms` : "—" },
+              ].map(({ icon: Icon, k, v }) => (
+                <div key={k} className="p-2 rounded bg-white/[0.06] border border-white/10">
+                  <span className="text-white/40 text-[9px] uppercase flex items-center gap-1">
+                    <Icon className="w-3 h-3" /> {k}
+                  </span>
+                  <span className="text-white break-all">{v}</span>
                 </div>
-                <span className="text-emerald-400 font-bold text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
-                  VERIFIED_OK
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
-                <div className="p-2 rounded bg-white/5 border border-white/10">
-                  <span className="text-white/40 block text-[9px]">DIRETÓRIO / AUTH</span>
-                  <span className="text-white">Active Directory RBAC</span>
-                </div>
-                <div className="p-2 rounded bg-white/5 border border-white/10">
-                  <span className="text-white/40 block text-[9px]">TOKEN REPLAY RESISTANCE</span>
-                  <span className="text-emerald-400">100% Nonce Salted</span>
-                </div>
-              </div>
+              ))}
             </div>
           )}
 
-          {/* Artefato: PIX AI Engine */}
-          {toolName === "inspectPixAiEngine" && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between font-mono text-xs p-2 rounded bg-white/5 border border-white/10">
-                <span className="text-white/70">Reconhecimento de Intenção PNL</span>
-                <span className="text-sky-300 font-bold">99.4% Acurácia</span>
+          {system && toolName !== "inspectEdgeInferenceRuntime" && (
+            <>
+              <div className="grid grid-cols-3 gap-2 text-center font-mono">
+                {system.metrics.slice(0, 3).map((m) => (
+                  <div key={m.label} className="p-2 rounded-lg bg-white/[0.06] border border-white/10">
+                    <div className="text-[9px] text-white/45 uppercase">{m.label}</div>
+                    <div className="text-[#38BDF8] font-bold text-xs mt-0.5">{m.value}</div>
+                  </div>
+                ))}
               </div>
-              <div className="p-2.5 rounded-lg bg-black/60 border border-white/10 font-mono text-[11px] space-y-1">
-                <div className="text-white/40 text-[9px]">FLUXO TRANSACIONAL SEGURO</div>
-                <div className="text-white/90">Intenção: &ldquo;Estorno Chave PIX Duplicada&rdquo;</div>
-                <div className="text-emerald-400 flex items-center gap-1.5 mt-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Roteamento autônomo sem intervenção humana
-                </div>
-              </div>
-            </div>
-          )}
 
-          {/* Artefato: Sentinel DLP */}
-          {toolName === "inspectSentinelDLP" && (
-            <div className="space-y-2.5 font-mono text-xs">
-              <div className="p-2.5 rounded-lg bg-rose-950/20 border border-rose-500/30 flex items-center justify-between">
-                <span className="text-rose-300">Payload com CPF/Cartão Bancário</span>
-                <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 text-[10px]">DLP BLOCKED</span>
-              </div>
-              <div className="p-2.5 rounded-lg bg-emerald-950/20 border border-emerald-500/30 flex items-center justify-between">
-                <span className="text-emerald-300">Output Sanitizado: &ldquo;***.***.892-00&rdquo;</span>
-                <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">SAFE FOR LLM</span>
-              </div>
-            </div>
-          )}
+              <ol className="flex flex-wrap items-center gap-1.5 font-mono text-[10px]">
+                {system.executionFlow.map((st, i) => (
+                  <li key={st.step} className="flex items-center gap-1.5">
+                    <span className="px-2 py-1 rounded bg-white/[0.06] border border-white/10 text-white/85" title={st.description}>
+                      <span className="text-white/40">{st.step}</span> {st.title}
+                    </span>
+                    {i < system.executionFlow.length - 1 && <span className="text-white/30">→</span>}
+                  </li>
+                ))}
+              </ol>
 
-          {/* Artefato: Elicitation Request (Solicitação de Contato Executivo) */}
-          {toolName === "requestExecutiveContact" && (
-            <div className="space-y-3 font-mono text-xs">
-              {elicitationResolved === "pending" ? (
-                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 space-y-2">
-                  <div className="flex items-center gap-2 text-amber-300 font-semibold text-xs">
-                    <Zap className="w-4 h-4 animate-bounce" />
-                    MCP Elicitation Request: Permissão Requerida
-                  </div>
-                  <p className="text-white/70 text-[11px] leading-relaxed">
-                    O agente requer confirmação para descriptografar os canais diretos e o telefone corporativo de Thadeu Ramos. Deseja prosseguir com a autorização?
-                  </p>
-                  <div className="flex items-center gap-2 pt-1">
-                    <button
-                      onClick={() => setElicitationResolved("accepted")}
-                      className="px-3 py-1 rounded bg-[#07CA6B] text-black font-bold text-xs hover:bg-[#07CA6B]/90 transition-all cursor-pointer shadow-lg"
-                    >
-                      Autorizar Acesso
-                    </button>
-                    <button
-                      onClick={() => setElicitationResolved("declined")}
-                      className="px-3 py-1 rounded bg-white/10 text-white/70 text-xs hover:bg-white/20 transition-all cursor-pointer"
-                    >
-                      Recusar
-                    </button>
-                  </div>
-                </div>
-              ) : elicitationResolved === "accepted" ? (
-                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 space-y-2 animate-in fade-in">
-                  <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-xs">
-                    <CheckCircle2 className="w-4 h-4" />
-                    Autorização MCP Concedida
-                  </div>
-                  <div className="space-y-1 text-white/90 text-[11px]">
-                    <div>• E-mail: <a href={`mailto:${PROFILE_DATA.contact.email}`} className="text-sky-300 underline">{PROFILE_DATA.contact.email}</a></div>
-                    <div>• Telefone/WhatsApp: <span className="text-sky-300">{PROFILE_DATA.contact.phone}</span></div>
-                    <div>• LinkedIn: <a href={PROFILE_DATA.contact.linkedin} target="_blank" rel="noreferrer" className="text-sky-300 underline">{PROFILE_DATA.contact.linkedin}</a></div>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-2.5 rounded-lg bg-white/5 border border-white/10 text-white/50 text-[11px]">
-                  Elicitation Request cancelada pelo usuário. Os canais privados permanecem encriptados.
-                </div>
-              )}
-            </div>
+              <div className="text-[11px] text-white/70 p-2 rounded bg-[#EA2143]/[0.06] border border-[#EA2143]/20">
+                <span className="font-mono text-[9px] text-[#EA2143] block">FAILURE HANDLING</span>
+                {system.failureHandling}
+              </div>
+            </>
           )}
         </div>
       )}
