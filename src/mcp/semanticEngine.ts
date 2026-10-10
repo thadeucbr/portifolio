@@ -9,7 +9,7 @@ import type { CorpusChunk } from "@/workers/embedding.worker";
 
 export const CONTACT_SYSTEM_ID = "executive-contact";
 
-/** Ferramenta MCP responsável por materializar cada sistema como Generative UI. */
+/** Mapeamento local que associa módulos a artefatos; não implementa uma chamada MCP. */
 export const SYSTEM_TOOL: Record<string, string> = {
   "ai-messaging-broker": "inspectBrokerArchitecture",
   "zero-trust-mesh": "inspectZeroTrustMesh",

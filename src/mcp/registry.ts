@@ -1,5 +1,5 @@
-// Model Context Protocol (MCP) Contract Types & Tool Definitions
-// Especificação rigorosa de outubro de 2026 conforme Design Web Portfólio Disruptivo IA.txt (Linhas 81-84, 150-153)
+// Contracts locais inspirados em MCP. Este registry não implementa cliente ou servidor MCP.
+// As anotações são exibidas como demonstração no portfólio, não executadas pelo protocolo.
 
 export interface MCPToolAnnotation {
   readOnlyHint: boolean;

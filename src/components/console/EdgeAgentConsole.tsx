@@ -34,7 +34,7 @@ export function EdgeAgentConsole() {
       id: "boot",
       role: "agent",
       content:
-        "Pergunte em linguagem natural. Sua pergunta vira um vetor dentro do seu navegador, é comparada com trechos do currículo e a ferramenta MCP do sistema mais próximo é renderizada como interface. Nada é enviado a servidores de IA.",
+        "Pergunte em linguagem natural. A busca vetorial roda neste navegador e seleciona um módulo local para mostrar evidências do portfólio. Não há LLM nem servidor MCP conectado; os contratos exibidos são demonstrações locais.",
     },
   ]);
   const endRef = useRef<HTMLDivElement>(null);

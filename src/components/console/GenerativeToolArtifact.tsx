@@ -15,9 +15,8 @@ interface GenerativeToolArtifactProps {
 }
 
 /**
- * Generative UI: a resposta do agente não é texto, é um componente montado a partir do
- * resultado da ferramenta MCP. Todo conteúdo vem de src/data/systems.ts ou da telemetria
- * real do runtime — nenhum número é inventado aqui.
+ * UI local: o ranking semântico seleciona um artefato do portfólio. O contrato é inspirado
+ * em MCP, mas não há chamada a um servidor MCP nem geração de resposta por LLM.
  */
 export function GenerativeToolArtifact({ toolName, systemId, evidence }: GenerativeToolArtifactProps) {
   const [copied, setCopied] = useState(false);
@@ -40,7 +39,7 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence }: Generat
     <div className="my-3 rounded-xl border border-white/15 bg-black/40 backdrop-blur-xl overflow-hidden">
       <div className="px-3.5 py-2.5 bg-gradient-to-r from-[#1856FF]/20 via-white/[0.04] to-transparent border-b border-white/10 flex items-center justify-between gap-2">
         <span className="font-mono text-xs font-semibold text-white tracking-wider truncate">
-          tools/call → <span className="text-[#38BDF8]">{tool.name}</span>
+          ferramenta local → <span className="text-[#38BDF8]">{tool.name}</span>
         </span>
         <div className="flex items-center gap-1.5 font-mono text-[9px] shrink-0">
           {tool.annotations.readOnlyHint && (
@@ -73,6 +72,9 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence }: Generat
         </div>
       ) : (
         <div className="p-3.5 space-y-3">
+          <p className="font-mono text-[9px] text-white/40">
+            CONTRATO LOCAL INSPIRADO EM MCP • SEM CONEXÃO A SERVIDOR MCP
+          </p>
           {evidence && (
             <div className="text-[11px] leading-relaxed text-white/75 border-l-2 border-[#1856FF] pl-2.5">
               <span className="font-mono text-[9px] text-white/40 block">EVIDÊNCIA RECUPERADA DO CURRÍCULO</span>

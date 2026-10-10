@@ -14,7 +14,7 @@ interface Props {
 /**
  * Campo de gravidade semântica: cada sistema é um corpo rígido Rapier. Após cada consulta,
  * a atração ao núcleo é proporcional à similaridade de cosseno — o mais relevante "afunda"
- * no centro. Clicar num corpo invoca a ferramenta MCP daquele sistema.
+ * no centro. Clicar num corpo seleciona o módulo local daquele sistema.
  */
 export function SemanticGravityField({ ids, scores, topId, onSelect }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);

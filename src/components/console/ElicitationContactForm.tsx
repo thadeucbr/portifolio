@@ -7,7 +7,7 @@ import { submitRecruiterSignal, type SignalState } from "@/app/actions";
 const initial: SignalState = { status: "idle" };
 
 /**
- * MCP Elicitation Request materializada como formulário de Server Action.
+ * Consentimento de contato inspirado em Elicitation, implementado como Server Action local.
  * accept → valida e persiste no servidor; decline → encerra sem efeitos colaterais.
  */
 export function ElicitationContactForm() {
@@ -48,7 +48,7 @@ export function ElicitationContactForm() {
   return (
     <form action={formAction} className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 space-y-2 text-xs">
       <div className="flex items-center gap-2 text-amber-300 font-semibold font-mono">
-        <ShieldQuestion className="w-4 h-4" /> elicitation/create · requestedSchema
+        <ShieldQuestion className="w-4 h-4" /> CONSENTIMENTO DE CONTATO · SERVER ACTION
       </div>
       <p className="text-white/70 text-[11px] leading-relaxed">
         Para solicitar contato, informe seus dados profissionais. Eles seguem para o servidor do portfólio e são registrados
