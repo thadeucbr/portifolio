@@ -10,11 +10,11 @@ import {
   ArrowUpRight, 
   CheckCircle2, 
   ChevronRight,
-  X,
   Lock,
   Zap,
   Terminal,
-  Grid
+  Grid,
+  AlertTriangle
 } from "lucide-react";
 
 export function ModeKineticGrid() {
@@ -61,7 +61,7 @@ export function ModeKineticGrid() {
                 }`}
               >
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-mono text-[10px] uppercase text-[#38BDF8] tracking-wider">
+                  <span className="font-mono text-[10px] uppercase text-[#38BDF8] tracking-wider font-semibold">
                     {sys.codename}
                   </span>
                   <span className="font-mono text-[10px] text-white/50 px-2 py-0.5 rounded-full bg-white/[0.04]">
@@ -92,7 +92,7 @@ export function ModeKineticGrid() {
           })}
         </div>
 
-        {/* Coluna Direita: O Painel Holográfico Expandido do Sistema Ativo */}
+        {/* Coluna Direita: O Painel Holográfico Expandido com Fluxo EXCLUSIVO do Sistema Ativo */}
         <div className="lg:col-span-7 glass-panel rounded-3xl p-6 border border-white/15 flex flex-col justify-between overflow-hidden relative">
           {/* Luz Ambiente Interna */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#1856FF]/20 rounded-full blur-3xl pointer-events-none" />
@@ -113,9 +113,9 @@ export function ModeKineticGrid() {
               <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/10 font-mono text-xs">
                 <button
                   onClick={() => setActiveTab("topology")}
-                  className={`px-3 py-1 rounded-lg transition-all ${
+                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                     activeTab === "topology"
-                      ? "bg-[#1856FF] text-white shadow-sm"
+                      ? "bg-[#1856FF] text-white shadow-sm font-semibold"
                       : "text-white/60 hover:text-white"
                   }`}
                 >
@@ -123,9 +123,9 @@ export function ModeKineticGrid() {
                 </button>
                 <button
                   onClick={() => setActiveTab("decisions")}
-                  className={`px-3 py-1 rounded-lg transition-all ${
+                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                     activeTab === "decisions"
-                      ? "bg-[#1856FF] text-white shadow-sm"
+                      ? "bg-[#1856FF] text-white shadow-sm font-semibold"
                       : "text-white/60 hover:text-white"
                   }`}
                 >
@@ -133,9 +133,9 @@ export function ModeKineticGrid() {
                 </button>
                 <button
                   onClick={() => setActiveTab("telemetry")}
-                  className={`px-3 py-1 rounded-lg transition-all ${
+                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                     activeTab === "telemetry"
-                      ? "bg-[#1856FF] text-white shadow-sm"
+                      ? "bg-[#1856FF] text-white shadow-sm font-semibold"
                       : "text-white/60 hover:text-white"
                   }`}
                 >
@@ -152,30 +152,43 @@ export function ModeKineticGrid() {
                     {selectedSystem.summary}
                   </p>
 
-                  {/* Fluxograma Arquitetural Interativo */}
-                  <div className="p-4 rounded-2xl bg-black/50 border border-white/10 space-y-2.5 font-mono text-xs">
-                    <div className="text-[10px] uppercase text-[#38BDF8] mb-2 font-bold">
-                      FLUXO DE EXECUÇÃO EM PRODUÇÃO:
+                  {/* Fluxograma Arquitetural Único e Específico do Sistema Selecionado */}
+                  <div className="p-4 rounded-2xl bg-black/50 border border-white/10 space-y-3 font-mono text-xs">
+                    <div className="flex items-center justify-between text-[10px] uppercase text-[#38BDF8] pb-1 border-b border-white/5 font-bold">
+                      <span>FLUXO ESPECÍFICO DE PRODUÇÃO [{selectedSystem.codename}]:</span>
+                      <span className="text-white/50">{selectedSystem.executionFlow.length} ESTÁGIOS</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="px-2 py-0.5 rounded bg-[#1856FF]/25 text-[#38BDF8] border border-[#1856FF]/40 text-[10px]">
-                        INGRESS
-                      </span>
-                      <span className="text-white/80">Meta Cloud / WhatsApp API + Telegram + Webhooks</span>
+
+                    <div className="space-y-3 pt-1">
+                      {selectedSystem.executionFlow.map((stage, idx) => (
+                        <div key={idx} className="space-y-1">
+                          <div className="flex items-center gap-3">
+                            <span className={`px-2 py-0.5 rounded border text-[10px] font-bold shrink-0 ${stage.badgeColor}`}>
+                              {stage.step}
+                            </span>
+                            <div className="flex items-center justify-between w-full">
+                              <span className="text-white font-semibold text-xs">{stage.title}</span>
+                              <span className="text-[10px] text-white/40 hidden sm:inline">{stage.tech}</span>
+                            </div>
+                          </div>
+                          <div className="pl-6 text-[11px] text-[#94A3B8]">
+                            {stage.description}
+                          </div>
+                          <div className="pl-6 text-[10px] text-[#07CA6B]/90 font-mono flex items-center gap-1">
+                            <span>❯</span>
+                            <span>{stage.actionOutput}</span>
+                          </div>
+                          {idx < selectedSystem.executionFlow.length - 1 && (
+                            <div className="pl-6 text-[#1856FF] text-[11px] py-0.5">↓</div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                    <div className="pl-6 text-[#1856FF] text-[11px]">↓ Validação de Integridade e DLP Sanitizer</div>
-                    <div className="flex items-center gap-3">
-                      <span className="px-2 py-0.5 rounded bg-purple-500/25 text-purple-300 border border-purple-500/40 text-[10px]">
-                        BUFFER
-                      </span>
-                      <span className="text-white/80">Broker Agnóstico com Desacoplamento Absoluto</span>
-                    </div>
-                    <div className="pl-6 text-purple-400 text-[11px]">↓ Token M2M Assinado (Ed25519) + RBAC Active Directory</div>
-                    <div className="flex items-center gap-3">
-                      <span className="px-2 py-0.5 rounded bg-[#07CA6B]/25 text-[#07CA6B] border border-[#07CA6B]/40 text-[10px]">
-                        DISPATCH
-                      </span>
-                      <span className="text-white/80">Model Context Protocol (MCP) + Ferramentas Dinâmicas</span>
+
+                    {/* Tratamento de Falha do Sistema */}
+                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 mt-3 text-[11px] text-amber-200/90 font-sans flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                      <span><strong>Tolerância a Falhas:</strong> {selectedSystem.failureHandling}</span>
                     </div>
                   </div>
                 </div>
@@ -184,7 +197,7 @@ export function ModeKineticGrid() {
               {activeTab === "decisions" && (
                 <div className="space-y-3">
                   <div className="text-[11px] font-mono text-[#38BDF8] uppercase">
-                    Pilares Técnicos e Hardening Implementado:
+                    Pilares Técnicos e Hardening Implementado em {selectedSystem.organization}:
                   </div>
                   <div className="grid gap-2">
                     {selectedSystem.architectureHighlights.map((hl, i) => (
@@ -203,7 +216,7 @@ export function ModeKineticGrid() {
               {activeTab === "telemetry" && (
                 <div className="space-y-4 font-mono">
                   <div className="text-[11px] text-[#38BDF8] uppercase">
-                    Métricas de Impacto em Produção:
+                    Métricas Nominais e Telemetria em Produção:
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     {selectedSystem.metrics.map((m, i) => (
@@ -212,6 +225,9 @@ export function ModeKineticGrid() {
                         <div className="text-[10px] text-[#94A3B8] mt-1">{m.label}</div>
                       </div>
                     ))}
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 text-xs text-[#94A3B8] font-sans">
+                    <strong>Garantia de Qualidade de Produção:</strong> Telemetria monitorada ativamente com rastreabilidade ponta a ponta e auditoria de não-repúdio.
                   </div>
                 </div>
               )}
