@@ -48,7 +48,7 @@ export function RecruiterDossierView() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 font-mono text-xs">
+        <div className="flex items-center gap-2 font-mono text-xs no-print">
           <button
             onClick={handleCopyLink}
             className="px-3.5 py-1.5 rounded-xl glass-panel hover:bg-white/[0.1] text-white border border-white/15 cursor-pointer transition-colors"

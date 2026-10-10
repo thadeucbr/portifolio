@@ -120,3 +120,91 @@ code, pre, .font-mono {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(24, 86, 255, 0.5);
 }
+
+/* ============================================================
+   REGRAS DE IMPRESSÃO EXECUTIVA (PDF EXPORT // DOSSIÊ LIMPO)
+   Oculta HUDs de navegação, docks, canvas e prepara layout A4
+   ============================================================ */
+
+@media print {
+  @page {
+    margin: 1.2cm;
+    size: A4 portrait;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 10pt;
+  }
+
+  /* Oculta elementos espaciais e de navegação interativa na impressão */
+  header,
+  footer,
+  canvas,
+  .ambient-glow-primary,
+  .ambient-glow-secondary,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Transmuta o container principal para fluxo de documento padrão A4 */
+  main {
+    height: auto !important;
+    width: 100% !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+  }
+
+  section {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Ajusta os painéis de vidro para caixas brancas com bordas nítidas para documento oficial */
+  .glass-panel,
+  .glass-panel-subtle {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  h1, h2, h3, h4, strong {
+    color: #0f172a !important;
+  }
+
+  p, span, div {
+    color: #334155 !important;
+  }
+
+  .text-white {
+    color: #0f172a !important;
+  }
+
+  .text-\[\#94A3B8\] {
+    color: #475569 !important;
+  }
+
+  .text-\[\#07CA6B\] {
+    color: #166534 !important;
+    font-weight: bold !important;
+  }
+
+  .text-\[\#38BDF8\] {
+    color: #0369a1 !important;
+    font-weight: bold !important;
+  }
+
+  .bg-black\/40,
+  .bg-black\/50,
+  .bg-black\/60 {
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+}
