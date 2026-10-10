@@ -4,9 +4,12 @@ import React, { useMemo, useRef, useEffect, useState } from "react";
 import { Bot, Send, Cpu, Loader2, AlertTriangle } from "lucide-react";
 import { useEdgeEmbeddings, type RankResult } from "@/hooks/useEdgeEmbeddings";
 import { usePortfolioMcp, type PortfolioMcpTool } from "@/hooks/usePortfolioMcp";
+import { useLocalAssistant } from "@/hooks/useLocalAssistant";
 import { CONTACT_SYSTEM_ID, SYSTEM_TOOL, SYSTEM_LABEL } from "@/mcp/semanticEngine";
+import { buildPortfolioAnswerMessages, type PortfolioAnswerEvidence } from "@/mcp/answerPrompt.mjs";
 import type { SystemProject } from "@/data/systems";
 import { GenerativeToolArtifact } from "./GenerativeToolArtifact";
+import { LocalModelPanel } from "./LocalModelPanel";
 import { SemanticGravityField } from "./SemanticGravityField";
 
 interface MessageItem {
@@ -21,7 +24,7 @@ interface MessageItem {
     definition?: PortfolioMcpTool;
     result?: { project?: SystemProject; evidenceStatus?: string };
   };
-  meta?: { engine: RankResult["engine"]; ms: number; top: { id: string; score: number }[] };
+  meta?: { engine: RankResult["engine"]; ms: number; top: { id: string; score: number }[]; inferenceMs?: number };
 }
 
 const QUICK = [
@@ -34,6 +37,7 @@ const QUICK = [
 export function EdgeAgentConsole() {
   const { state, rank } = useEdgeEmbeddings();
   const { state: mcpState, callTool } = usePortfolioMcp();
+  const { state: assistantState, loadModel, generate } = useLocalAssistant();
   const ids = useMemo(() => Object.keys(SYSTEM_TOOL), []);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -44,7 +48,7 @@ export function EdgeAgentConsole() {
       id: "boot",
       role: "agent",
       content:
-        "Pergunte em linguagem natural. Embeddings ficam no navegador; a busca seleciona uma ficha e o cliente AI SDK chama um tool read-only no servidor MCP via Streamable HTTP. O servidor retorna conteúdo estático do portfólio. Ainda não há LLM escolhendo tools nem redigindo a resposta.",
+        "Pergunte em linguagem natural. Embeddings e, se você ativar, o Qwen3.5 ficam neste navegador. A busca escolhe a ficha; o MCP read-only recebe somente o ID do projeto. Sem baixar o LLM, você ainda pode abrir fichas e evidências estáticas.",
     },
   ]);
   const endRef = useRef<HTMLDivElement>(null);
@@ -53,7 +57,14 @@ export function EdgeAgentConsole() {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [messages, busy]);
 
-  const invoke = async (systemId: string, evidence?: string, prefix?: string, meta?: MessageItem["meta"]) => {
+  const invoke = async (
+    systemId: string,
+    evidence?: string,
+    prefix?: string,
+    meta?: MessageItem["meta"],
+    question?: string,
+    retrievedEvidence?: PortfolioAnswerEvidence[],
+  ) => {
     const toolName = SYSTEM_TOOL[systemId];
     if (!toolName) return;
 
@@ -94,14 +105,37 @@ export function EdgeAgentConsole() {
       const response = await callTool(toolName, { projectId: systemId });
       if (response.isError) throw new Error("MCP server rejected the project lookup.");
       const result = response.structuredContent as NonNullable<MessageItem["tool"]>["result"];
-      if (result?.project?.id !== systemId) throw new Error("MCP result did not match the requested project.");
+      const project = result?.project;
+      if (!project || project.id !== systemId) throw new Error("MCP result did not match the requested project.");
+      const messageId = `a-${Date.now()}`;
+      const shouldGenerate = assistantState.phase === "ready" && Boolean(question?.trim());
       setMessages((prev) => [...prev, {
-        id: `a-${Date.now()}`,
+        id: messageId,
         role: "agent",
-        content: prefix ?? `Resultado recebido via MCP: ${SYSTEM_LABEL[systemId]}.`,
+        content: shouldGenerate ? "Gerando resposta local com fontes…" : prefix ?? `Ficha recebida via MCP: ${SYSTEM_LABEL[systemId]}.`,
         tool: { name: toolName, systemId, evidence, source: "mcp", definition, result },
         meta,
       }]);
+      if (shouldGenerate && question) {
+        const evidenceForAnswer: PortfolioAnswerEvidence[] = [
+          { id: systemId, title: `${project.title} · ficha MCP`, text: JSON.stringify(project) },
+          ...(retrievedEvidence ?? []).filter((source) => source.id !== systemId),
+        ].slice(0, 3);
+        try {
+          const completion = await generate(buildPortfolioAnswerMessages(question, evidenceForAnswer), (text) => {
+            setMessages((previous) => previous.map((message) => message.id === messageId
+              ? { ...message, content: message.content === "Gerando resposta local com fontes…" ? text : message.content + text }
+              : message));
+          });
+          setMessages((previous) => previous.map((message) => message.id === messageId
+            ? { ...message, content: completion.answer, meta: message.meta ? { ...message.meta, inferenceMs: completion.inferenceMs } : undefined }
+            : message));
+        } catch (error) {
+          setMessages((previous) => previous.map((message) => message.id === messageId
+            ? { ...message, content: `A resposta local falhou: ${error instanceof Error ? error.message : "erro desconhecido"}. A ficha MCP continua disponível abaixo.` }
+            : message));
+        }
+      }
     } catch (error) {
       setMessages((prev) => [...prev, {
         id: `a-${Date.now()}`,
@@ -130,7 +164,12 @@ export function EdgeAgentConsole() {
         top: r.ranking.slice(0, 3).map((x) => ({ id: x.systemId, score: x.score })),
       };
       if (top && top.score >= r.threshold) {
-        await invoke(top.systemId, top.bestChunk, `Maior similaridade: ${SYSTEM_LABEL[top.systemId]}.`, meta);
+        const retrievedEvidence: PortfolioAnswerEvidence[] = r.ranking.slice(0, 3).map((item) => ({
+          id: item.systemId,
+          title: SYSTEM_LABEL[item.systemId] ?? item.systemId,
+          text: item.bestChunk ?? "",
+        }));
+        await invoke(top.systemId, top.bestChunk, `Maior similaridade: ${SYSTEM_LABEL[top.systemId]}.`, meta, text, retrievedEvidence);
       } else {
         setMessages((p) => [
           ...p,
@@ -197,6 +236,7 @@ export function EdgeAgentConsole() {
       )}
 
       <SemanticGravityField ids={ids} scores={scores} topId={topId} onSelect={(id) => invoke(id)} />
+      <LocalModelPanel state={assistantState} onLoad={loadModel} />
 
       <div className="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
         {messages.map((m) => (
@@ -213,6 +253,7 @@ export function EdgeAgentConsole() {
                 <div className="mt-1.5 font-mono text-[9px] text-white/45">
                   {m.meta.engine === "neural" ? "embeddings neurais" : "fallback léxico (modelo ainda carregando)"} ·{" "}
                   {m.meta.ms.toFixed(1)} ms · {m.meta.top.map((t) => `${SYSTEM_LABEL[t.id]} ${t.score.toFixed(3)}`).join(" | ")}
+                  {m.meta.inferenceMs !== undefined ? ` · Qwen3.5 ${m.meta.inferenceMs.toFixed(0)} ms` : ""}
                 </div>
               )}
               {m.tool && (
@@ -230,7 +271,7 @@ export function EdgeAgentConsole() {
         ))}
         {busy && (
           <div className="flex items-center gap-2 font-mono text-[11px] text-[#38BDF8]">
-            <Loader2 className="w-3.5 h-3.5 animate-spin" /> gerando embedding da consulta…
+            <Loader2 className="w-3.5 h-3.5 animate-spin" /> buscando localmente, consultando MCP e gerando resposta se ativada…
           </div>
         )}
         <div ref={endRef} />
