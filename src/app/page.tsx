@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { ModeArchitect } from "@/components/modes/ModeArchitect";
 import { ModeKineticGrid } from "@/components/modes/ModeKineticGrid";
-import { ChaosCollisionChamber } from "@/components/chaos/ChaosCollisionChamber";
-import { LiveArchitectureSandbox } from "@/components/sandbox/LiveArchitectureSandbox";
+import { SystemResilienceWorkbench } from "@/components/workbench/SystemResilienceWorkbench";
+import { ZeroTrustDlpInspector } from "@/components/security/ZeroTrustDlpInspector";
+import { RecruiterDossierView } from "@/components/dossier/RecruiterDossierView";
 import { EdgeAgentConsole } from "@/components/console/EdgeAgentConsole";
 import { AntigravityCanvas } from "@/components/canvas/AntigravityCanvas";
 import { PROFILE_DATA } from "@/data/systems";
@@ -12,28 +13,27 @@ import {
   Compass, 
   Grid3X3, 
   Activity, 
+  ShieldCheck, 
+  FileCheck, 
   Cpu, 
-  Flame,
-  Terminal, 
-  Layers, 
-  Share2, 
   Mail, 
-  Sparkles
+  Layers
 } from "lucide-react";
 
-type StageMode = "architect" | "chaos" | "grid" | "cockpit" | "agent";
+type WorkbenchStage = "architect" | "grid" | "resilience" | "security" | "agent" | "dossier";
 
 export default function Home() {
-  const [currentMode, setCurrentMode] = useState<StageMode>("architect");
+  const [currentStage, setCurrentStage] = useState<WorkbenchStage>("architect");
 
-  // Teclas de atalho para alternar modos cinematográficos
+  // Teclas de atalho para alternar rapidamente
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "1") setCurrentMode("architect");
-      if (e.key === "2") setCurrentMode("chaos");
-      if (e.key === "3") setCurrentMode("grid");
-      if (e.key === "4") setCurrentMode("cockpit");
-      if (e.key === "5") setCurrentMode("agent");
+      if (e.key === "1") setCurrentStage("architect");
+      if (e.key === "2") setCurrentStage("grid");
+      if (e.key === "3") setCurrentStage("resilience");
+      if (e.key === "4") setCurrentStage("security");
+      if (e.key === "5") setCurrentStage("agent");
+      if (e.key === "6") setCurrentStage("dossier");
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -43,7 +43,7 @@ export default function Home() {
     <main className="relative w-screen h-screen overflow-hidden bg-[#07090E] text-[#F8FAFC] select-none font-sans flex flex-col justify-between">
       {/* 1. Eixo Z Negativo: Orbes Neon e Iluminação Ambiente Cósmica */}
       <div className={`ambient-glow-primary top-10 -left-20 transition-all duration-700 ${
-        currentMode === "chaos" ? "scale-150 opacity-40 bg-purple-600/30" : "opacity-25"
+        currentStage === "security" ? "scale-125 opacity-40 bg-[#07CA6B]/25" : "opacity-25"
       }`} />
       <div className="ambient-glow-secondary top-40 right-0 opacity-30" />
       <div className="ambient-glow-primary bottom-10 right-1/4 opacity-25" />
@@ -65,7 +65,7 @@ export default function Home() {
                 </span>
                 <span className="font-mono text-[9px] px-2 py-0.5 rounded-full bg-[#07CA6B]/20 text-[#07CA6B] border border-[#07CA6B]/30 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#07CA6B] animate-pulse" />
-                  V4.0 // ZERO-G RECIPIENTE
+                  AUTONOMOUS ARCHITECTURE WORKBENCH
                 </span>
               </div>
               <p className="text-[10px] text-[#94A3B8]">
@@ -109,103 +109,117 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 4. PALCO CINEMÁTICO PRINCIPAL (Recipiente Mutável sem Scroll Monótono) */}
+      {/* 4. PALCO DE ENGENHARIA DE UTILIDADE REAL (Recipiente Mutável sem Scroll Monótono) */}
       <section className="relative z-30 flex-1 min-h-0 max-w-7xl w-full mx-auto px-4 sm:px-6 my-auto flex items-center justify-center">
-        {currentMode === "architect" && (
+        {currentStage === "architect" && (
           <ModeArchitect
-            onExploreGrid={() => setCurrentMode("chaos")}
-            onLaunchPipeline={() => setCurrentMode("cockpit")}
+            onExploreGrid={() => setCurrentStage("grid")}
+            onLaunchPipeline={() => setCurrentStage("resilience")}
           />
         )}
 
-        {currentMode === "chaos" && (
-          <ChaosCollisionChamber />
-        )}
-
-        {currentMode === "grid" && (
+        {currentStage === "grid" && (
           <ModeKineticGrid />
         )}
 
-        {currentMode === "cockpit" && (
-          <div className="w-full max-h-[82vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-500">
-            <LiveArchitectureSandbox />
-          </div>
+        {currentStage === "resilience" && (
+          <SystemResilienceWorkbench />
         )}
 
-        {currentMode === "agent" && (
+        {currentStage === "security" && (
+          <ZeroTrustDlpInspector />
+        )}
+
+        {currentStage === "agent" && (
           <div className="w-full max-w-3xl animate-in fade-in zoom-in-95 duration-500">
             <EdgeAgentConsole />
           </div>
         )}
+
+        {currentStage === "dossier" && (
+          <RecruiterDossierView />
+        )}
       </section>
 
-      {/* 5. DOCK DE COMANDO ORBITAL (Navegação Cinemática dos 5 Modos) */}
+      {/* 5. DOCK ORBITAL DE FERRAMENTAS DE UTILIDADE PRÁTICA */}
       <footer className="relative z-40 px-6 pb-4 shrink-0">
-        <div className="max-w-fit mx-auto glass-panel rounded-2xl p-2 flex items-center gap-2 border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
+        <div className="max-w-fit mx-auto glass-panel rounded-2xl p-2 flex items-center gap-1.5 border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
           <button
-            onClick={() => setCurrentMode("architect")}
-            className={`px-3.5 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
-              currentMode === "architect"
-                ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)]"
+            onClick={() => setCurrentStage("architect")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer ${
+              currentStage === "architect"
+                ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)] font-semibold"
                 : "text-white/60 hover:text-white hover:bg-white/[0.05]"
             }`}
           >
             <Compass className="w-3.5 h-3.5" />
-            <span>1. O Arquiteto</span>
+            <span>1. Manifesto</span>
           </button>
 
           <button
-            onClick={() => setCurrentMode("chaos")}
-            className={`px-3.5 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
-              currentMode === "chaos"
-                ? "bg-gradient-to-r from-purple-600 to-[#1856FF] text-white shadow-[0_0_25px_rgba(168,85,247,0.5)] font-bold"
-                : "text-white/60 hover:text-white hover:bg-white/[0.05]"
-            }`}
-          >
-            <Flame className="w-3.5 h-3.5 text-amber-300" />
-            <span>2. Zero-G Chaos (Física Real)</span>
-          </button>
-
-          <button
-            onClick={() => setCurrentMode("grid")}
-            className={`px-3.5 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
-              currentMode === "grid"
-                ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)]"
+            onClick={() => setCurrentStage("grid")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer ${
+              currentStage === "grid"
+                ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)] font-semibold"
                 : "text-white/60 hover:text-white hover:bg-white/[0.05]"
             }`}
           >
             <Grid3X3 className="w-3.5 h-3.5" />
-            <span>3. Kinetic Grid</span>
+            <span>2. Sistemas</span>
           </button>
 
           <button
-            onClick={() => setCurrentMode("cockpit")}
-            className={`px-3.5 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
-              currentMode === "cockpit"
-                ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)]"
+            onClick={() => setCurrentStage("resilience")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer ${
+              currentStage === "resilience"
+                ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)] font-semibold"
                 : "text-white/60 hover:text-white hover:bg-white/[0.05]"
             }`}
           >
-            <Activity className="w-3.5 h-3.5 text-[#07CA6B]" />
-            <span>4. Cockpit Sandbox</span>
+            <Activity className="w-3.5 h-3.5 text-amber-400" />
+            <span>3. Teste de Falhas</span>
           </button>
 
           <button
-            onClick={() => setCurrentMode("agent")}
-            className={`px-3.5 py-2 rounded-xl text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
-              currentMode === "agent"
-                ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)]"
+            onClick={() => setCurrentStage("security")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer ${
+              currentStage === "security"
+                ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)] font-semibold"
+                : "text-white/60 hover:text-white hover:bg-white/[0.05]"
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-[#07CA6B]" />
+            <span>4. Teste Zero Trust & DLP</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentStage("agent")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer ${
+              currentStage === "agent"
+                ? "bg-[#1856FF] text-white shadow-[0_0_20px_rgba(24,86,255,0.5)] font-semibold"
                 : "text-white/60 hover:text-white hover:bg-white/[0.05]"
             }`}
           >
             <Cpu className="w-3.5 h-3.5 text-[#38BDF8]" />
-            <span>5. Edge MCP</span>
+            <span>5. Edge IA (MCP)</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentStage("dossier")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer ${
+              currentStage === "dossier"
+                ? "bg-gradient-to-r from-purple-600 to-[#1856FF] text-white shadow-[0_0_20px_rgba(168,85,247,0.5)] font-semibold"
+                : "text-white/60 hover:text-white hover:bg-white/[0.05]"
+            }`}
+          >
+            <FileCheck className="w-3.5 h-3.5 text-purple-300" />
+            <span>6. Dossiê Executivo</span>
           </button>
 
           <div className="w-[1px] h-5 bg-white/10 hidden sm:block mx-1" />
 
           <div className="hidden sm:flex items-center text-[10px] font-mono text-white/40 px-2">
-            Teclas 1, 2, 3, 4, 5
+            Teclas 1 a 6
           </div>
         </div>
       </footer>
