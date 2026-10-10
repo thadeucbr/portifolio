@@ -3,7 +3,7 @@
 import { Download, Loader2, Sparkles } from "lucide-react";
 import type { LocalAssistantSnapshot } from "@/ai/localAssistantProtocol";
 
-const MODEL_URL = "https://huggingface.co/onnx-community/Qwen3.5-0.8B-ONNX/tree/d1ea95774d40a29f0479bf9138cdf488a0394b6b";
+const MODEL_URL = "https://huggingface.co/onnx-community/Qwen2.5-0.5B-Instruct-ONNX/tree/4b32b4541cf2de9d0c0a85125e8fe8d9943f7982";
 
 function formatMegabytes(bytes: number) {
   return `${(bytes / 1_000_000).toFixed(0)} MB`;
@@ -29,9 +29,9 @@ export function LocalModelPanel({
         <div className="flex items-start gap-2 min-w-0">
           <Sparkles className="w-3.5 h-3.5 mt-0.5 shrink-0 text-violet-300" />
           <div className="min-w-0">
-            <div className="text-[10px] font-semibold tracking-wide text-violet-200">RESPOSTAS LOCAIS · QWEN3.5 0.8B</div>
+            <div className="text-[10px] font-semibold tracking-wide text-violet-200">RESPOSTAS LOCAIS · QWEN2.5 0.5B</div>
             <p className="text-[9px] leading-relaxed text-white/50">
-              Opt-in: ~437 MB (WebGPU q4f16) ou ~485 MB (WASM q4), mais tokenizer. Pergunta/evidências ficam no navegador; consulta de projetos envia só ID ou argumentos vazios. Respostas Qwen ficam desligadas por padrão para evitar latência; contato só envia campos após Accept explícito.
+              Opt-in: ~483 MB (WebGPU q4f16) ou ~786 MB (WASM q4), mais tokenizer (~7 MB). Pergunta/evidências ficam no navegador; consulta de projetos envia só ID ou argumentos vazios. Respostas Qwen ficam desligadas por padrão para evitar latência; contato só envia campos após Accept explícito.
               {" "}
               <a href={MODEL_URL} target="_blank" rel="noreferrer" className="underline decoration-white/30 hover:text-white/80">modelo Apache-2.0</a>
             </p>

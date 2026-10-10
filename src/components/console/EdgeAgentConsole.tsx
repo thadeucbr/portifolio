@@ -195,12 +195,27 @@ export function EdgeAgentConsole() {
           ...(retrievedEvidence ?? []).filter((source) => source.id !== primaryEvidence.id && source.id !== resolvedSystemId),
         ].slice(0, 3);
         const generationStartedAt = performance.now();
+        let bufferedTokens = "";
+        let tokenFlushTimer: number | null = null;
+        const flushTokens = () => {
+          if (tokenFlushTimer !== null) {
+            window.clearTimeout(tokenFlushTimer);
+            tokenFlushTimer = null;
+          }
+          if (!bufferedTokens) return;
+          const text = bufferedTokens;
+          bufferedTokens = "";
+          setMessages((previous) => previous.map((message) => message.id === messageId
+            ? { ...message, content: message.content === "Gerando resposta local com fontes…" ? text : message.content + text }
+            : message));
+        };
+        const onToken = (text: string) => {
+          bufferedTokens += text;
+          if (tokenFlushTimer === null) tokenFlushTimer = window.setTimeout(flushTokens, 40);
+        };
         try {
-          const completion = await generate(buildPortfolioAnswerMessages(question, evidenceForAnswer), (text) => {
-            setMessages((previous) => previous.map((message) => message.id === messageId
-              ? { ...message, content: message.content === "Gerando resposta local com fontes…" ? text : message.content + text }
-              : message));
-          });
+          const completion = await generate(buildPortfolioAnswerMessages(question, evidenceForAnswer), onToken);
+          flushTokens();
           setMessages((previous) => previous.map((message) => message.id === messageId
             ? {
                 ...message,
@@ -214,6 +229,7 @@ export function EdgeAgentConsole() {
               }
             : message));
         } catch (error) {
+          flushTokens();
           setMessages((previous) => previous.map((message) => message.id === messageId
             ? {
                 ...message,
