@@ -11,7 +11,7 @@ import type { FieldLayout } from "@/workers/fieldLayouts.mjs";
 const PROJECT_IDS = SYSTEMS_DATA.map((project) => project.id);
 const PROJECT_CARD_INFO = Object.fromEntries(SYSTEMS_DATA.map((project) => [project.id, {
   title: project.title,
-  subtitle: `${project.sourceLabel} · ${project.category}`,
+  subtitle: `${project.shortLabel} · ${project.category}`,
 }]));
 const LAYOUTS: { id: FieldLayout; label: string }[] = [
   { id: "orbital", label: "Órbita" },
@@ -85,7 +85,7 @@ export function ProjectAtlas() {
         <article className="lg:col-span-7 glass-panel rounded-2xl border border-white/15 p-4 sm:p-5 flex flex-col justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase text-[#38BDF8]">
-              <span>{selected.sourceLabel}</span>
+              <span>{selected.shortLabel}</span>
               <span className="text-white/30">/</span>
               <span>{selected.category}</span>
               <span className="text-white/30">/</span>

@@ -161,7 +161,7 @@ async function init(chunks: CorpusChunk[]) {
       const loadMs = performance.now() - t0;
 
       active = candidate;
-      post({ type: "status", phase: "indexing", detail: `${chunks.length} trechos do currículo` });
+      post({ type: "status", phase: "indexing", detail: `${chunks.length} trechos do perfil` });
 
       const t1 = performance.now();
       corpusVectors = await embed(chunks.map((c) => candidate.docPrefix + c.text));

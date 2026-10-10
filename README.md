@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Thadeu Ramos — Portfólio de Engenharia e IA
 
-## Getting Started
+Portfólio interativo que apresenta experiências em engenharia de plataformas, segurança e sistemas de IA. A interface combina Dark Glassmorphism, navegação por estágios, física local e demonstrações de IA executadas no navegador.
 
-First, run the development server:
+## Stack atual
+
+- Next.js 16.4 / React 19.3 / TypeScript
+- Tailwind CSS 4
+- Three.js `WebGPURenderer` + TSL, Bloom e `OffscreenCanvas` em Web Worker; fallback WebGL2 na thread principal
+- Rapier/WASM em worker para física e interação do Atlas
+- Transformers.js 4 / ONNX Runtime Web para embeddings, geração local e ASR opcional
+- MCP Streamable HTTP em `/api/mcp`, com schemas tipados, verificação do manifesto e consentimento explícito para contato
+
+## Executar localmente
+
+Requer Node.js compatível com as versões instaladas no projeto e npm.
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra http://localhost:3000. Para gerar uma compilação de produção:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npm run start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+O portfólio possui seis estágios navegáveis (Core, Sistemas, Resiliência, Segurança, Agente Edge e Dossiê). Os atalhos 1–6 mudam de estágio quando o foco não está em um campo editável.
 
-## Learn More
+## IA e privacidade
 
-To learn more about Next.js, take a look at the following resources:
+- Embeddings, geração Qwen e reconhecimento de fala são opt-in; pesos grandes não são baixados automaticamente ao abrir a página.
+- A transcrição exige ativação explícita e permissão do microfone. O texto resultante pode ser revisto antes do envio.
+- O cliente MCP consulta somente o conteúdo público e estático deste portfólio; não acessa sistemas ou telemetria corporativos.
+- O pedido de contato exige aceitação explícita. Em desenvolvimento, sem `CONTACT_WEBHOOK_URL`, a Server Action grava os pedidos aceitos em `.data/recruiter-signals.jsonl`. Em produção, configure um destino de webhook seguro no ambiente do servidor e defina retenção e proteção contra abuso adequadas nesse destino.
+- Não há sandbox ligada a endpoints internos, nem métricas de produção ou desempenho de GPU alegadas como prova independente.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+A aplicação não é export estático: utiliza Server Actions e a rota MCP `/api/mcp`. Publique em um runtime Node compatível com Next.js e preserve essas rotas. Configure `CONTACT_WEBHOOK_URL` como variável secreta no provedor, nunca no cliente. Nenhum provedor ou ambiente de produção está associado automaticamente a este repositório.
 
-## Deploy on Vercel
+## Validação
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`npm run lint` verifica regras estáticas; `npm run build` valida a compilação de produção. Recursos dependentes do dispositivo — WebGPU/WebGL2, downloads de modelos, microfone, toque, transições e FPS — ainda precisam de validação manual no navegador e hardware de destino. Esta documentação não afirma uma taxa de quadros ou compatibilidade que não tenha sido medida.

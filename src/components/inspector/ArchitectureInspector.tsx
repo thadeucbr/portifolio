@@ -21,7 +21,7 @@ export function ArchitectureInspector({ system }: ArchitectureInspectorProps) {
           Nenhum Sistema Selecionado
         </h3>
         <p className="text-xs text-[#94A3B8] max-w-xs leading-relaxed">
-          <span className="text-white/60">Clique em qualquer cartão para inspecionar o resumo curricular e a visão conceitual deste projeto.</span>
+          <span className="text-white/60">Clique em qualquer cartão para ver os destaques e a visão do projeto.</span>
         </p>
       </div>
     );
@@ -36,7 +36,7 @@ export function ArchitectureInspector({ system }: ArchitectureInspectorProps) {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-mono text-xs uppercase text-[#38BDF8] tracking-wider">
-                {system.sourceLabel} • INSPECTOR
+                {system.shortLabel} • INSPECTOR
               </span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.05] text-white/60 font-mono">
                 {system.category}
@@ -88,7 +88,7 @@ export function ArchitectureInspector({ system }: ArchitectureInspectorProps) {
                 : "text-white/60 hover:text-white"
             }`}
           >
-            Resumo CV
+            Visão Geral
           </button>
         </div>
       </div>
@@ -99,15 +99,15 @@ export function ArchitectureInspector({ system }: ArchitectureInspectorProps) {
           <div className="space-y-4">
             <div className="text-xs text-[#94A3B8] flex items-center justify-between">
               <span className="font-mono uppercase text-[#38BDF8]">
-                Visão conceitual · resumo curricular
+                Visão do projeto
               </span>
               <span className="font-mono text-[11px] text-white/50">
                 Não é topologia de produção
               </span>
             </div>
 
-            {/* Visão ilustrativa derivada do resumo curricular; não é arquitetura em produção */}
-            <ol className="grid gap-3 sm:grid-cols-3" aria-label="Etapas conceituais descritas no currículo">
+            {/* Visão ilustrativa; não representa arquitetura em produção */}
+            <ol className="grid gap-3 sm:grid-cols-3" aria-label="Tópicos do projeto">
               {system.executionFlow.map((stage) => (
                 <li key={stage.step} className="rounded-xl border border-white/10 bg-black/30 p-3">
                   <span className={`inline-flex rounded border px-2 py-0.5 font-mono text-[9px] ${stage.badgeColor}`}>{stage.step}</span>
@@ -117,7 +117,7 @@ export function ArchitectureInspector({ system }: ArchitectureInspectorProps) {
               ))}
             </ol>
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-[11px] leading-relaxed text-white/55">
-              Ilustração editorial baseada no CV. Não documenta sequência, topologia, controles operacionais nem estado dos sistemas internos.
+              Representação simplificada; não exibe topologia, controles operacionais ou estado dos sistemas internos.
             </div>
           </div>
         )}
@@ -147,7 +147,7 @@ export function ArchitectureInspector({ system }: ArchitectureInspectorProps) {
 
             <div className="pt-2">
               <span className="text-xs text-[#94A3B8] font-mono uppercase text-[#38BDF8] block mb-2">
-                Temas técnicos descritos no resumo curricular
+                Destaques técnicos
               </span>
               <div className="flex flex-wrap gap-2">
                 {system.stack.map((tech) => (
@@ -165,7 +165,7 @@ export function ArchitectureInspector({ system }: ArchitectureInspectorProps) {
 
         {activeTab === "telemetry" && (
           <div className="space-y-4 font-mono">
-            <div className="text-xs uppercase text-[#38BDF8]">Informações reportadas no currículo</div>
+            <div className="text-xs uppercase text-[#38BDF8]">Destaques do projeto</div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {system.facts.map((fact) => (
                 <div key={fact.label} className="rounded-xl border border-white/[0.08] bg-black/40 p-4">
@@ -175,7 +175,7 @@ export function ArchitectureInspector({ system }: ArchitectureInspectorProps) {
               ))}
             </div>
             <p className="rounded-xl border border-white/10 bg-white/[0.03] p-3 font-sans text-[11px] leading-relaxed text-white/55">
-              São declarações curriculares, não métricas medidas, telemetria, auditoria independente ou confirmação de estado de produção.
+              Estes dados são descritivos; não representam métricas medidas, telemetria, auditoria independente ou confirmação de estado de produção.
             </p>
           </div>
         )}

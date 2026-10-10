@@ -256,7 +256,7 @@ export function ChaosCollisionChamber() {
               {/* Header do Card com Tag e Drag Handler */}
               <div className="flex items-center justify-between mb-3 pointer-events-none">
                 <span className="font-mono text-[9px] px-2 py-0.5 rounded-full bg-[#1856FF]/20 text-[#38BDF8] border border-[#1856FF]/30 uppercase font-semibold">
-                  {system.sourceLabel}
+                  {system.shortLabel}
                 </span>
                 <span className="font-mono text-[9px] text-white/50">
                   {system.organization}
@@ -273,7 +273,7 @@ export function ChaosCollisionChamber() {
                 {system.summary}
               </p>
 
-              {/* Fatos curriculares selecionados */}
+              {/* Fatos profissionais selecionados */}
               <div className="grid grid-cols-2 gap-2 rounded-xl border border-white/[0.06] bg-black/40 p-2 font-mono text-[10px]">
                 {[system.facts[0], system.facts[1]].filter(Boolean).map((fact) => (
                   <div key={fact.label}>
@@ -306,7 +306,7 @@ export function ChaosCollisionChamber() {
 
       {/* Dica de Interatividade no Rodapé */}
       <div className="relative z-20 text-center pointer-events-none">
-        <span className="glass-panel-subtle px-4 py-1.5 rounded-full text-[11px] font-mono text-white/60 border border-white/10">Resumo interativo baseado no CV · não representa telemetria ou topologia interna</span>
+        <span className="glass-panel-subtle px-4 py-1.5 rounded-full text-[11px] font-mono text-white/60 border border-white/10">Resumo interativo · sem telemetria ou topologia interna</span>
       </div>
 
       {/* Modal de Detalhe Holográfico Completo */}

@@ -121,7 +121,7 @@ export function SpatialZeroGCanvas({
     // Criação dos monolitos de vidro 3D para cada sistema
     systems.forEach((system, index) => {
       const group = new THREE.Group();
-      group.userData = { id: system.id, index, title: system.title, sourceLabel: system.sourceLabel };
+      group.userData = { id: system.id, index, title: system.title, shortLabel: system.shortLabel };
 
       // Monolito Principal (Vidro Translúcido com Bordas de Luz)
       const boxGeo = new THREE.BoxGeometry(32, 22, 4);

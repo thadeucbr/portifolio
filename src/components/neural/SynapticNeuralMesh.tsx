@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { MeshIn, MeshOut } from "@/workers/neuralMesh.worker";
+import { AntigravityCanvas } from "@/components/canvas/AntigravityCanvas";
 
 /** Backend gráfico efetivamente em uso — publicado para a HUD exibir a verdade, não um selo fixo. */
 export function emitRenderBackend(name: string) {
+  (window as Window & { __portfolioRenderBackend?: string }).__portfolioRenderBackend = name;
   window.dispatchEvent(new CustomEvent("neural:backend", { detail: { name } }));
 }
 
@@ -15,13 +17,15 @@ export function emitRenderBackend(name: string) {
  */
 export function SynapticNeuralMesh({ className = "" }: { className?: string }) {
   const hostRef = useRef<HTMLDivElement>(null);
+  const [useWebGlFallback, setUseWebGlFallback] = useState(false);
 
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
     if (typeof OffscreenCanvas === "undefined" || !("transferControlToOffscreen" in HTMLCanvasElement.prototype)) {
       emitRenderBackend("indisponível (sem OffscreenCanvas)");
-      return;
+      const fallbackTimer = window.setTimeout(() => setUseWebGlFallback(true), 0);
+      return () => window.clearTimeout(fallbackTimer);
     }
 
     // Canvas criado no efeito: transferControlToOffscreen só pode ser chamado uma vez por elemento,
@@ -33,13 +37,25 @@ export function SynapticNeuralMesh({ className = "" }: { className?: string }) {
 
     const worker = new Worker(new URL("../../workers/neuralMesh.worker.ts", import.meta.url), { type: "module" });
     const send = (m: MeshIn, transfer: Transferable[] = []) => worker.postMessage(m, transfer);
+    let disposed = false;
+    const fallback = () => {
+      if (disposed) return;
+      disposed = true;
+      worker.terminate();
+      canvas.remove();
+      setUseWebGlFallback(true);
+    };
 
     worker.onmessage = (e: MessageEvent<MeshOut>) => {
       if (e.data.type === "backend") emitRenderBackend(e.data.name);
       if (e.data.type === "error") {
         console.error("[neuralMesh.worker]", e.data.message);
-        emitRenderBackend("falhou");
+        fallback();
       }
+    };
+    worker.onerror = (event) => {
+      console.error("[neuralMesh.worker] falha de inicialização:", event.message);
+      fallback();
     };
 
     send(
@@ -65,6 +81,7 @@ export function SynapticNeuralMesh({ className = "" }: { className?: string }) {
     window.addEventListener("neural:pulse", onPulse);
 
     return () => {
+      disposed = true;
       window.removeEventListener("resize", onResize);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("neural:pulse", onPulse);
@@ -72,6 +89,8 @@ export function SynapticNeuralMesh({ className = "" }: { className?: string }) {
       canvas.remove();
     };
   }, []);
+
+  if (useWebGlFallback) return <AntigravityCanvas className={className} />;
 
   return <div ref={hostRef} className={`absolute inset-0 pointer-events-none overflow-hidden ${className}`} aria-hidden="true" />;
 }

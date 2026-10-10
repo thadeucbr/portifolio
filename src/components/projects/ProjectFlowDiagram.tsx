@@ -23,12 +23,12 @@ export function ProjectFlowDiagram({ steps, evidenceStatus = "static-portfolio-c
   if (!graph.nodes.length) return null;
 
   return (
-    <section className="space-y-2 rounded-xl border border-white/10 bg-black/20 p-3" aria-label="Ilustração interativa baseada no currículo">
+    <section className="space-y-2 rounded-xl border border-white/10 bg-black/20 p-3" aria-label="Visão interativa do projeto">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="font-mono text-[9px] uppercase tracking-wide text-[#38BDF8]">VISÃO CURRICULAR · ILUSTRAÇÃO INTERATIVA</span>
+        <span className="font-mono text-[9px] uppercase tracking-wide text-[#38BDF8]">ILUSTRAÇÃO INTERATIVA · PROJETO</span>
         <span className="font-mono text-[8px] text-white/45">{evidenceStatus} · não é execução ao vivo</span>
       </div>
-      <p className="text-[10px] text-white/60">Selecione um tópico para ler o resumo descrito no CV; a sequência é apenas ilustrativa.</p>
+      <p className="text-[10px] text-white/60">Selecione um tópico para explorar; a sequência é uma representação simplificada.</p>
 
       <div className="overflow-x-auto pb-1">
         <ol className="flex min-w-max items-center gap-2" aria-label="Etapas do fluxo">

@@ -17,7 +17,7 @@ export function CyberpunkHeroView({
   return (
     <div className="relative w-full h-full flex flex-col justify-between p-4 sm:p-10 animate-in fade-in duration-500">
         <div className="flex items-center gap-3">
-          <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 font-mono text-xs text-[#38BDF8]">DEMONSTRAÇÃO VISUAL · RESUMO CURRICULAR</span>
+          <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 font-mono text-xs text-[#38BDF8]">PORTFÓLIO PROFISSIONAL · EXPERIÊNCIAS</span>
           <span className="hidden font-mono text-[10px] text-white/45 md:inline">INTERAÇÕES LOCAIS · SEM CONEXÃO A SISTEMAS INTERNOS</span>
         </div>
 

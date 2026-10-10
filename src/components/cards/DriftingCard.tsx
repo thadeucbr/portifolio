@@ -61,7 +61,7 @@ export function DriftingCard({ system, index, isSelected, onSelect }: DriftingCa
             {getCategoryIcon()}
           </div>
           <span className="font-mono text-[11px] uppercase tracking-wider text-[#94A3B8]">
-            {system.sourceLabel}
+            {system.shortLabel}
           </span>
         </div>
 
@@ -87,7 +87,7 @@ export function DriftingCard({ system, index, isSelected, onSelect }: DriftingCa
         {system.summary}
       </p>
 
-      {/* Fatos curriculares, sem métricas operacionais */}
+      {/* Destaques profissionais, sem métricas operacionais */}
       <div className="grid grid-cols-3 gap-2 p-3 rounded-xl bg-black/25 border border-white/[0.06] mb-4">
         {system.facts.map((metric, i) => (
           <div key={i} className="text-center">

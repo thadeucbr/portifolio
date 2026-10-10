@@ -110,7 +110,7 @@ export function RecruiterDossierView() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-[10px] text-[#38BDF8] font-bold">
-                        {sys.sourceLabel}
+                        {sys.shortLabel}
                       </span>
                       <span className="text-white/40">•</span>
                       <span className="text-xs font-bold text-white">{sys.title}</span>

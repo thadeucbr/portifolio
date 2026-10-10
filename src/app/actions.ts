@@ -29,7 +29,9 @@ export async function submitRecruiterSignal(_prev: SignalState, formData: FormDa
   const email = String(formData.get("email") ?? "").trim().toLowerCase().slice(0, 200);
   const company = String(formData.get("company") ?? "").trim().slice(0, 120);
   const intent = String(formData.get("intent") ?? "");
-  const decision = classifyContactDecision(String(formData.get("decision") ?? "accept"));
+  // Fail closed: only a submitted, explicit "accept" may persist contact data.
+  const rawDecision = formData.get("decision");
+  const decision = classifyContactDecision(typeof rawDecision === "string" ? rawDecision : "");
 
   // Decline/cancel/invalid decisions exit before validation or persistence.
   if (decision === "decline") {

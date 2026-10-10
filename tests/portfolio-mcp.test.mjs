@@ -4,6 +4,7 @@ import { createMCPClient } from "@ai-sdk/mcp";
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
 import { createPortfolioMcpHandler } from "../src/mcp/portfolioServer.mjs";
 import { verifyPortfolioToolManifest } from "../src/mcp/portfolioToolPolicy.mjs";
+import { createBrowserFetch } from "../src/mcp/browserFetch.mjs";
 import { parseMcpToolRoutingDecision } from "../src/mcp/toolRouting.mjs";
 import {
   PORTFOLIO_CONTACT_ELICITATION_MESSAGE,
@@ -13,7 +14,7 @@ import {
 const fixture = [
   {
     id: "broker-1",
-    sourceLabel: "RESUMO CURRICULAR",
+    shortLabel: "MENSAGERIA · IA",
     title: "Broker de Mensageria",
     category: "Platform Architecture",
     period: "2026",
@@ -73,7 +74,7 @@ test("returns curated project details as structured MCP content", async () => {
     assert.notEqual(result.isError, true);
     assert.equal(result.structuredContent.project.id, "broker-1");
     assert.equal(result.structuredContent.project.title, "Broker de Mensageria");
-    assert.equal(result.structuredContent.project.sourceLabel, "RESUMO CURRICULAR");
+    assert.equal(result.structuredContent.project.shortLabel, "MENSAGERIA · IA");
     assert.deepEqual(result.structuredContent.project.facts, [{ label: "Canais descritos", value: "WhatsApp · Telegram" }]);
     assert.equal("codename" in result.structuredContent.project, false);
     assert.equal("metrics" in result.structuredContent.project, false);
@@ -87,6 +88,7 @@ test("lists only curated project summaries as structured MCP content", async () 
     assert.notEqual(result.isError, true);
     assert.deepEqual(result.structuredContent.projects.map((project) => project.id), ["broker-1"]);
     assert.equal(result.structuredContent.projects[0].title, "Broker de Mensageria");
+    assert.equal(result.structuredContent.projects[0].shortLabel, "MENSAGERIA · IA");
     assert.equal(result.structuredContent.evidenceStatus, "static-portfolio-content");
   });
 });
@@ -96,19 +98,27 @@ test("rejects unknown project identifiers without returning unrelated records", 
     const result = await client.callTool({ name: "portfolio_get_project", arguments: { projectId: "missing-secret" } });
     assert.equal(result.isError, true);
     assert.match(result.content[0].text, /not found/i);
-    assert.doesNotMatch(JSON.stringify(result), /RESUMO CURRICULAR|Redis/);
+    assert.doesNotMatch(JSON.stringify(result), /MENSAGERIA · IA|Redis/);
   });
 });
 
-test("AI SDK MCP client negotiates the route and invokes the pinned tool", async () => {
+test("AI SDK MCP client uses the bound browser fetch for a real list/detail call", async () => {
   const handler = createPortfolioMcpHandler(fixture);
+  let fetchCalls = 0;
+  const browserWindow = {
+    fetch(url, init) {
+      if (this !== browserWindow) throw new TypeError("Illegal invocation");
+      fetchCalls += 1;
+      return handler.fetch(new Request(url, init));
+    },
+  };
   const client = await createMCPClient({
-    clientName: "ai-sdk-portfolio-integration-test",
+    clientName: "ai-sdk-portfolio-bound-fetch-test",
     version: "1.0.0",
     transport: {
       type: "http",
       url: "http://portfolio.test/api/mcp",
-      fetch: (url, init) => handler.fetch(new Request(url, init)),
+      fetch: createBrowserFetch(browserWindow),
     },
   });
 
@@ -116,7 +126,8 @@ test("AI SDK MCP client negotiates the route and invokes the pinned tool", async
     const listed = await client.listTools();
     assert.deepEqual(verifyPortfolioToolManifest(listed.tools), { ok: true });
     const result = await client.callTool({ name: "portfolio_get_project", arguments: { projectId: "broker-1" } });
-    assert.equal(result.structuredContent.project.sourceLabel, "RESUMO CURRICULAR");
+    assert.equal(result.structuredContent.project.shortLabel, "MENSAGERIA · IA");
+    assert.ok(fetchCalls >= 2);
   } finally {
     await client.close();
     await handler.close();

@@ -6,7 +6,7 @@ const evidenceStatus = "static-portfolio-content";
 
 const projectSummarySchema = z.object({
   id: z.string(),
-  sourceLabel: z.string(),
+  shortLabel: z.string(),
   title: z.string(),
   category: z.string(),
   period: z.string(),
@@ -69,8 +69,8 @@ export function createPortfolioMcpServer(systems, submitContact = async () => ({
       }),
     },
     async () => {
-      const projects = systems.map(({ id, sourceLabel, title, category, period, summary }) => ({
-        id, sourceLabel, title, category, period, summary,
+      const projects = systems.map(({ id, shortLabel, title, category, period, summary }) => ({
+        id, shortLabel, title, category, period, summary,
       }));
       const structuredContent = { projects, evidenceStatus };
       return {
@@ -102,7 +102,7 @@ export function createPortfolioMcpServer(systems, submitContact = async () => ({
 
       const project = {
         id: source.id,
-        sourceLabel: source.sourceLabel,
+        shortLabel: source.shortLabel,
         title: source.title,
         category: source.category,
         period: source.period,

@@ -11,7 +11,7 @@ import type { PortfolioContactResult, PortfolioMcpTool } from "@/hooks/usePortfo
 
 interface McpProjectResult {
   project?: (typeof SYSTEMS_DATA)[number];
-  projects?: Array<Pick<(typeof SYSTEMS_DATA)[number], "id" | "sourceLabel" | "title" | "category" | "period" | "summary">>;
+  projects?: Array<Pick<(typeof SYSTEMS_DATA)[number], "id" | "shortLabel" | "title" | "category" | "period" | "summary">>;
   contact?: PortfolioContactResult;
   evidenceStatus?: string;
 }
@@ -19,7 +19,7 @@ interface McpProjectResult {
 interface GenerativeToolArtifactProps {
   toolName: string;
   systemId: string;
-  /** Trecho do currículo recuperado pelo modelo de embeddings que justificou a chamada. */
+  /** Trecho do perfil recuperado pelo modelo de embeddings que justificou a chamada. */
   evidence?: string;
   source?: "mcp" | "local";
   serverTool?: PortfolioMcpTool;
@@ -86,7 +86,7 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence, source = 
           </p>
           {evidence && (
             <div className="text-[11px] leading-relaxed text-white/75 border-l-2 border-[#1856FF] pl-2.5">
-              <span className="font-mono text-[9px] text-white/40 block">EVIDÊNCIA RECUPERADA DO CURRÍCULO</span>
+              <span className="font-mono text-[9px] text-white/40 block">CONTEXTO RECUPERADO DO PERFIL</span>
               {evidence}
             </div>
           )}
@@ -111,7 +111,7 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence, source = 
                       <span className="text-[11px] font-semibold text-white">{project.title}</span>
                       <span className="font-mono text-[8px] text-white/40">{project.period}</span>
                     </div>
-                    <span className="font-mono text-[9px] text-[#38BDF8]/80">{project.sourceLabel} · {project.category}</span>
+                    <span className="font-mono text-[9px] text-[#38BDF8]/80">{project.shortLabel} · {project.category}</span>
                     <p className="mt-1 text-[10px] leading-relaxed text-white/55">{project.summary}</p>
                   </li>
                 ))}

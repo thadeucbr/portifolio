@@ -9,7 +9,17 @@ function formatMegabytes(bytes: number) {
   return `${(bytes / 1_000_000).toFixed(0)} MB`;
 }
 
-export function LocalModelPanel({ state, onLoad }: { state: LocalAssistantSnapshot; onLoad: () => void }) {
+export function LocalModelPanel({
+  state,
+  onLoad,
+  generationEnabled,
+  onToggleGeneration,
+}: {
+  state: LocalAssistantSnapshot;
+  onLoad: () => void;
+  generationEnabled: boolean;
+  onToggleGeneration: () => void;
+}) {
   const loading = ["probing", "downloading", "loading"].includes(state.phase);
   const percent = Math.max(0, Math.min(100, state.progress?.percent ?? 0));
 
@@ -21,16 +31,21 @@ export function LocalModelPanel({ state, onLoad }: { state: LocalAssistantSnapsh
           <div className="min-w-0">
             <div className="text-[10px] font-semibold tracking-wide text-violet-200">RESPOSTAS LOCAIS · QWEN3.5 0.8B</div>
             <p className="text-[9px] leading-relaxed text-white/50">
-              Opt-in: ~437 MB (WebGPU q4f16) ou ~485 MB (WASM q4), mais tokenizer. Pergunta/evidências ficam no navegador; consulta de projetos envia só ID ou argumentos vazios. Contato é uma ferramenta separada e só envia campos após Accept explícito.
+              Opt-in: ~437 MB (WebGPU q4f16) ou ~485 MB (WASM q4), mais tokenizer. Pergunta/evidências ficam no navegador; consulta de projetos envia só ID ou argumentos vazios. Respostas Qwen ficam desligadas por padrão para evitar latência; contato só envia campos após Accept explícito.
               {" "}
               <a href={MODEL_URL} target="_blank" rel="noreferrer" className="underline decoration-white/30 hover:text-white/80">modelo Apache-2.0</a>
             </p>
           </div>
         </div>
         {state.phase === "ready" ? (
-          <span className="shrink-0 rounded border border-violet-400/40 bg-violet-400/10 px-2 py-1 font-mono text-[9px] text-violet-200">
-            {state.device?.toUpperCase()} · {state.dtype}
-          </span>
+          <button
+            type="button"
+            aria-pressed={generationEnabled}
+            onClick={onToggleGeneration}
+            className={`shrink-0 rounded border px-2 py-1 font-mono text-[9px] ${generationEnabled ? "border-violet-300/60 bg-violet-400/20 text-violet-100" : "border-white/15 bg-white/[0.04] text-white/60 hover:text-white"}`}
+          >
+            RESPOSTAS QWEN {generationEnabled ? "ON" : "OFF"}
+          </button>
         ) : (
           <button
             type="button"

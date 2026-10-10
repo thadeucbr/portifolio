@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { SystemProject } from "@/data/systems";
 import { Play, RotateCcw, Zap } from "lucide-react";
-import { buildCurriculumSimulationEvents } from "./curriculumSimulation.mjs";
+import { buildProjectSimulationEvents } from "./projectSimulation.mjs";
 
 interface PipelineSimulatorProps {
   system: SystemProject;
@@ -14,7 +14,7 @@ export function PipelineSimulator({ system }: PipelineSimulatorProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
   const runId = useRef(0);
-  const events = useMemo(() => buildCurriculumSimulationEvents(system), [system]);
+  const events = useMemo(() => buildProjectSimulationEvents(system), [system]);
 
   useEffect(() => () => { runId.current += 1; }, []);
 
@@ -71,7 +71,7 @@ export function PipelineSimulator({ system }: PipelineSimulatorProps) {
       </div>
 
       <p className="rounded-lg border border-amber-400/20 bg-amber-400/[0.04] p-2 text-[10px] leading-relaxed text-amber-100/70">
-        Esta animação reproduz apenas os tópicos do resumo curricular. Não chama sistemas internos, não envia payloads e não mede tempos ou resultados.
+        Esta animação é uma demonstração local; não chama sistemas internos, não envia payloads e não mede tempos ou resultados.
       </p>
 
       <ol className="grid grid-cols-1 gap-2 sm:grid-cols-3" aria-label="Etapas conceituais da demonstração">
@@ -85,7 +85,7 @@ export function PipelineSimulator({ system }: PipelineSimulatorProps) {
 
       <div className="h-40 space-y-1 overflow-y-auto rounded-xl border border-white/10 bg-black/60 p-3.5" aria-live="polite">
         {logs.length === 0 ? (
-          <div className="py-8 text-center italic text-white/35">Execute a demonstração para percorrer a síntese curricular deste projeto.</div>
+          <div className="py-8 text-center italic text-white/35">Execute a demonstração para percorrer as etapas conceituais deste projeto.</div>
         ) : logs.map((log, index) => (
           <div key={`${index}-${log}`} className="leading-relaxed text-white/80">
             <span className="text-[#38BDF8]">›</span> {log}

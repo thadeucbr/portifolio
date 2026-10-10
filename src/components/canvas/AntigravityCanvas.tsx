@@ -31,14 +31,26 @@ export function AntigravityCanvas({ className = "" }: AntigravityCanvasProps) {
     const camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 1000);
     camera.position.z = 220;
 
-    const renderer = new THREE.WebGLRenderer({
-      alpha: true,
-      antialias: true,
-      powerPreference: "high-performance",
-    });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    container.appendChild(renderer.domElement);
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        alpha: true,
+        antialias: true,
+        powerPreference: "high-performance",
+      });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+      const name = "WebGL2 (fallback)";
+      (window as Window & { __portfolioRenderBackend?: string }).__portfolioRenderBackend = name;
+      window.dispatchEvent(new CustomEvent("neural:backend", { detail: { name } }));
+    } catch (error) {
+      console.warn("[AntigravityCanvas] WebGL2 indisponível:", error);
+      const name = "indisponível (WebGL2)";
+      (window as Window & { __portfolioRenderBackend?: string }).__portfolioRenderBackend = name;
+      window.dispatchEvent(new CustomEvent("neural:backend", { detail: { name } }));
+      return;
+    }
 
     // 2. Campo de Poeira Cósmica & Micro-gravidade (Partículas Quânticas)
     const particleCount = 420;
@@ -232,7 +244,12 @@ export function AntigravityCanvas({ className = "" }: AntigravityCanvasProps) {
       }
       particleGeometry.dispose();
       particleMaterial.dispose();
+      pointTexture.dispose();
       coreGeometry.dispose();
+      coreWireframe.dispose();
+      coreLine.material.dispose();
+      torusGeometry.dispose();
+      torusMaterial.dispose();
       renderer.dispose();
     };
   }, []);

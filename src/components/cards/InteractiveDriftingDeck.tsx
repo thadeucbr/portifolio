@@ -115,7 +115,7 @@ export function InteractiveDriftingDeck({
               <div className="flex items-center gap-2">
                 <span className={`font-mono text-[10px] px-2.5 py-1 rounded-full border flex items-center gap-1.5 ${badge.color}`}>
                   {badge.icon}
-                  <span>{system.sourceLabel}</span>
+                  <span>{system.shortLabel}</span>
                 </span>
               </div>
               <span className="font-mono text-[10px] text-white/50 bg-white/[0.04] px-2 py-0.5 rounded-full border border-white/5">
@@ -134,7 +134,7 @@ export function InteractiveDriftingDeck({
               {system.summary}
             </p>
 
-            {/* Resumo curricular, não métricas de produção */}
+            {/* Resumo profissional, não métricas de produção */}
             <div className="grid grid-cols-3 gap-2 p-3 rounded-2xl bg-black/40 border border-white/[0.06] mb-4">
               {system.facts.map((m, i) => (
                 <div key={i} className="text-center">

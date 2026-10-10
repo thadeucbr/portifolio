@@ -10,7 +10,7 @@ export interface ExecutionStage {
 export interface SystemProject {
   id: string;
   title: string;
-  sourceLabel: string;
+  shortLabel: string;
   category: "Platform Architecture" | "Security & Zero Trust" | "Edge AI & Multi-Agent" | "Financial Systems";
   organization: string;
   period: string;
@@ -22,15 +22,14 @@ export interface SystemProject {
   failureHandling: string;
 }
 
-const CURRICULUM_NOTE = "Resumo baseado no CV; não descreve topologia interna, métricas operacionais ou dados de produção.";
+const PROJECT_NOTE = "Representação editorial; detalhes internos e métricas operacionais não são exibidos.";
 const stage = (step: string, title: string, description: string, tech: string, badgeColor: string): ExecutionStage => ({
-  step, title, description, tech, badgeColor, actionOutput: CURRICULUM_NOTE,
+  step, title, description, tech, badgeColor, actionOutput: PROJECT_NOTE,
 });
 const blue = "bg-[#1856FF]/20 text-[#38BDF8] border-[#1856FF]/40";
 const purple = "bg-purple-500/20 text-purple-300 border-purple-500/40";
 const green = "bg-[#07CA6B]/20 text-[#07CA6B] border-[#07CA6B]/40";
-const internalLabel = "EXPERIÊNCIA INTERNA · RESUMO DO CV";
-const internalOrg = "Banco Safra · experiência interna";
+const internalOrg = "Banco Safra";
 
 export const PROFILE_DATA = {
   name: "Thadeu Castelo Branco Ramos",
@@ -60,7 +59,7 @@ export const SYSTEMS_DATA: SystemProject[] = [
   {
     id: "ai-messaging-broker",
     title: "Broker de Mensageria Agnóstico para IA",
-    sourceLabel: internalLabel,
+    shortLabel: "MENSAGERIA · IA",
     category: "Platform Architecture",
     organization: internalOrg,
     period: "Experiência Sênior · desde mai. 2026",
@@ -82,12 +81,12 @@ export const SYSTEMS_DATA: SystemProject[] = [
       stage("ROTEAMENTO", "Integração com IA", "Roteamento em tempo real ao ecossistema de modelos de IA do banco.", "Mensageria · IA", purple),
       stage("FERRAMENTAS", "Interações conversacionais", "Listas, botões, validação de biometria facial e callbacks assíncronos.", "Ferramentas para agentes", green),
     ],
-    failureHandling: CURRICULUM_NOTE,
+    failureHandling: PROJECT_NOTE,
   },
   {
     id: "zero-trust-mesh",
     title: "Hardening de APIs e Arquitetura Zero Trust",
-    sourceLabel: internalLabel,
+    shortLabel: "ZERO TRUST · M2M",
     category: "Security & Zero Trust",
     organization: internalOrg,
     period: "Experiência Sênior · desde mai. 2026",
@@ -109,12 +108,12 @@ export const SYSTEMS_DATA: SystemProject[] = [
       stage("AUTENTICAÇÃO", "Identidade M2M", "Tokens criptográficos assinados individualmente por aplicação.", "M2M · assinatura", blue),
       stage("AUTORIZAÇÃO", "Controle de acesso", "RBAC integrado aos grupos do Active Directory, com rastreabilidade ponta a ponta.", "RBAC · Active Directory", green),
     ],
-    failureHandling: CURRICULUM_NOTE,
+    failureHandling: PROJECT_NOTE,
   },
   {
     id: "governance-dlp",
     title: "Auditoria, DLP e Governança de Comunicação",
-    sourceLabel: internalLabel,
+    shortLabel: "DLP · GOVERNANÇA",
     category: "Security & Zero Trust",
     organization: internalOrg,
     period: "Experiência Sênior · desde mai. 2026",
@@ -136,12 +135,12 @@ export const SYSTEMS_DATA: SystemProject[] = [
       stage("DLP", "Proteção e custódia", "Políticas DLP e custódia/tráfego seguro de arquivos.", "DLP · arquivos", purple),
       stage("OPERAÇÃO", "Atendimento e conformidade", "Delegação temporária e painéis de adoção e conformidade.", "Delegação · analytics", green),
     ],
-    failureHandling: CURRICULUM_NOTE,
+    failureHandling: PROJECT_NOTE,
   },
   {
     id: "pix-ai-engine",
     title: "Canal de Atendimento do PIX baseado em IA",
-    sourceLabel: internalLabel,
+    shortLabel: "PIX · IA",
     category: "Financial Systems",
     organization: internalOrg,
     period: "Experiência Pleno · nov. 2025–mai. 2026",
@@ -161,21 +160,21 @@ export const SYSTEMS_DATA: SystemProject[] = [
     executionFlow: [
       stage("CANAL", "Atendimento PIX", "Concepção, integração e sustentação de canal de atendimento integralmente baseado em IA.", "PIX · Inteligência Artificial", blue),
       stage("PNL", "Intenções e entidades", "Refinamento de modelos para reduzir falhas de compreensão e melhorar as interações.", "PNL", purple),
-      stage("ESCALA", "Alta demanda", "Solução descrita no CV como escalável sob alta demanda transacional.", "Escalabilidade", green),
+      stage("ESCALA", "Alta demanda", "Escala para períodos de alta demanda transacional.", "Escalabilidade", green),
     ],
-    failureHandling: "O CV descreve o escopo e os objetivos; não contém métricas de assertividade, disponibilidade ou volume para publicar.",
+    failureHandling: "Esta ficha não apresenta métricas de assertividade, disponibilidade ou volume.",
   },
   {
     id: "edge-mcp-hub",
     title: "Busca Semântica Local e MCP do Portfólio",
-    sourceLabel: "DEMONSTRAÇÃO TÉCNICA DO PORTFÓLIO",
+    shortLabel: "EDGE AI · MCP",
     category: "Edge AI & Multi-Agent",
-    organization: "Projeto demonstrativo independente · não é projeto Safra",
-    period: "Implementação demonstrativa · 2026",
-    summary: "Demonstração deste próprio portfólio: busca semântica local, geração local opcional ainda sem validação end-to-end e servidor MCP para consultar fichas estáticas. O contato é enviado ao servidor apenas após consentimento explícito.",
+    organization: "Portfólio pessoal",
+    period: "Demonstração técnica",
+    summary: "Demonstração deste portfólio: busca semântica local, assistente opcional no navegador e ferramentas MCP para consultar fichas de projetos. O envio de contato só ocorre após consentimento explícito.",
     architectureHighlights: [
       "Busca semântica local com fallback lexical identificado.",
-      "Geração local opcional, sem alegar validação de inferência real no navegador.",
+      "Assistente local opcional sob demanda.",
       "Servidor MCP same-origin para listar e consultar o conteúdo estático do portfólio.",
       "Fluxo de contato separado, condicionado a consentimento explícito.",
     ],

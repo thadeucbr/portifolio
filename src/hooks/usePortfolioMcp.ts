@@ -4,6 +4,7 @@ import { createMCPClient } from "@ai-sdk/mcp";
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { verifyPortfolioToolManifest } from "@/mcp/portfolioToolPolicy.mjs";
+import { createBrowserFetch } from "@/mcp/browserFetch.mjs";
 import {
   createPortfolioContactElicitationHandler,
   type PortfolioContactElicitationResponse,
@@ -49,6 +50,7 @@ export function usePortfolioMcp() {
             type: "http",
             url: new URL("/api/mcp", window.location.origin).toString(),
             redirect: "error",
+            fetch: createBrowserFetch(window),
           },
         });
 
@@ -110,7 +112,7 @@ export function usePortfolioMcp() {
     );
     const transport = new StreamableHTTPClientTransport(
       new URL("/api/mcp", window.location.origin),
-      { fetch: (url, init) => fetch(url, { ...init, redirect: "error" }) },
+      { fetch: createBrowserFetch(window) },
     );
 
     client.setRequestHandler("elicitation/create", createPortfolioContactElicitationHandler((message) =>

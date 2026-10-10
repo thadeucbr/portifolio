@@ -160,7 +160,7 @@ async function runGeneration(requestId: string, messages: PortfolioChatMessage[]
   });
   const start = performance.now();
   const output = await model.pipeline(messages, {
-    max_new_tokens: 220,
+    max_new_tokens: 96,
     do_sample: false,
     streamer,
     tokenizer_encode_kwargs: { enable_thinking: false },

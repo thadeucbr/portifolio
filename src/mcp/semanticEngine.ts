@@ -1,4 +1,4 @@
-// Corpus semântico derivado dos dados reais do currículo (src/data/systems.ts).
+// Corpus semântico derivado do conteúdo profissional do portfólio.
 // O ranqueamento principal é feito por embeddings neurais no Web Worker (src/workers/embedding.worker.ts).
 // Este módulo também expõe um ranqueamento LÉXICO de contingência, usado apenas enquanto o modelo
 // ainda está sendo baixado (guideline linha 80: a experiência não pode paralisar durante o warmup).
@@ -16,7 +16,7 @@ export const SYSTEM_TOOL: Record<string, string> = {
 };
 
 export const SYSTEM_LABEL: Record<string, string> = {
-  ...Object.fromEntries(SYSTEMS_DATA.map((s) => [s.id, s.sourceLabel])),
+  ...Object.fromEntries(SYSTEMS_DATA.map((s) => [s.id, s.shortLabel])),
   [CONTACT_SYSTEM_ID]: "CONTATO",
 };
 

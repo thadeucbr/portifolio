@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Play, RotateCcw, Zap } from "lucide-react";
 import { SYSTEMS_DATA } from "@/data/systems";
-import { buildCurriculumSimulationEvents } from "@/components/inspector/curriculumSimulation.mjs";
+import { buildProjectSimulationEvents } from "@/components/inspector/projectSimulation.mjs";
 
 export function LiveArchitectureSandbox() {
   const projects = SYSTEMS_DATA;
@@ -13,7 +13,7 @@ export function LiveArchitectureSandbox() {
   const [logs, setLogs] = useState<string[]>([]);
   const runId = useRef(0);
   const project = projects.find((item) => item.id === projectId) ?? projects[0];
-  const events = useMemo(() => buildCurriculumSimulationEvents(project), [project]);
+  const events = useMemo(() => buildProjectSimulationEvents(project), [project]);
 
   useEffect(() => () => { runId.current += 1; }, []);
 
@@ -53,7 +53,7 @@ export function LiveArchitectureSandbox() {
       <div className="relative z-10 space-y-5">
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-wider text-[#38BDF8]">Demonstração local · conteúdo curricular</div>
+            <div className="font-mono text-[10px] uppercase tracking-wider text-[#38BDF8]">Demonstração local · experiências profissionais</div>
             <h2 className="mt-1 text-lg font-bold text-white">Visão conceitual dos projetos</h2>
             <p className="mt-1 max-w-2xl text-xs leading-relaxed text-white/55">Não conecta a sistemas internos, não transmite payloads e não mostra métricas ou telemetria de produção.</p>
           </div>
@@ -67,7 +67,7 @@ export function LiveArchitectureSandbox() {
           </div>
         </header>
 
-        <div className="flex flex-wrap gap-2" aria-label="Selecionar resumo curricular">
+        <div className="flex flex-wrap gap-2" aria-label="Selecionar experiência">
           {projects.map((item) => (
             <button key={item.id} onClick={() => { resetDemo(); setProjectId(item.id); }} className={`rounded-lg border px-3 py-1.5 text-[10px] ${item.id === project.id ? "border-[#1856FF]/60 bg-[#1856FF]/15 text-white" : "border-white/10 bg-black/20 text-white/60"}`}>
               {item.title}
@@ -76,7 +76,7 @@ export function LiveArchitectureSandbox() {
         </div>
 
         <div className="rounded-xl border border-amber-400/20 bg-amber-400/[0.04] p-3 text-[10px] leading-relaxed text-amber-100/70">
-          Os cartões abaixo são uma ilustração editorial da descrição do CV, não um diagrama aprovado da arquitetura interna.
+          Os cartões abaixo ilustram os projetos; não são um diagrama aprovado da arquitetura interna.
         </div>
 
         <ol className="grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="Tópicos do resumo selecionado">

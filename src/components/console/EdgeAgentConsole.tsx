@@ -6,8 +6,8 @@ import { useEdgeEmbeddings, type RankResult } from "@/hooks/useEdgeEmbeddings";
 import { usePortfolioMcp, type PortfolioContactResult, type PortfolioMcpTool } from "@/hooks/usePortfolioMcp";
 import { useLocalAssistant } from "@/hooks/useLocalAssistant";
 import { CONTACT_SYSTEM_ID, SYSTEM_TOOL, SYSTEM_LABEL } from "@/mcp/semanticEngine";
+import { isExplicitContactRequest } from "@/mcp/contactIntent.mjs";
 import { buildPortfolioAnswerMessages, type PortfolioAnswerEvidence } from "@/mcp/answerPrompt.mjs";
-import { buildMcpToolRoutingMessages, parseMcpToolRoutingDecision, type McpToolRoutingDecision } from "@/mcp/toolRouting.mjs";
 import type { SystemProject } from "@/data/systems";
 import { GenerativeToolArtifact } from "./GenerativeToolArtifact";
 import { LocalModelPanel } from "./LocalModelPanel";
@@ -35,20 +35,16 @@ interface MessageItem {
   meta?: {
     engine: RankResult["engine"];
     ms: number;
+    mcpMs?: number;
+    generationMs?: number;
+    totalMs?: number;
     top: { id: string; score: number }[];
     inferenceMs?: number;
-    routingMs?: number;
     toolSelection?: string;
   };
 }
 
-type PortfolioProjectSummary = Pick<SystemProject, "id" | "sourceLabel" | "title" | "category" | "period" | "summary">;
-
-interface ToolRoutingState {
-  decision: McpToolRoutingDecision | null;
-  attempted: true;
-  inferenceMs?: number;
-}
+type PortfolioProjectSummary = Pick<SystemProject, "id" | "shortLabel" | "title" | "category" | "period" | "summary">;
 
 const QUICK = [
   "Como você desacopla canais de mensagem dos modelos de IA?",
@@ -58,12 +54,13 @@ const QUICK = [
 ];
 
 export function EdgeAgentConsole() {
-  const { state, rank } = useEdgeEmbeddings();
+  const { state, rank, loadEmbeddings } = useEdgeEmbeddings();
   const { state: mcpState, callTool, requestContact, contactElicitation, respondToContactElicitation } = usePortfolioMcp();
   const { state: assistantState, loadModel, generate } = useLocalAssistant();
   const ids = useMemo(() => Object.keys(SYSTEM_TOOL), []);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [generationEnabled, setGenerationEnabled] = useState(false);
   const [scores, setScores] = useState<Record<string, number> | null>(null);
   const [topId, setTopId] = useState<string>();
   const [messages, setMessages] = useState<MessageItem[]>([
@@ -71,7 +68,7 @@ export function EdgeAgentConsole() {
       id: "boot",
       role: "agent",
       content:
-        "Pergunte em linguagem natural. Embeddings e o Qwen3.5 opt-in ficam neste navegador. Com o modelo ativo, ele escolhe entre tools MCP read-only verificadas; contato é uma ação MCP separada que exige Elicitation accept/decline/cancel. Perguntas e evidências não seguem ao servidor; somente IDs de projeto, nenhum argumento de listagem, ou os dados de contato que você aceitar enviar.",
+        "Pergunte em linguagem natural. A busca lexical local responde imediatamente; embeddings neurais e respostas Qwen são opcionais porque podem disputar GPU/CPU e aumentar a latência. O MCP consulta a ficha selecionada. O contato é uma ação separada que só envia os campos que você aceitar explicitamente.",
     },
   ]);
   const endRef = useRef<HTMLDivElement>(null);
@@ -87,9 +84,9 @@ export function EdgeAgentConsole() {
     meta?: MessageItem["meta"],
     question?: string,
     retrievedEvidence?: PortfolioAnswerEvidence[],
-    routing?: ToolRoutingState,
+    requestStartedAt?: number,
   ) => {
-    const toolName = routing?.decision?.name ?? SYSTEM_TOOL[systemId];
+    const toolName = SYSTEM_TOOL[systemId];
     if (!toolName) return;
 
     if (systemId === CONTACT_SYSTEM_ID) {
@@ -149,8 +146,10 @@ export function EdgeAgentConsole() {
 
     setBusy(true);
     try {
-      const toolArguments: Record<string, unknown> = routing?.decision?.arguments ?? { projectId: systemId };
+      const toolArguments: Record<string, unknown> = { projectId: systemId };
+      const mcpStartedAt = performance.now();
       const response = await callTool(toolName, toolArguments);
+      const mcpMs = performance.now() - mcpStartedAt;
       if (response.isError) throw new Error("MCP server rejected the request.");
       const result = response.structuredContent as NonNullable<MessageItem["tool"]>["result"];
       let resolvedSystemId = systemId;
@@ -167,16 +166,15 @@ export function EdgeAgentConsole() {
         throw new Error("The selected MCP tool is outside the local allowlist.");
       }
       const messageId = `a-${Date.now()}`;
-      const shouldGenerate = assistantState.phase === "ready" && Boolean(question?.trim());
-      const responseMeta = meta ? {
-        ...meta,
-        toolSelection: routing?.decision
-          ? `Qwen3.5 → ${toolName}`
-          : routing?.attempted
-            ? "fallback semântico (plano recusado)"
-            : "busca semântica",
-        routingMs: routing?.inferenceMs,
-      } : meta;
+      const shouldGenerate = generationEnabled && assistantState.phase === "ready" && Boolean(question?.trim());
+      const responseMeta = meta
+        ? {
+            ...meta,
+            toolSelection: "busca semântica",
+            mcpMs,
+            ...(requestStartedAt === undefined ? {} : { totalMs: performance.now() - requestStartedAt }),
+          }
+        : meta;
       setMessages((prev) => [...prev, {
         id: messageId,
         role: "agent",
@@ -189,13 +187,14 @@ export function EdgeAgentConsole() {
           ? {
               id: "portfolio-index",
               title: "Índice de projetos do MCP",
-              text: result.projects.map((project) => `${project.title} (${project.sourceLabel}, ${project.category})`).join("; "),
+              text: result.projects.map((project) => `${project.title} (${project.shortLabel}, ${project.category})`).join("; "),
             }
           : { id: resolvedSystemId, title: `${result?.project?.title ?? SYSTEM_LABEL[resolvedSystemId]} · ficha MCP`, text: JSON.stringify(result?.project ?? {}) };
         const evidenceForAnswer: PortfolioAnswerEvidence[] = [
           primaryEvidence,
           ...(retrievedEvidence ?? []).filter((source) => source.id !== primaryEvidence.id && source.id !== resolvedSystemId),
         ].slice(0, 3);
+        const generationStartedAt = performance.now();
         try {
           const completion = await generate(buildPortfolioAnswerMessages(question, evidenceForAnswer), (text) => {
             setMessages((previous) => previous.map((message) => message.id === messageId
@@ -203,11 +202,28 @@ export function EdgeAgentConsole() {
               : message));
           });
           setMessages((previous) => previous.map((message) => message.id === messageId
-            ? { ...message, content: completion.answer, meta: message.meta ? { ...message.meta, inferenceMs: completion.inferenceMs } : undefined }
+            ? {
+                ...message,
+                content: completion.answer,
+                meta: message.meta ? {
+                  ...message.meta,
+                  inferenceMs: completion.inferenceMs,
+                  generationMs: performance.now() - generationStartedAt,
+                  totalMs: requestStartedAt === undefined ? message.meta.totalMs : performance.now() - requestStartedAt,
+                } : undefined,
+              }
             : message));
         } catch (error) {
           setMessages((previous) => previous.map((message) => message.id === messageId
-            ? { ...message, content: `A resposta local falhou: ${error instanceof Error ? error.message : "erro desconhecido"}. A ficha MCP continua disponível abaixo.` }
+            ? {
+                ...message,
+                content: `A resposta local falhou: ${error instanceof Error ? error.message : "erro desconhecido"}. A ficha MCP continua disponível abaixo.`,
+                meta: message.meta ? {
+                  ...message.meta,
+                  generationMs: performance.now() - generationStartedAt,
+                  totalMs: requestStartedAt === undefined ? message.meta.totalMs : performance.now() - requestStartedAt,
+                } : undefined,
+              }
             : message));
         }
       }
@@ -225,10 +241,18 @@ export function EdgeAgentConsole() {
 
   const ask = async (text: string) => {
     if (!text.trim() || busy) return;
+    const requestStartedAt = performance.now();
     setInput("");
     setBusy(true);
     setMessages((p) => [...p, { id: `u-${Date.now()}`, role: "user", content: text }]);
     try {
+      if (isExplicitContactRequest(text)) {
+        setTopId(CONTACT_SYSTEM_ID);
+        setScores({ [CONTACT_SYSTEM_ID]: 1 });
+        await invoke(CONTACT_SYSTEM_ID, "Pedido explícito de contato.");
+        return;
+      }
+
       const r = await rank(text);
       const top = r.ranking[0];
       setScores(Object.fromEntries(r.ranking.map((x) => [x.systemId, x.score])));
@@ -244,37 +268,7 @@ export function EdgeAgentConsole() {
           title: SYSTEM_LABEL[item.systemId] ?? item.systemId,
           text: item.bestChunk ?? "",
         }));
-        const routingCandidates = r.ranking.slice(0, 3).map((item) => ({
-          id: item.systemId,
-          title: SYSTEM_LABEL[item.systemId] ?? item.systemId,
-        }));
-        let routing: ToolRoutingState | undefined;
-        if (assistantState.phase === "ready" && mcpState.phase === "ready" && top.systemId !== CONTACT_SYSTEM_ID) {
-          try {
-            const routingCompletion = await generate(buildMcpToolRoutingMessages(
-              text,
-              routingCandidates,
-              mcpState.tools,
-            ));
-            routing = {
-              decision: parseMcpToolRoutingDecision(
-                routingCompletion.answer,
-                mcpState.tools,
-                routingCandidates.map(({ id }) => id),
-              ),
-              attempted: true,
-              inferenceMs: routingCompletion.inferenceMs,
-            };
-          } catch {
-            routing = { decision: null, attempted: true };
-          }
-        }
-        const prefix = routing?.decision
-          ? `Qwen3.5 selecionou ${routing.decision.name}; o plano passou pela allowlist read-only.`
-          : routing?.attempted
-            ? `O roteamento local não passou pela allowlist; fallback seguro para ${SYSTEM_LABEL[top.systemId]}.`
-            : `Maior similaridade: ${SYSTEM_LABEL[top.systemId]}.`;
-        await invoke(top.systemId, top.bestChunk, prefix, meta, text, retrievedEvidence, routing);
+        await invoke(top.systemId, top.bestChunk, `Maior similaridade: ${SYSTEM_LABEL[top.systemId]}.`, meta, text, retrievedEvidence, requestStartedAt);
       } else {
         setMessages((p) => [
           ...p,
@@ -283,7 +277,7 @@ export function EdgeAgentConsole() {
             role: "agent",
             content:
               "Nenhum sistema passou do limiar de confiança. Prefiro não chutar: reformule ou toque num dos corpos no campo acima.",
-            meta,
+            meta: { ...meta, totalMs: performance.now() - requestStartedAt },
           },
         ]);
       }
@@ -293,7 +287,7 @@ export function EdgeAgentConsole() {
   };
 
   const rt = state.runtime;
-  const loading = state.phase !== "ready" && state.phase !== "error";
+  const loading = ["probing", "downloading", "indexing"].includes(state.phase);
 
   return (
     <div className="glass-panel rounded-2xl border border-white/15 overflow-hidden flex flex-col h-[min(640px,calc(100vh-180px))]">
@@ -320,18 +314,23 @@ export function EdgeAgentConsole() {
             </p>
           </div>
         </div>
-        <span
-          className={`shrink-0 font-mono text-[10px] px-2 py-1 rounded border flex items-center gap-1 ${
-            rt
-              ? "bg-[#07CA6B]/15 text-[#07CA6B] border-[#07CA6B]/30"
-              : state.phase === "error"
-                ? "bg-[#EA2143]/15 text-[#EA2143] border-[#EA2143]/30"
-                : "bg-amber-500/10 text-amber-300 border-amber-500/30"
-          }`}
-        >
-          {rt ? <Cpu className="w-3 h-3" /> : state.phase === "error" ? <AlertTriangle className="w-3 h-3" /> : <Loader2 className="w-3 h-3 animate-spin" />}
-          {rt ? "MODELO PRONTO" : state.phase === "error" ? "SEM BACKEND" : `${Math.round(state.progress * 100)}%`}
-        </span>
+        {rt ? (
+          <span className="shrink-0 font-mono text-[9px] px-2 py-1 rounded border bg-[#07CA6B]/15 text-[#07CA6B] border-[#07CA6B]/30">
+            <Cpu aria-hidden="true" className="inline w-3 h-3 mr-1" />
+            {rt.device.toUpperCase()} · pronto
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={loadEmbeddings}
+            disabled={loading}
+            aria-label={loading ? "Carregando modelo de embeddings" : "Ativar busca neural local"}
+            className="shrink-0 font-mono text-[9px] px-2 py-1 rounded border border-[#1856FF]/40 bg-[#1856FF]/10 text-[#BAE6FD] hover:bg-[#1856FF]/20 disabled:cursor-wait disabled:opacity-60"
+          >
+            {loading ? <Loader2 aria-hidden="true" className="inline w-3 h-3 mr-1 animate-spin" /> : state.phase === "error" ? <AlertTriangle aria-hidden="true" className="inline w-3 h-3 mr-1" /> : <Cpu aria-hidden="true" className="inline w-3 h-3 mr-1" />}
+            {loading ? `${Math.round(state.progress * 100)}%` : state.phase === "error" ? "TENTAR EMBEDDINGS" : "ATIVAR BUSCA NEURAL"}
+          </button>
+        )}
       </div>
 
       {loading && (
@@ -341,7 +340,12 @@ export function EdgeAgentConsole() {
       )}
 
       <SemanticGravityField ids={ids} scores={scores} topId={topId} onSelect={(id) => invoke(id)} />
-      <LocalModelPanel state={assistantState} onLoad={loadModel} />
+      <LocalModelPanel
+        state={assistantState}
+        onLoad={loadModel}
+        generationEnabled={generationEnabled}
+        onToggleGeneration={() => setGenerationEnabled((enabled) => !enabled)}
+      />
       <LocalAsrPanel onTranscript={setInput} />
 
       <div className="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
@@ -357,10 +361,11 @@ export function EdgeAgentConsole() {
               <div className="whitespace-pre-wrap">{m.content}</div>
               {m.meta && (
                 <div className="mt-1.5 font-mono text-[9px] text-white/45">
-                  {m.meta.engine === "neural" ? "embeddings neurais" : "fallback léxico (modelo ainda carregando)"} ·{" "}
-                  {m.meta.ms.toFixed(1)} ms · {m.meta.top.map((t) => `${SYSTEM_LABEL[t.id]} ${t.score.toFixed(3)}`).join(" | ")}
-                  {m.meta.inferenceMs !== undefined ? ` · Qwen3.5 ${m.meta.inferenceMs.toFixed(0)} ms` : ""}
-                  {m.meta.routingMs !== undefined ? ` · roteamento ${m.meta.routingMs.toFixed(0)} ms` : ""}
+                  {m.meta.engine === "neural" ? "embeddings neurais" : "fallback léxico"} ·{" "}
+                  busca {m.meta.ms.toFixed(1)} ms · {m.meta.top.map((t) => `${SYSTEM_LABEL[t.id]} ${t.score.toFixed(3)}`).join(" | ")}
+                  {m.meta.mcpMs !== undefined ? ` · MCP ${m.meta.mcpMs.toFixed(0)} ms` : ""}
+                  {m.meta.generationMs !== undefined ? ` · Qwen ${m.meta.generationMs.toFixed(0)} ms` : ""}
+                  {m.meta.totalMs !== undefined ? ` · total ${m.meta.totalMs.toFixed(0)} ms` : ""}
                   {m.meta.toolSelection ? ` · ${m.meta.toolSelection}` : ""}
                 </div>
               )}
@@ -407,6 +412,7 @@ export function EdgeAgentConsole() {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          aria-label="Pergunte sobre a experiência e os projetos de Thadeu"
           placeholder="Ex.: como ele lida com falhas de um provedor de LLM?"
           className="flex-1 bg-white/[0.06] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/40 focus:outline-none focus:border-[#1856FF]"
         />
@@ -415,7 +421,8 @@ export function EdgeAgentConsole() {
           disabled={!input.trim() || busy}
           className="p-2.5 rounded-xl bg-[#1856FF] hover:bg-[#1856FF]/90 disabled:opacity-50 text-white cursor-pointer"
         >
-          <Send className="w-4 h-4" />
+          <Send aria-hidden="true" className="w-4 h-4" />
+          <span className="sr-only">Enviar pergunta</span>
         </button>
       </form>
       {contactElicitation && (

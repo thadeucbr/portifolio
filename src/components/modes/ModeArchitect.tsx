@@ -19,7 +19,7 @@ export function ModeArchitect({ onExploreGrid, onLaunchPipeline }: ModeArchitect
         </div>
 
         <div className="hidden md:flex items-center gap-3 font-mono text-xs text-white/60">
-          <span>PORTFÓLIO • RESUMOS CURRICULARES</span>
+          <span>PORTFÓLIO PROFISSIONAL · EXPERIÊNCIAS</span>
         </div>
       </div>
 
@@ -62,7 +62,7 @@ export function ModeArchitect({ onExploreGrid, onLaunchPipeline }: ModeArchitect
         </div>
       </div>
 
-      {/* Rodapé: fatos curriculares, não indicadores de produção */}
+      {/* Rodapé: destaques profissionais, não indicadores de produção */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-white/10 font-mono text-xs">
         <div className="glass-panel-subtle p-3.5 rounded-2xl border border-white/10">
           <div className="text-[10px] text-[#94A3B8]">ORGANIZAÇÃO PRINCIPAL</div>

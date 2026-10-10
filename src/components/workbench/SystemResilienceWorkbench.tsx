@@ -15,11 +15,11 @@ const SCENARIOS: Record<ScenarioType, {
 }> = {
   normal: {
     title: "Visão geral",
-    subtitle: "Tópicos curriculares",
+    subtitle: "Visão geral",
     projectId: "ai-messaging-broker",
     messages: [
       { level: "info", message: "Demonstração local: nenhum payload real foi recebido." },
-      { level: "success", message: "Os cartões apresentam resumos independentes dos projetos descritos no CV." },
+      { level: "success", message: "Os cartões apresentam quatro experiências profissionais distintas." },
       { level: "info", message: "Nenhuma integração, arquitetura interna ou métrica de produção é consultada." },
     ],
   },
@@ -29,7 +29,7 @@ const SCENARIOS: Record<ScenarioType, {
     projectId: "ai-messaging-broker",
     messages: [
       { level: "warn", message: "Cenário hipotético: um canal externo fica indisponível." },
-      { level: "info", message: "O CV cita alta resiliência; mecanismo real de contingência não é descrito aqui." },
+      { level: "info", message: "A resiliência é um atributo da plataforma; detalhes internos de contingência não são exibidos." },
       { level: "success", message: "Nenhum canal real foi chamado ou afetado." },
     ],
   },
@@ -39,7 +39,7 @@ const SCENARIOS: Record<ScenarioType, {
     projectId: "governance-dlp",
     messages: [
       { level: "warn", message: "Cenário didático: nenhuma mensagem real ou dado bancário está sendo inspecionado." },
-      { level: "info", message: "O CV cita políticas DLP e custódia/tráfego seguro de arquivos; as regras internas não são reproduzidas nesta demo." },
+      { level: "info", message: "A experiência inclui DLP, custódia de arquivos e delegação; regras internas não são reproduzidas nesta demonstração." },
       { level: "success", message: "A demonstração não transmite nem persiste payloads deste cenário." },
     ],
   },
@@ -49,7 +49,7 @@ const SCENARIOS: Record<ScenarioType, {
     projectId: "zero-trust-mesh",
     messages: [
       { level: "warn", message: "Hipótese didática: uma aplicação tenta acessar um recurso sem autorização." },
-      { level: "info", message: "O CV descreve tokens M2M assinados por aplicação e RBAC associado ao Active Directory." },
+      { level: "info", message: "Experiência com tokens M2M assinados por aplicação e RBAC associado ao Active Directory." },
       { level: "success", message: "Nenhum token, certificado, diretório ou API real foi verificado." },
     ],
   },
@@ -59,7 +59,7 @@ const SCENARIOS: Record<ScenarioType, {
     projectId: "pix-ai-engine",
     messages: [
       { level: "warn", message: "Cenário hipotético de alta demanda; esta animação não gera carga." },
-      { level: "info", message: "O CV descreve um canal PIX baseado em IA e trabalho sob alta demanda transacional." },
+      { level: "info", message: "Experiência em canal PIX baseado em IA e atendimento sob alta demanda transacional." },
       { level: "success", message: "Volume, assertividade e capacidade não são medidos nem estimados nesta demo." },
     ],
   },
@@ -84,8 +84,8 @@ export function SystemResilienceWorkbench() {
       <header className="flex flex-col justify-between gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-center">
         <div>
           <div className="font-mono text-[10px] uppercase tracking-wider text-[#38BDF8]">LABORATÓRIO LOCAL · CENÁRIOS DIDÁTICOS</div>
-          <h2 className="mt-1 text-xl font-bold text-white sm:text-2xl">Resiliência em contexto curricular</h2>
-          <p className="mt-1 max-w-3xl text-xs leading-relaxed text-white/55">Interações locais baseadas no CV. Não conectam a sistemas internos, não injetam falhas e não medem resultados de produção.</p>
+          <h2 className="mt-1 text-xl font-bold text-white sm:text-2xl">Engenharia e resiliência</h2>
+          <p className="mt-1 max-w-3xl text-xs leading-relaxed text-white/55">Demonstrações locais de conceitos de engenharia. Não conectam a sistemas internos, não injetam falhas e não medem resultados de produção.</p>
         </div>
         <span className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 font-mono text-[10px] text-white/60">SEM INTEGRAÇÕES</span>
       </header>
@@ -104,9 +104,9 @@ export function SystemResilienceWorkbench() {
       </div>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-12">
-        <section className="glass-panel rounded-3xl border border-white/15 p-4 sm:p-6 lg:col-span-7" aria-labelledby="curriculum-themes-title">
+        <section className="glass-panel rounded-3xl border border-white/15 p-4 sm:p-6 lg:col-span-7" aria-labelledby="experience-themes-title">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
-            <h3 id="curriculum-themes-title" className="font-mono text-[10px] font-bold uppercase text-[#38BDF8]">Experiências descritas no CV</h3>
+            <h3 id="experience-themes-title" className="font-mono text-[10px] font-bold uppercase text-[#38BDF8]">Experiências profissionais</h3>
             <span className="font-mono text-[9px] text-white/40">PROJETOS INDEPENDENTES · SEM TOPOLOGIA INTERNA</span>
           </div>
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -118,10 +118,10 @@ export function SystemResilienceWorkbench() {
                   <div className="flex items-start gap-3">
                     <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[#38BDF8]" aria-hidden="true" />
                     <div>
-                      <span className="font-mono text-[8px] uppercase text-white/40">{project.sourceLabel}</span>
+                      <span className="font-mono text-[8px] uppercase text-white/40">{project.shortLabel}</span>
                       <h4 className="mt-1 text-xs font-semibold text-white">{project.title}</h4>
                       <p className="mt-1 text-[10px] leading-relaxed text-white/55">{project.summary}</p>
-                      <span className={`mt-2 inline-block font-mono text-[8px] uppercase ${isFocused ? "text-[#38BDF8]" : "text-white/30"}`}>{isFocused ? "EM FOCO NESTA DEMO" : "RESUMO CURRICULAR"}</span>
+                      <span className={`mt-2 inline-block font-mono text-[8px] uppercase ${isFocused ? "text-[#38BDF8]" : "text-white/30"}`}>{isFocused ? "EM FOCO NESTA DEMO" : "EXPERIÊNCIA PROFISSIONAL"}</span>
                     </div>
                   </div>
                 </article>
