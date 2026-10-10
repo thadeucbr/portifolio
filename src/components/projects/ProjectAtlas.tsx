@@ -5,12 +5,24 @@ import { ArrowUpRight, Orbit, Workflow } from "lucide-react";
 import { SYSTEMS_DATA } from "@/data/systems";
 import { SemanticGravityField } from "@/components/console/SemanticGravityField";
 import { buildProjectGravityScores } from "./projectAtlasModel.mjs";
+import type { FieldLayout } from "@/workers/fieldLayouts.mjs";
 
 const PROJECT_IDS = SYSTEMS_DATA.map((project) => project.id);
+const PROJECT_CARD_INFO = Object.fromEntries(SYSTEMS_DATA.map((project) => [project.id, {
+  title: project.title,
+  subtitle: `${project.codename} · ${project.category}`,
+}]));
+const LAYOUTS: { id: FieldLayout; label: string }[] = [
+  { id: "orbital", label: "Órbita" },
+  { id: "circle", label: "Círculo" },
+  { id: "grid", label: "Matriz" },
+  { id: "triangle", label: "Triângulo" },
+];
 
 /** Project browser: Rapier moves each project node; selection pulls it toward the core. */
 export function ProjectAtlas() {
   const [selectedId, setSelectedId] = useState(PROJECT_IDS[0]);
+  const [layout, setLayout] = useState<FieldLayout>("orbital");
   const selected = SYSTEMS_DATA.find((project) => project.id === selectedId) ?? SYSTEMS_DATA[0];
   const scores = useMemo(
     () => buildProjectGravityScores(SYSTEMS_DATA, selected.id),
@@ -29,12 +41,27 @@ export function ProjectAtlas() {
             Sistemas que convergem
           </h2>
           <p className="text-xs text-[#94A3B8] mt-1 max-w-2xl">
-            Arraste o cursor entre os nós: a simulação Rapier os repele. Selecione um projeto para trazê-lo ao núcleo e inspecionar o fluxo descrito.
+            Arraste e arremesse cartões; colisões e molas rodam em Rapier no worker. Setas do teclado também movem o cartão focado.
           </p>
         </div>
-        <span className="shrink-0 font-mono text-[9px] px-2.5 py-1 rounded-full border border-white/15 bg-white/[0.04] text-white/55">
-          FÍSICA LOCAL · NENHUM SISTEMA EXTERNO CONECTADO
-        </span>
+        <div className="flex flex-col items-start sm:items-end gap-2">
+          <div role="group" aria-label="Alinhamento dos cartões" className="flex flex-wrap gap-1">
+            {LAYOUTS.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                aria-pressed={layout === option.id}
+                onClick={() => setLayout(option.id)}
+                className={`rounded-lg border px-2 py-1 font-mono text-[9px] ${layout === option.id ? "border-[#38BDF8]/70 bg-[#1856FF]/20 text-[#BAE6FD]" : "border-white/10 bg-white/[0.03] text-white/55 hover:text-white"}`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          <span className="shrink-0 font-mono text-[9px] px-2.5 py-1 rounded-full border border-white/15 bg-white/[0.04] text-white/55">
+            FÍSICA LOCAL · NENHUM SISTEMA EXTERNO CONECTADO
+          </span>
+        </div>
       </header>
 
       <div className="glass-panel rounded-2xl border border-white/15 overflow-hidden">
@@ -43,6 +70,9 @@ export function ProjectAtlas() {
           scores={scores}
           topId={selected.id}
           modeLabel="órbita por seleção"
+          shape="card"
+          layout={layout}
+          cardInfo={PROJECT_CARD_INFO}
           onSelect={setSelectedId}
         />
       </div>
