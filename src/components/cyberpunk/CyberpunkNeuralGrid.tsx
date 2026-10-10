@@ -3,12 +3,11 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 
-interface CyberpunkGridProps {
+interface CyberAtmosphereProps {
   className?: string;
-  isGlitching?: boolean;
 }
 
-export function CyberpunkNeuralGrid({ className = "", isGlitching = false }: CyberpunkGridProps) {
+export function CyberpunkNeuralGrid({ className = "" }: CyberAtmosphereProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
 
@@ -19,13 +18,10 @@ export function CyberpunkNeuralGrid({ className = "", isGlitching = false }: Cyb
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    // Cena, Câmera e Renderizador
+    // Cena e Câmera
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x05070d, 0.0022);
-
-    const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
-    camera.position.set(0, -25, 110);
-    camera.rotation.x = 0.35; // Ângulo inclinado estilo visualizador cibernético / terminal HUD
+    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+    camera.position.z = 100;
 
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
@@ -36,70 +32,71 @@ export function CyberpunkNeuralGrid({ className = "", isGlitching = false }: Cyb
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
 
-    // 1. GRID CIBERNÉTICO DE PISO INFINITO (Cyberpunk Wireframe Plane)
-    const gridHelper = new THREE.GridHelper(360, 48, 0x1856ff, 0x1e293b);
-    gridHelper.position.y = -42;
-    scene.add(gridHelper);
+    // 1. NEON LIGHT LEAKS NO EIXO Z NEGATIVO (Conforme Linha 8 do Documento)
+    // Gradientes profundos volumétricos que iluminam o vidro sem agressividade
+    const createAmbientGlowMesh = (colorHex: number, radius: number, x: number, y: number, z: number) => {
+      const geo = new THREE.PlaneGeometry(radius, radius);
+      const cvs = document.createElement("canvas");
+      cvs.width = 128;
+      cvs.height = 128;
+      const ctx = cvs.getContext("2d");
+      if (ctx) {
+        const rad = 64;
+        const col = new THREE.Color(colorHex);
+        const grad = ctx.createRadialGradient(rad, rad, 0, rad, rad, rad);
+        grad.addColorStop(0, `rgba(${col.r * 255}, ${col.g * 255}, ${col.b * 255}, 0.28)`);
+        grad.addColorStop(0.5, `rgba(${col.r * 255}, ${col.g * 255}, ${col.b * 255}, 0.08)`);
+        grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 128, 128);
+      }
+      const tex = new THREE.CanvasTexture(cvs);
+      const mat = new THREE.MeshBasicMaterial({
+        map: tex,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(x, y, z);
+      return mesh;
+    };
 
-    // 2. GRID CIBERNÉTICO DE TETO (Data-bus Ceil)
-    const ceilGrid = new THREE.GridHelper(360, 48, 0x07ca6b, 0x0f172a);
-    ceilGrid.position.y = 52;
-    ceilGrid.rotation.x = Math.PI;
-    scene.add(ceilGrid);
+    // Orbe Electric Blue principal (#1856FF)
+    const blueLeak = createAmbientGlowMesh(0x1856ff, 180, -45, 20, -50);
+    scene.add(blueLeak);
 
-    // 3. FLUXO DE PACOTES DE FIBRA ÓPTICA E PULSOS DE DADOS (Data Highway Pulses)
-    const pulseCount = 70;
-    const pulseGeo = new THREE.BufferGeometry();
-    const pulsePositions = new Float32Array(pulseCount * 3);
-    const pulseColors = new Float32Array(pulseCount * 3);
+    // Orbe Deep Plum / Ameixa (#3A344E)
+    const plumLeak = createAmbientGlowMesh(0x3a344e, 220, 50, -30, -60);
+    scene.add(plumLeak);
 
-    const cyan = new THREE.Color(0x38bdf8);
-    const electricBlue = new THREE.Color(0x1856ff);
-    const neonGreen = new THREE.Color(0x07ca6b);
-    const neonAmber = new THREE.Color(0xf59e0b);
+    // Toque sutil de Cyan (#38BDF8)
+    const cyanLeak = createAmbientGlowMesh(0x38bdf8, 140, 20, 45, -45);
+    scene.add(cyanLeak);
 
-    for (let i = 0; i < pulseCount; i++) {
-      const idx = i * 3;
-      pulsePositions[idx] = (Math.random() - 0.5) * 240;
-      pulsePositions[idx + 1] = -41.5 + (Math.random() * 2);
-      pulsePositions[idx + 2] = (Math.random() - 0.5) * 300;
-
-      const c = Math.random() > 0.6 ? cyan : Math.random() > 0.3 ? neonGreen : electricBlue;
-      pulseColors[idx] = c.r;
-      pulseColors[idx + 1] = c.g;
-      pulseColors[idx + 2] = c.b;
+    // 2. MALHA TOPOLÓGICA DE CIRCUITO SUAVE E ESTÁVEL (Sem linhas vindo na cara)
+    // Uma malha estática calma com respiração lenta no fundo
+    const circuitPoints: THREE.Vector3[] = [];
+    const step = 20;
+    for (let x = -100; x <= 100; x += step) {
+      circuitPoints.push(new THREE.Vector3(x, -60, -20));
+      circuitPoints.push(new THREE.Vector3(x, 60, -20));
+    }
+    for (let y = -60; y <= 60; y += step) {
+      circuitPoints.push(new THREE.Vector3(-100, y, -20));
+      circuitPoints.push(new THREE.Vector3(100, y, -20));
     }
 
-    pulseGeo.setAttribute("position", new THREE.BufferAttribute(pulsePositions, 3));
-    pulseGeo.setAttribute("color", new THREE.BufferAttribute(pulseColors, 3));
-
-    const pulseMat = new THREE.PointsMaterial({
-      size: 4.5,
-      vertexColors: true,
+    const circuitGeo = new THREE.BufferGeometry().setFromPoints(circuitPoints);
+    const circuitMat = new THREE.LineBasicMaterial({
+      color: 0x1e293b,
       transparent: true,
-      opacity: 0.9,
-      blending: THREE.AdditiveBlending,
+      opacity: 0.22,
     });
-    const dataPulses = new THREE.Points(pulseGeo, pulseMat);
-    scene.add(dataPulses);
+    const circuitMesh = new THREE.LineSegments(circuitGeo, circuitMat);
+    scene.add(circuitMesh);
 
-    // 4. SCANLINE LASER HORIZONTAL (Cyberpunk Sensor Scan)
-    const scanlineGeo = new THREE.BufferGeometry();
-    const scanPoints = new Float32Array([
-      -180, -41, 0,
-       180, -41, 0
-    ]);
-    scanlineGeo.setAttribute("position", new THREE.BufferAttribute(scanPoints, 3));
-    const scanlineMat = new THREE.LineBasicMaterial({
-      color: 0x38bdf8,
-      transparent: true,
-      opacity: 0.7,
-      linewidth: 2,
-    });
-    const scanline = new THREE.Line(scanlineGeo, scanlineMat);
-    scene.add(scanline);
-
-    // 5. Interação com o Cursor
+    // 3. Resposta suave ao mouse (Apenas parallax elegante de profundidade)
     const onMouseMove = (e: MouseEvent) => {
       const rect = container.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -121,7 +118,7 @@ export function CyberpunkNeuralGrid({ className = "", isGlitching = false }: Cyb
 
     window.addEventListener("resize", onResize);
 
-    // 6. Laço de Animação Cyberpunk
+    // 4. Laço Cinematográfico Suave (Respiração Orgânica de Luz)
     let animId: number;
     const clock = new THREE.Clock();
 
@@ -129,33 +126,22 @@ export function CyberpunkNeuralGrid({ className = "", isGlitching = false }: Cyb
       animId = requestAnimationFrame(animate);
       const time = clock.getElapsedTime();
 
-      // Lerp da câmera com resposta ao mouse
-      mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * 0.04;
-      mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * 0.04;
+      // Lerp calmo de câmera
+      mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * 0.02;
+      mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * 0.02;
 
-      camera.position.x = mouseRef.current.x * 15;
-      camera.position.y = -25 + mouseRef.current.y * 8;
-      camera.rotation.y = -mouseRef.current.x * 0.08;
+      camera.position.x = mouseRef.current.x * 6;
+      camera.position.y = mouseRef.current.y * 4;
+      camera.lookAt(0, 0, 0);
 
-      // Movimento infinito do grid (Efeito de velocidade cibernética)
-      gridHelper.position.z = (time * 18) % 15;
-      ceilGrid.position.z = (time * 18) % 15;
+      // Respiração lenta e sutil dos orbes de luz (sem tremedeira, sem nada vindo na cara)
+      blueLeak.position.x = -45 + Math.sin(time * 0.3) * 6;
+      blueLeak.position.y = 20 + Math.cos(time * 0.25) * 4;
 
-      // Varredura da Scanline Laser
-      scanline.position.z = Math.sin(time * 0.8) * 90;
+      plumLeak.position.x = 50 + Math.cos(time * 0.2) * 8;
+      plumLeak.position.y = -30 + Math.sin(time * 0.3) * 5;
 
-      // Movimentação dos pacotes de dados
-      const posAttr = pulseGeo.attributes.position as THREE.BufferAttribute;
-      const pArr = posAttr.array as Float32Array;
-      for (let i = 0; i < pulseCount; i++) {
-        const idx = i * 3;
-        pArr[idx + 2] += 1.8; // Voando em direção à câmera
-        if (pArr[idx + 2] > 120) {
-          pArr[idx + 2] = -160;
-          pArr[idx] = (Math.random() - 0.5) * 240;
-        }
-      }
-      posAttr.needsUpdate = true;
+      cyanLeak.scale.setScalar(1 + Math.sin(time * 0.4) * 0.08);
 
       renderer.render(scene, camera);
     };

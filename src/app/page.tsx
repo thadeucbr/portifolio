@@ -42,8 +42,8 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="relative w-screen h-screen overflow-hidden bg-[#05070D] text-[#F8FAFC] select-none font-sans flex flex-col justify-between cyber-scanlines">
-      {/* 1. Eixo Z Negativo: Luzes Neon Cyberpunk (Electric Blue, Amber e Acid Green) */}
+    <main className="relative w-screen h-screen overflow-hidden bg-[#07090E] text-[#F8FAFC] select-none font-sans flex flex-col justify-between">
+      {/* 1. Eixo Z Negativo: Luzes Neon Sutis (Electric Blue, Amber e Acid Green) */}
       <div className={`ambient-glow-primary top-10 -left-20 transition-all duration-700 ${
         currentStage === "security" ? "scale-125 opacity-40 bg-[#07CA6B]/25" : "opacity-25"
       }`} />
