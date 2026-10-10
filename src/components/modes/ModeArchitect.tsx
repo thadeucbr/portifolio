@@ -1,18 +1,7 @@
 "use client";
 
 import React from "react";
-import { PROFILE_DATA } from "@/data/systems";
-import { 
-  ShieldCheck, 
-  Layers, 
-  Cpu, 
-  ArrowRight, 
-  Sparkles, 
-  Activity, 
-  Lock,
-  ChevronRight,
-  Database
-} from "lucide-react";
+import { Sparkles, Activity, ChevronRight } from "lucide-react";
 
 interface ModeArchitectProps {
   onExploreGrid: () => void;
@@ -30,11 +19,7 @@ export function ModeArchitect({ onExploreGrid, onLaunchPipeline }: ModeArchitect
         </div>
 
         <div className="hidden md:flex items-center gap-3 font-mono text-xs text-white/60">
-          <span>LATÊNCIA: &lt; 45ms</span>
-          <span>•</span>
-          <span className="text-[#07CA6B]">ZERO TRUST: VERIFIED</span>
-          <span>•</span>
-          <span className="text-[#38BDF8]">M2M MESH: 100%</span>
+          <span>PORTFÓLIO • RESUMOS CURRICULARES</span>
         </div>
       </div>
 
@@ -72,12 +57,12 @@ export function ModeArchitect({ onExploreGrid, onLaunchPipeline }: ModeArchitect
             className="px-6 py-3.5 rounded-2xl glass-panel hover:bg-white/[0.12] text-white font-mono text-xs flex items-center gap-2.5 transition-all border border-white/20 cursor-pointer"
           >
             <Activity className="w-4 h-4 text-[#07CA6B]" />
-            <span>Simulador de Pipeline de Produção</span>
+            <span>Explorar demonstração conceitual local</span>
           </button>
         </div>
       </div>
 
-      {/* Bottom Bar: Radar de Indicadores de Produção */}
+      {/* Rodapé: fatos curriculares, não indicadores de produção */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-white/10 font-mono text-xs">
         <div className="glass-panel-subtle p-3.5 rounded-2xl border border-white/10">
           <div className="text-[10px] text-[#94A3B8]">ORGANIZAÇÃO PRINCIPAL</div>

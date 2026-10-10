@@ -1,18 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
-import { SystemProject } from "@/data/systems";
-import { 
-  Play, 
-  RotateCcw, 
-  CheckCircle2, 
-  ShieldAlert, 
-  Cpu, 
-  ArrowRight,
-  Zap,
-  Lock,
-  Layers
-} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { SystemProject } from "@/data/systems";
+import { Play, RotateCcw, Zap } from "lucide-react";
+import { buildCurriculumSimulationEvents } from "./curriculumSimulation.mjs";
 
 interface PipelineSimulatorProps {
   system: SystemProject;
@@ -22,41 +13,36 @@ export function PipelineSimulator({ system }: PipelineSimulatorProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
+  const runId = useRef(0);
+  const events = useMemo(() => buildCurriculumSimulationEvents(system), [system]);
+
+  useEffect(() => () => { runId.current += 1; }, []);
 
   const runSimulation = () => {
     if (isRunning) return;
+    const run = ++runId.current;
+    const stages = system.executionFlow;
     setIsRunning(true);
-    setCurrentStep(1);
-    setLogs([`[0.00ms] INBOUND: Recebido payload assíncrono via Meta Cloud Webhook (ID: 0x9f4a1)`]);
+    setCurrentStep(0);
+    setLogs([events[0]]);
+
+    stages.forEach((_stage, index) => {
+      setTimeout(() => {
+        if (runId.current !== run) return;
+        setCurrentStep(index + 1);
+        setLogs((previous) => [...previous, events[index + 1]]);
+      }, 650 * (index + 1));
+    });
 
     setTimeout(() => {
-      setCurrentStep(2);
-      setLogs((prev) => [
-        ...prev,
-        `[12.4ms] DLP SANITIZER: Análise de conformidade executada. 0 vazamentos de dados detectados.`,
-      ]);
-    }, 700);
-
-    setTimeout(() => {
-      setCurrentStep(3);
-      setLogs((prev) => [
-        ...prev,
-        `[24.8ms] ZERO TRUST M2M: Token criptográfico Ed25519 assinado verificado com sucesso contra AD.`,
-      ]);
-    }, 1400);
-
-    setTimeout(() => {
-      setCurrentStep(4);
-      setLogs((prev) => [
-        ...prev,
-        `[38.2ms] MCP DISPATCHER: Invocação de ferramenta dinâmica aprovada. Roteado para o ecossistema de modelos de IA.`,
-        `[42.1ms] COMPLETED: Transação concluída com sucesso em 42ms (Latência nominal < 45ms).`,
-      ]);
+      if (runId.current !== run) return;
+      setLogs((previous) => [...previous, events.at(-1) ?? "Demonstração finalizada."]);
       setIsRunning(false);
-    }, 2200);
+    }, 650 * (stages.length + 1));
   };
 
   const resetSimulation = () => {
+    runId.current += 1;
     setIsRunning(false);
     setCurrentStep(0);
     setLogs([]);
@@ -64,94 +50,47 @@ export function PipelineSimulator({ system }: PipelineSimulatorProps) {
 
   return (
     <div className="space-y-4 font-mono text-xs">
-      <div className="flex items-center justify-between pb-2 border-b border-white/10">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-2">
         <div className="flex items-center gap-2">
-          <Zap className="w-4 h-4 text-[#38BDF8]" />
-          <span className="text-white font-semibold">Simulador de Tráfego em Tempo Real</span>
+          <Zap className="h-4 w-4 text-[#38BDF8]" />
+          <span className="font-semibold text-white">Demonstração conceitual local</span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={runSimulation}
             disabled={isRunning}
-            className={`px-3 py-1 rounded-lg flex items-center gap-1.5 transition-all ${
-              isRunning
-                ? "bg-white/10 text-white/40 cursor-not-allowed"
-                : "bg-[#1856FF] hover:bg-[#1856FF]/90 text-white shadow-md cursor-pointer"
-            }`}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1 transition-all ${isRunning ? "cursor-not-allowed bg-white/10 text-white/40" : "cursor-pointer bg-[#1856FF] text-white shadow-md hover:bg-[#1856FF]/90"}`}
           >
-            <Play className="w-3 h-3 fill-current" />
-            <span>Disparar Payload</span>
+            <Play className="h-3 w-3 fill-current" />
+            <span>Executar etapas</span>
           </button>
-          <button
-            onClick={resetSimulation}
-            className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors"
-            title="Resetar"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
+          <button onClick={resetSimulation} className="rounded-lg bg-white/5 p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white" title="Reiniciar demonstração">
+            <RotateCcw className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Nós do Pipeline Interativo com Status Visual */}
-      <div className="grid grid-cols-4 gap-2">
-        <div
-          className={`p-3 rounded-xl border transition-all ${
-            currentStep >= 1
-              ? "bg-[#1856FF]/20 border-[#1856FF] text-[#38BDF8]"
-              : "bg-black/30 border-white/5 text-white/40"
-          }`}
-        >
-          <div className="text-[10px] uppercase font-bold">1. Inbound</div>
-          <div className="text-[11px] truncate mt-1">Multi-Channel</div>
-        </div>
+      <p className="rounded-lg border border-amber-400/20 bg-amber-400/[0.04] p-2 text-[10px] leading-relaxed text-amber-100/70">
+        Esta animação reproduz apenas os tópicos do resumo curricular. Não chama sistemas internos, não envia payloads e não mede tempos ou resultados.
+      </p>
 
-        <div
-          className={`p-3 rounded-xl border transition-all ${
-            currentStep >= 2
-              ? "bg-purple-500/20 border-purple-400 text-purple-300"
-              : "bg-black/30 border-white/5 text-white/40"
-          }`}
-        >
-          <div className="text-[10px] uppercase font-bold">2. DLP Filter</div>
-          <div className="text-[11px] truncate mt-1">Sanitização</div>
-        </div>
+      <ol className="grid grid-cols-1 gap-2 sm:grid-cols-3" aria-label="Etapas conceituais da demonstração">
+        {system.executionFlow.map((stage, index) => (
+          <li key={stage.step} className={`rounded-xl border p-3 transition-colors ${currentStep > index ? "border-[#1856FF]/70 bg-[#1856FF]/10 text-white" : "border-white/10 bg-black/30 text-white/50"}`}>
+            <div className="text-[10px] font-bold uppercase">{String(index + 1).padStart(2, "0")} · {stage.step}</div>
+            <div className="mt-1 text-[11px] leading-relaxed">{stage.title}</div>
+          </li>
+        ))}
+      </ol>
 
-        <div
-          className={`p-3 rounded-xl border transition-all ${
-            currentStep >= 3
-              ? "bg-[#07CA6B]/20 border-[#07CA6B] text-[#07CA6B]"
-              : "bg-black/30 border-white/5 text-white/40"
-          }`}
-        >
-          <div className="text-[10px] uppercase font-bold">3. Zero Trust</div>
-          <div className="text-[11px] truncate mt-1">Token M2M</div>
-        </div>
-
-        <div
-          className={`p-3 rounded-xl border transition-all ${
-            currentStep >= 4
-              ? "bg-sky-500/20 border-sky-400 text-sky-300"
-              : "bg-black/30 border-white/5 text-white/40"
-          }`}
-        >
-          <div className="text-[10px] uppercase font-bold">4. MCP Agent</div>
-          <div className="text-[11px] truncate mt-1">Inferência</div>
-        </div>
-      </div>
-
-      {/* Terminal de Logs de Execução em Dark Glass */}
-      <div className="p-3.5 rounded-xl bg-black/60 border border-white/10 h-36 overflow-y-auto space-y-1">
+      <div className="h-40 space-y-1 overflow-y-auto rounded-xl border border-white/10 bg-black/60 p-3.5" aria-live="polite">
         {logs.length === 0 ? (
-          <div className="text-white/30 italic text-center py-8">
-            Clique em &quot;Disparar Payload&quot; para ver o trajeto de validação distribuída.
+          <div className="py-8 text-center italic text-white/35">Execute a demonstração para percorrer a síntese curricular deste projeto.</div>
+        ) : logs.map((log, index) => (
+          <div key={`${index}-${log}`} className="leading-relaxed text-white/80">
+            <span className="text-[#38BDF8]">›</span> {log}
           </div>
-        ) : (
-          logs.map((log, index) => (
-            <div key={index} className="text-white/80 leading-relaxed">
-              <span className="text-[#38BDF8]">❯</span> {log}
-            </div>
-          ))
-        )}
+        ))}
       </div>
     </div>
   );

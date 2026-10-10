@@ -2,18 +2,7 @@
 
 import React, { useState } from "react";
 import { SystemProject } from "@/data/systems";
-import { 
-  ShieldCheck, 
-  Terminal, 
-  Cpu, 
-  Layers, 
-  CheckCircle2, 
-  Network,
-  Share2,
-  Lock,
-  ArrowRight,
-  Zap
-} from "lucide-react";
+import { CheckCircle2, Network } from "lucide-react";
 import { PipelineSimulator } from "./PipelineSimulator";
 
 interface ArchitectureInspectorProps {
@@ -21,7 +10,7 @@ interface ArchitectureInspectorProps {
   onClose?: () => void;
 }
 
-export function ArchitectureInspector({ system, onClose }: ArchitectureInspectorProps) {
+export function ArchitectureInspector({ system }: ArchitectureInspectorProps) {
   const [activeTab, setActiveTab] = useState<"topology" | "simulator" | "highlights" | "telemetry">("topology");
 
   if (!system) {
@@ -32,7 +21,7 @@ export function ArchitectureInspector({ system, onClose }: ArchitectureInspector
           Nenhum Sistema Selecionado
         </h3>
         <p className="text-xs text-[#94A3B8] max-w-xs leading-relaxed">
-          Clique em qualquer um dos cartões flutuantes na câmara antigravidade para inspecionar a topologia e a telemetria do sistema.
+          <span className="text-white/60">Clique em qualquer cartão para inspecionar o resumo curricular e a visão conceitual deste projeto.</span>
         </p>
       </div>
     );
@@ -47,7 +36,7 @@ export function ArchitectureInspector({ system, onClose }: ArchitectureInspector
           <div>
             <div className="flex items-center gap-2">
               <span className="font-mono text-xs uppercase text-[#38BDF8] tracking-wider">
-                {system.codename} • INSPECTOR
+                {system.sourceLabel} • INSPECTOR
               </span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.05] text-white/60 font-mono">
                 {system.category}
@@ -99,7 +88,7 @@ export function ArchitectureInspector({ system, onClose }: ArchitectureInspector
                 : "text-white/60 hover:text-white"
             }`}
           >
-            Telemetria
+            Resumo CV
           </button>
         </div>
       </div>
@@ -110,55 +99,25 @@ export function ArchitectureInspector({ system, onClose }: ArchitectureInspector
           <div className="space-y-4">
             <div className="text-xs text-[#94A3B8] flex items-center justify-between">
               <span className="font-mono uppercase text-[#38BDF8]">
-                Diagrama de Fluxo & Decoupling
+                Visão conceitual · resumo curricular
               </span>
               <span className="font-mono text-[11px] text-white/50">
-                Resiliência Garantida: 99.99%
+                Não é topologia de produção
               </span>
             </div>
 
-            {/* Simulação Visual de Pipeline de Arquitetura (Architecture as Code) */}
-            <div className="p-4 rounded-xl bg-black/40 border border-white/[0.08] space-y-3 font-mono text-xs">
-              <div className="flex items-center gap-3">
-                <span className="px-2.5 py-1 rounded-md bg-[#1856FF]/20 text-[#38BDF8] border border-[#1856FF]/40">
-                  INPUT
-                </span>
-                <span className="text-white/80">Canais de Entrada: WhatsApp, Telegram & Enterprise Webhooks</span>
-              </div>
-              <div className="pl-6 text-[#1856FF]">↓ [Zero Data Leakage Validation via DLP / Sentinel]</div>
-
-              <div className="flex items-center gap-3">
-                <span className="px-2.5 py-1 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/40">
-                  ROUTER
-                </span>
-                <span className="text-white/80">Broker Agnóstico de Mensageria (Buffer Desacoplado)</span>
-              </div>
-              <div className="pl-6 text-purple-400">↓ [Token Criptográfico M2M Assinado + RBAC via Active Directory]</div>
-
-              <div className="flex items-center gap-3">
-                <span className="px-2.5 py-1 rounded-md bg-[#07CA6B]/20 text-[#07CA6B] border border-[#07CA6B]/40">
-                  DISPATCH
-                </span>
-                <span className="text-white/80">Model Context Protocol (MCP) + Ferramental Dinâmico</span>
-              </div>
-              <div className="pl-6 text-[#07CA6B]">↓ [Execução de Modelos de IA & Callbacks Assíncronos]</div>
-
-              <div className="flex items-center gap-3">
-                <span className="px-2.5 py-1 rounded-md bg-sky-500/20 text-sky-300 border border-sky-500/40">
-                  OUTPUT
-                </span>
-                <span className="text-white/80">Resposta Transacional Segura & Baixa Latência</span>
-              </div>
-            </div>
-
-            {/* Resumo de Valor */}
-            <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-              <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-2 font-mono">
-                Por que este design é disruptivo:
-              </h4>
-              <p className="text-xs text-[#94A3B8] leading-relaxed">
-                Em vez de acoplar diretamente APIs de terceiros aos modelos, esta arquitetura garante que a queda de qualquer canal não degrade o ecossistema de inteligência e viabiliza governança com auditoria contínua e não-repúdio.
-              </p>
+            {/* Visão ilustrativa derivada do resumo curricular; não é arquitetura em produção */}
+            <ol className="grid gap-3 sm:grid-cols-3" aria-label="Etapas conceituais descritas no currículo">
+              {system.executionFlow.map((stage) => (
+                <li key={stage.step} className="rounded-xl border border-white/10 bg-black/30 p-3">
+                  <span className={`inline-flex rounded border px-2 py-0.5 font-mono text-[9px] ${stage.badgeColor}`}>{stage.step}</span>
+                  <h3 className="mt-2 text-xs font-semibold text-white">{stage.title}</h3>
+                  <p className="mt-1 text-[11px] leading-relaxed text-white/65">{stage.description}</p>
+                </li>
+              ))}
+            </ol>
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-[11px] leading-relaxed text-white/55">
+              Ilustração editorial baseada no CV. Não documenta sequência, topologia, controles operacionais nem estado dos sistemas internos.
             </div>
           </div>
         )}
@@ -188,7 +147,7 @@ export function ArchitectureInspector({ system, onClose }: ArchitectureInspector
 
             <div className="pt-2">
               <span className="text-xs text-[#94A3B8] font-mono uppercase text-[#38BDF8] block mb-2">
-                Stack de Tecnologias Empregada
+                Temas técnicos descritos no resumo curricular
               </span>
               <div className="flex flex-wrap gap-2">
                 {system.stack.map((tech) => (
@@ -206,32 +165,18 @@ export function ArchitectureInspector({ system, onClose }: ArchitectureInspector
 
         {activeTab === "telemetry" && (
           <div className="space-y-4 font-mono">
-            <div className="text-xs text-[#94A3B8] uppercase text-[#38BDF8]">
-              Indicadores de Performance e Segurança
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {system.metrics.map((m, i) => (
-                <div
-                  key={i}
-                  className="p-4 rounded-xl bg-black/40 border border-white/[0.08]"
-                >
-                  <div className="text-[11px] text-[#94A3B8] mb-1">{m.label}</div>
-                  <div className="text-lg font-bold text-white">{m.value}</div>
+            <div className="text-xs uppercase text-[#38BDF8]">Informações reportadas no currículo</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {system.facts.map((fact) => (
+                <div key={fact.label} className="rounded-xl border border-white/[0.08] bg-black/40 p-4">
+                  <div className="mb-1 text-[11px] text-[#94A3B8]">{fact.label}</div>
+                  <div className="text-sm font-bold text-white">{fact.value}</div>
                 </div>
               ))}
-              <div className="p-4 rounded-xl bg-black/40 border border-white/[0.08]">
-                <div className="text-[11px] text-[#94A3B8] mb-1">Impacto Organizacional</div>
-                <div className="text-xs font-semibold text-[#07CA6B] mt-1">
-                  {system.organization} • Produção Ativa
-                </div>
-              </div>
-              <div className="p-4 rounded-xl bg-black/40 border border-white/[0.08]">
-                <div className="text-[11px] text-[#94A3B8] mb-1">Status Criptográfico</div>
-                <div className="text-xs font-semibold text-[#38BDF8] mt-1">
-                  Validação Ativa (Zero Trust)
-                </div>
-              </div>
             </div>
+            <p className="rounded-xl border border-white/10 bg-white/[0.03] p-3 font-sans text-[11px] leading-relaxed text-white/55">
+              São declarações curriculares, não métricas medidas, telemetria, auditoria independente ou confirmação de estado de produção.
+            </p>
           </div>
         )}
       </div>

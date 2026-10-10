@@ -22,17 +22,17 @@ Atualizada em 2026-10-10 após releitura integral de `docs/Design Web Portfólio
 | RSC/Generative UI (`streamUI`, `useUIState`) | Parcial | `page.tsx` é Server Component; ferramenta MCP retorna dados estruturados e a UI monta artefatos locais. | Não usa AI SDK RSC `streamUI/useUIState`; grafo é um componente React cliente derivado do resultado MCP, não React UI transmitida pelo LLM. |
 | Server Actions e progressive enhancement | Parcial forte | Formulário usa `useActionState`; `accept` valida/persiste, `decline`/`cancel` encerram antes de efeitos; fallback via `<noscript>` disponível; integração testada com callback fake. | Caminho sem JS ainda precisa de teste no navegador; política de retenção e proteção anti-spam/rate-limit não estão definidas. |
 | View Transitions nativas; morph card→detalhe | Código implementado, visual não certificado | Seleção usa `startTransition`; nomes CSS únicos transferem o cartão não selecionado para o título do detalhe e de volta; direção de estágio/reduced-motion continua ativa. | Sem confirmação de geometria/continuidade visual em Chrome, Safari, Firefox e dispositivos touch. |
-| Diagramas interativos / arquitetura como código | Parcial forte | `ProjectFlowDiagram` monta nós/arestas a partir de `executionFlow` recebido por `portfolio_get_project`; botões permitem inspecionar etapa/descrição/tecnologia. Rótulo deixa claro “conteúdo estático / não é execução ao vivo”. | Os fluxos de origem ainda são conteúdo estático; não substitui Mermaid/diagrama autoral de repositório nem mostra pipeline executando. |
-| Live Code / sandbox com API pública implantada | Ausente | Há demos/simuladores identificados como locais/estáticos; MCP não consulta produção. | Precisa de endpoint público de projeto autorizado e política operacional; não inventar endpoint, credencial, latência ou dado de produção. |
-| Mutações visuais acionadas por ferramentas | Parcial implementado | A resposta estruturada de `portfolio_get_project` muda o grafo de arquitetura exibido; resultado de `portfolio_list_projects` cria índice visual; artefatos mostram annotations e evidência. | O grafo representa fluxo estático do perfil, não código/estado vivo. Browser QA ainda bloqueado. |
-| Evidências de senioridade: repos, releases, deploys, métricas autorizadas | Parcial | Dataset identifica cinco projetos e métricas como declarações estáticas, sem chamá-las de telemetria. | Faltam links/referências confirmados pelo candidato, deployments e evidências públicas mapeadas aos projetos; não adicionar prova sem autorização. |
+| Diagramas interativos / arquitetura como código | Ilustração curricular, não arquitetura verificada | `ProjectFlowDiagram` renderiza tópicos da descrição do CV; permite selecionar e inspecionar cada cartão. Interface identifica explicitamente como resumo/ilustração, não topologia de produção. | Não é arquitetura como código, diagrama aprovado de repositório ou execução de pipeline; os quatro projetos Safra permanecem fichas independentes. |
+| Live Code / sandbox conectado a API pública | Ausente por política de privacidade | Os simuladores locais foram limitados a cenários didáticos sem carga, dados internos ou telemetria. O MCP consulta somente o conteúdo curricular estático. | Projetos são internos/privados do Banco Safra; não conectarei endpoints nem exporei dados internos. A sandbox live só deve usar serviço público autorizado e sem vínculo com sistemas Safra. |
+| Mutações visuais acionadas por ferramentas | Parcial implementado | A resposta de `portfolio_get_project` alimenta a ilustração curricular; `portfolio_list_projects` gera índice visual e os artefatos mostram annotations e fonte CV. | Não é uma arquitetura em execução; QA visual ainda depende de browser autorizado. |
+| Base factual dos projetos | Revisado contra o CV fornecido; prova independente não disponível | As quatro experiências internas Safra foram reescritas a partir do `CV - Thadeu Castelo Branco Ramos - 2026.docx`; codenames inventados e métricas sem fonte removidos. O quinto item é identificado como demonstração independente do portfólio. | O CV é fonte de autorrelato, não evidência independente; não são necessários repositórios públicos dos projetos privados. Detalhes além do CV permanecem omitidos. |
 
 ## Verificação desta rodada
 
-- `npm test`: 65 testes aprovados.
+- `npm test`: 70 testes aprovados.
 - `npx tsc --noEmit`: aprovado.
 - `npm run build`: aprovado (Next.js 16.4.0 / React 19.3).
-- `npm run lint`: 0 erros; 62 avisos existentes em componentes fora desta fatia.
+- `npm run lint`: 0 erros; 23 avisos de variáveis/imports não utilizados em componentes preexistentes.
 - `git diff --check`: aprovado.
 - MCP: cliente/servidor em teste de integração; não acionado contato real nem gravados dados reais.
 - Browser: build smoke com HTTP 200; inspeção visual/interativa bloqueada porque Chrome exige habilitar “Allow remote debugging” e aprovar mais um popup. Não cliquei nem contornei essa permissão.
@@ -42,6 +42,6 @@ Atualizada em 2026-10-10 após releitura integral de `docs/Design Web Portfólio
 1. Permissão explícita do usuário para Chrome remote debugging, necessária para validar modal, grafo, view morph e estados WebGPU/WASM visualmente.
 2. Execução real do Qwen no browser após consentimento explícito do download e captura de WebGPU/WASM.
 3. Dados de deployment/API públicos e autorizados para substituir a sandbox estática; não enviar chaves/segredos pelo chat.
-4. Revisão/autorização de links de repositórios, releases e métricas que podem ser publicados no portfólio.
+4. Nenhum repositório dos projetos internos é necessário; para prova independente, usar somente material público ou autorizado, sem código/segredo interno.
 5. Executar ASR Whisper Small no browser depois de consentimento explícito ao download (~300 MB) e à permissão de microfone; conferir decoder/resampling e qualidade de transcrição.
 6. Benchmarks de FPS/frametime, comparação touch/mobile e compatibilidade entre browsers; sem eles não afirmar 60–120 FPS nem “compatibilidade absoluta”.

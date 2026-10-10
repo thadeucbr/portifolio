@@ -16,7 +16,7 @@ export const SYSTEM_TOOL: Record<string, string> = {
 };
 
 export const SYSTEM_LABEL: Record<string, string> = {
-  ...Object.fromEntries(SYSTEMS_DATA.map((s) => [s.id, s.codename])),
+  ...Object.fromEntries(SYSTEMS_DATA.map((s) => [s.id, s.sourceLabel])),
   [CONTACT_SYSTEM_ID]: "CONTATO",
 };
 

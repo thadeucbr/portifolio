@@ -96,7 +96,7 @@ export function RecruiterDossierView() {
           <div>
             <div className="flex items-center justify-between pb-2 border-b border-white/10 font-mono text-xs">
               <span className="text-[#07CA6B] font-bold uppercase">
-                PROJETOS DESCRITOS • CONTEXTO DE ENGENHARIA BANCÁRIA
+                EXPERIÊNCIA E DEMONSTRAÇÕES • RESUMOS CURRICULARES
               </span>
               <span className="text-white/50">RESUMO CURRICULAR</span>
             </div>
@@ -110,7 +110,7 @@ export function RecruiterDossierView() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-[10px] text-[#38BDF8] font-bold">
-                        {sys.codename}
+                        {sys.sourceLabel}
                       </span>
                       <span className="text-white/40">•</span>
                       <span className="text-xs font-bold text-white">{sys.title}</span>
@@ -121,8 +121,8 @@ export function RecruiterDossierView() {
                   </div>
 
                   <div className="text-right shrink-0 font-mono text-xs">
-                    <span className="text-[#07CA6B] font-bold block">{sys.metrics[0].value}</span>
-                    <span className="text-[10px] text-white/40">{sys.metrics[0].label}</span>
+                    <span className="text-[#07CA6B] font-bold block">{sys.facts[0].value}</span>
+                    <span className="text-[10px] text-white/40">{sys.facts[0].label}</span>
                   </div>
                 </div>
               ))}

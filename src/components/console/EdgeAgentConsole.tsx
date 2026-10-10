@@ -42,7 +42,7 @@ interface MessageItem {
   };
 }
 
-type PortfolioProjectSummary = Pick<SystemProject, "id" | "codename" | "title" | "category" | "period" | "summary">;
+type PortfolioProjectSummary = Pick<SystemProject, "id" | "sourceLabel" | "title" | "category" | "period" | "summary">;
 
 interface ToolRoutingState {
   decision: McpToolRoutingDecision | null;
@@ -189,7 +189,7 @@ export function EdgeAgentConsole() {
           ? {
               id: "portfolio-index",
               title: "Índice de projetos do MCP",
-              text: result.projects.map((project) => `${project.title} (${project.codename}, ${project.category})`).join("; "),
+              text: result.projects.map((project) => `${project.title} (${project.sourceLabel}, ${project.category})`).join("; "),
             }
           : { id: resolvedSystemId, title: `${result?.project?.title ?? SYSTEM_LABEL[resolvedSystemId]} · ficha MCP`, text: JSON.stringify(result?.project ?? {}) };
         const evidenceForAnswer: PortfolioAnswerEvidence[] = [

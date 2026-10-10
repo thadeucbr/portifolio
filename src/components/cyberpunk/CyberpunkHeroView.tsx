@@ -1,20 +1,7 @@
 "use client";
 
 import React from "react";
-import { PROFILE_DATA } from "@/data/systems";
-import { 
-  ShieldAlert, 
-  Cpu, 
-  Terminal, 
-  Layers, 
-  Zap, 
-  Radio, 
-  Sparkles, 
-  ChevronRight,
-  Activity,
-  AlertTriangle,
-  Lock
-} from "lucide-react";
+import { ShieldAlert, Zap, ChevronRight, Activity } from "lucide-react";
 
 interface CyberpunkHeroProps {
   onLaunchGrid: () => void;
@@ -29,24 +16,10 @@ export function CyberpunkHeroView({
 }: CyberpunkHeroProps) {
   return (
     <div className="relative w-full h-full flex flex-col justify-between p-4 sm:p-10 animate-in fade-in duration-500">
-      {/* HUD Top Bar: Telemetria de Mainframe */}
-      <div className="flex items-center justify-between pb-3 border-b border-white/10 font-mono text-xs">
         <div className="flex items-center gap-3">
-          <div className="px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-bold tracking-wider cyber-corner flex items-center gap-1.5">
-            <Radio className="w-3 h-3 animate-pulse text-amber-400" />
-            <span>NIGHT_CITY_NET // BANCO SAFRA ARCHITECTURE NODE</span>
-          </div>
-          <span className="text-white/40 hidden md:inline">ID: TR-8942-SR</span>
+          <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 font-mono text-xs text-[#38BDF8]">DEMONSTRAÇÃO VISUAL · RESUMO CURRICULAR</span>
+          <span className="hidden font-mono text-[10px] text-white/45 md:inline">INTERAÇÕES LOCAIS · SEM CONEXÃO A SISTEMAS INTERNOS</span>
         </div>
-
-        <div className="flex items-center gap-4 text-[11px]">
-          <span className="text-white/60">SYS_PROTOCOL: <strong className="text-white">ZERO_TRUST_v3</strong></span>
-          <span className="text-white/40">•</span>
-          <span className="text-[#07CA6B]">ENCRYPTION: <strong className="text-[#07CA6B]">Ed25519</strong></span>
-          <span className="text-white/40">•</span>
-          <span className="text-[#38BDF8]">NODE_LATENCY: <strong className="text-white">&lt; 45ms</strong></span>
-        </div>
-      </div>
 
       {/* Bloco Central Hero Estilo Terminal Cyberpunk 2077 */}
       <div className="max-w-4xl my-auto py-6">

@@ -256,7 +256,7 @@ export function ChaosCollisionChamber() {
               {/* Header do Card com Tag e Drag Handler */}
               <div className="flex items-center justify-between mb-3 pointer-events-none">
                 <span className="font-mono text-[9px] px-2 py-0.5 rounded-full bg-[#1856FF]/20 text-[#38BDF8] border border-[#1856FF]/30 uppercase font-semibold">
-                  {system.codename}
+                  {system.sourceLabel}
                 </span>
                 <span className="font-mono text-[9px] text-white/50">
                   {system.organization}
@@ -273,16 +273,14 @@ export function ChaosCollisionChamber() {
                 {system.summary}
               </p>
 
-              {/* Métricas Rápidas */}
-              <div className="grid grid-cols-2 gap-2 p-2 rounded-xl bg-black/40 border border-white/[0.06] mb-3 pointer-events-none font-mono text-[10px]">
-                <div>
-                  <span className="text-white/50 text-[9px]">LATÊNCIA:</span>
-                  <div className="font-bold text-white">{system.metrics[0]?.value}</div>
-                </div>
-                <div>
-                  <span className="text-white/50 text-[9px]">SEGURANÇA:</span>
-                  <div className="font-bold text-[#07CA6B]">Zero Trust</div>
-                </div>
+              {/* Fatos curriculares selecionados */}
+              <div className="grid grid-cols-2 gap-2 rounded-xl border border-white/[0.06] bg-black/40 p-2 font-mono text-[10px]">
+                {[system.facts[0], system.facts[1]].filter(Boolean).map((fact) => (
+                  <div key={fact.label}>
+                    <span className="text-[9px] text-white/50">{fact.label.toUpperCase()}:</span>
+                    <div className="font-bold text-white">{fact.value}</div>
+                  </div>
+                ))}
               </div>
 
               {/* Footer do Card com Botão de Inspeção */}
@@ -308,9 +306,7 @@ export function ChaosCollisionChamber() {
 
       {/* Dica de Interatividade no Rodapé */}
       <div className="relative z-20 text-center pointer-events-none">
-        <span className="glass-panel-subtle px-4 py-1.5 rounded-full text-[11px] font-mono text-white/60 border border-white/10">
-          ✦ Clique e arremesse qualquer cartão pelo espaço • Use o botão &quot;Alinhar Matriz&quot; para estabilizar
-        </span>
+        <span className="glass-panel-subtle px-4 py-1.5 rounded-full text-[11px] font-mono text-white/60 border border-white/10">Resumo interativo baseado no CV · não representa telemetria ou topologia interna</span>
       </div>
 
       {/* Modal de Detalhe Holográfico Completo */}
@@ -353,7 +349,7 @@ export function ChaosCollisionChamber() {
 
             <div className="pt-4 border-t border-white/10 flex items-center justify-between">
               <span className="text-xs font-mono text-[#07CA6B]">
-                Produção: {expandedSystem.organization}
+                <span className="text-xs font-mono text-[#07CA6B]">Contexto: {expandedSystem.organization}</span>
               </span>
               <button
                 onClick={() => setExpandedSystem(null)}

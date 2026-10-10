@@ -6,7 +6,7 @@ const evidenceStatus = "static-portfolio-content";
 
 const projectSummarySchema = z.object({
   id: z.string(),
-  codename: z.string(),
+  sourceLabel: z.string(),
   title: z.string(),
   category: z.string(),
   period: z.string(),
@@ -16,7 +16,7 @@ const projectSummarySchema = z.object({
 const projectDetailsSchema = projectSummarySchema.extend({
   architectureHighlights: z.array(z.string()),
   stack: z.array(z.string()),
-  metrics: z.array(z.object({ label: z.string(), value: z.string() })),
+  facts: z.array(z.object({ label: z.string(), value: z.string() })),
   executionFlow: z.array(z.object({
     step: z.string(),
     title: z.string(),
@@ -69,8 +69,8 @@ export function createPortfolioMcpServer(systems, submitContact = async () => ({
       }),
     },
     async () => {
-      const projects = systems.map(({ id, codename, title, category, period, summary }) => ({
-        id, codename, title, category, period, summary,
+      const projects = systems.map(({ id, sourceLabel, title, category, period, summary }) => ({
+        id, sourceLabel, title, category, period, summary,
       }));
       const structuredContent = { projects, evidenceStatus };
       return {
@@ -102,14 +102,14 @@ export function createPortfolioMcpServer(systems, submitContact = async () => ({
 
       const project = {
         id: source.id,
-        codename: source.codename,
+        sourceLabel: source.sourceLabel,
         title: source.title,
         category: source.category,
         period: source.period,
         summary: source.summary,
         architectureHighlights: source.architectureHighlights,
         stack: source.stack,
-        metrics: source.metrics,
+        facts: source.facts,
         executionFlow: source.executionFlow.map(({ step, title, description, tech }) => ({
           step, title, description, tech,
         })),

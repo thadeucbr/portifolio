@@ -13,14 +13,14 @@ import {
 const fixture = [
   {
     id: "broker-1",
-    codename: "BROKER-ONE",
+    sourceLabel: "RESUMO CURRICULAR",
     title: "Broker de Mensageria",
     category: "Platform Architecture",
     period: "2026",
     summary: "Roteia mensagens por um buffer desacoplado.",
     architectureHighlights: ["Idempotência", "Circuit breaker"],
     stack: ["TypeScript", "Redis"],
-    metrics: [{ label: "Latência declarada", value: "< 45ms" }],
+    facts: [{ label: "Canais descritos", value: "WhatsApp · Telegram" }],
     executionFlow: [{ step: "INGRESS", title: "Entrada", description: "Normaliza payload", tech: "HTTP" }],
     failureHandling: "Retém eventos em fila de retentativa.",
   },
@@ -73,6 +73,10 @@ test("returns curated project details as structured MCP content", async () => {
     assert.notEqual(result.isError, true);
     assert.equal(result.structuredContent.project.id, "broker-1");
     assert.equal(result.structuredContent.project.title, "Broker de Mensageria");
+    assert.equal(result.structuredContent.project.sourceLabel, "RESUMO CURRICULAR");
+    assert.deepEqual(result.structuredContent.project.facts, [{ label: "Canais descritos", value: "WhatsApp · Telegram" }]);
+    assert.equal("codename" in result.structuredContent.project, false);
+    assert.equal("metrics" in result.structuredContent.project, false);
     assert.equal(result.structuredContent.evidenceStatus, "static-portfolio-content");
   });
 });
@@ -92,7 +96,7 @@ test("rejects unknown project identifiers without returning unrelated records", 
     const result = await client.callTool({ name: "portfolio_get_project", arguments: { projectId: "missing-secret" } });
     assert.equal(result.isError, true);
     assert.match(result.content[0].text, /not found/i);
-    assert.doesNotMatch(JSON.stringify(result), /BROKER-ONE|Redis/);
+    assert.doesNotMatch(JSON.stringify(result), /RESUMO CURRICULAR|Redis/);
   });
 });
 
@@ -112,7 +116,7 @@ test("AI SDK MCP client negotiates the route and invokes the pinned tool", async
     const listed = await client.listTools();
     assert.deepEqual(verifyPortfolioToolManifest(listed.tools), { ok: true });
     const result = await client.callTool({ name: "portfolio_get_project", arguments: { projectId: "broker-1" } });
-    assert.equal(result.structuredContent.project.codename, "BROKER-ONE");
+    assert.equal(result.structuredContent.project.sourceLabel, "RESUMO CURRICULAR");
   } finally {
     await client.close();
     await handler.close();

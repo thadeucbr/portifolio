@@ -11,7 +11,7 @@ import type { PortfolioContactResult, PortfolioMcpTool } from "@/hooks/usePortfo
 
 interface McpProjectResult {
   project?: (typeof SYSTEMS_DATA)[number];
-  projects?: Array<Pick<(typeof SYSTEMS_DATA)[number], "id" | "codename" | "title" | "category" | "period" | "summary">>;
+  projects?: Array<Pick<(typeof SYSTEMS_DATA)[number], "id" | "sourceLabel" | "title" | "category" | "period" | "summary">>;
   contact?: PortfolioContactResult;
   evidenceStatus?: string;
 }
@@ -111,7 +111,7 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence, source = 
                       <span className="text-[11px] font-semibold text-white">{project.title}</span>
                       <span className="font-mono text-[8px] text-white/40">{project.period}</span>
                     </div>
-                    <span className="font-mono text-[9px] text-[#38BDF8]/80">{project.codename} · {project.category}</span>
+                    <span className="font-mono text-[9px] text-[#38BDF8]/80">{project.sourceLabel} · {project.category}</span>
                     <p className="mt-1 text-[10px] leading-relaxed text-white/55">{project.summary}</p>
                   </li>
                 ))}
@@ -146,7 +146,7 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence, source = 
           {system && systemId !== "edge-mcp-hub" && (
             <>
               <div className="grid grid-cols-3 gap-2 text-center font-mono">
-                {system.metrics.slice(0, 3).map((m) => (
+                {system.facts.slice(0, 3).map((m) => (
                   <div key={m.label} className="p-2 rounded-lg bg-white/[0.06] border border-white/10">
                     <div className="text-[9px] text-white/45 uppercase">{m.label}</div>
                     <div className="text-[#38BDF8] font-bold text-xs mt-0.5">{m.value}</div>

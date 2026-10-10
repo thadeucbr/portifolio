@@ -49,7 +49,7 @@ export function ModeKineticGrid() {
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="font-mono text-[10px] uppercase text-[#38BDF8] tracking-wider font-semibold">
-                    {sys.codename}
+                    {sys.sourceLabel}
                   </span>
                   <span className="font-mono text-[10px] text-white/50 px-2 py-0.5 rounded-full bg-white/[0.04]">
                     {sys.organization}
@@ -70,9 +70,9 @@ export function ModeKineticGrid() {
                 </p>
 
                 <div className="flex items-center gap-3 mt-3 pt-2 border-t border-white/[0.06] font-mono text-[10px] text-white/60">
-                  <span>{sys.metrics[0].label}: <strong className="text-white">{sys.metrics[0].value}</strong></span>
+                  <span>{sys.facts[0].label}: <strong className="text-white">{sys.facts[0].value}</strong></span>
                   <span>•</span>
-                  <span>{sys.metrics[1].label}: <strong className="text-white">{sys.metrics[1].value}</strong></span>
+                  <span>{sys.facts[1].label}: <strong className="text-white">{sys.facts[1].value}</strong></span>
                 </div>
               </div>
             );
@@ -126,7 +126,7 @@ export function ModeKineticGrid() {
                       : "text-white/60 hover:text-white"
                   }`}
                 >
-                  Telemetria
+                  Resumo CV
                 </button>
               </div>
             </div>
@@ -142,7 +142,7 @@ export function ModeKineticGrid() {
                   {/* Fluxograma Arquitetural Único e Específico do Sistema Selecionado */}
                   <div className="p-4 rounded-2xl bg-black/50 border border-white/10 space-y-3 font-mono text-xs">
                     <div className="flex items-center justify-between text-[10px] uppercase text-[#38BDF8] pb-1 border-b border-white/5 font-bold">
-                      <span>FLUXO DE REFERÊNCIA [{selectedSystem.codename}]:</span>
+                      <span>Visão conceitual · baseada no CV</span>
                       <span className="text-white/50">{selectedSystem.executionFlow.length} ESTÁGIOS</span>
                     </div>
 
@@ -175,7 +175,7 @@ export function ModeKineticGrid() {
                     {/* Tratamento de Falha do Sistema */}
                     <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 mt-3 text-[11px] text-amber-200/90 font-sans flex items-start gap-2">
                       <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                      <span><strong>Tolerância a Falhas:</strong> {selectedSystem.failureHandling}</span>
+                      <span><strong>Nota de escopo:</strong> {selectedSystem.failureHandling}</span>
                     </div>
                   </div>
                 </div>
@@ -203,10 +203,10 @@ export function ModeKineticGrid() {
               {activeTab === "telemetry" && (
                 <div className="space-y-4 font-mono">
                   <div className="text-[11px] text-[#38BDF8] uppercase">
-                    Indicadores cadastrados na ficha do projeto:
+                    Indicadores curriculares cadastrados na ficha (não são telemetria):
                   </div>
                   <div className="grid grid-cols-3 gap-3">
-                    {selectedSystem.metrics.map((m, i) => (
+                    {selectedSystem.facts.map((m, i) => (
                       <div key={i} className="p-4 rounded-xl bg-black/40 border border-white/10 text-center">
                         <div className="text-base font-bold text-white">{m.value}</div>
                         <div className="text-[10px] text-[#94A3B8] mt-1">{m.label}</div>
@@ -214,7 +214,7 @@ export function ModeKineticGrid() {
                     ))}
                   </div>
                   <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 text-xs text-[#94A3B8] font-sans">
-                    Estes valores são conteúdo estático da ficha; não representam telemetria ao vivo nem uma consulta ao sistema original.
+                    Estes fatos vêm do resumo curricular; não são telemetria ao vivo nem confirmação do ambiente interno.
                   </div>
                 </div>
               )}
