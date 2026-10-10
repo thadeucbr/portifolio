@@ -7,8 +7,8 @@ import { submitRecruiterSignal, type SignalState } from "@/app/actions";
 const initial: SignalState = { status: "idle" };
 
 /**
- * Consentimento de contato inspirado em Elicitation, implementado como Server Action local.
- * accept → valida e persiste no servidor; decline → encerra sem efeitos colaterais.
+ * Formulário progressivo de fallback via Server Action; não é uma chamada MCP Elicitation.
+ * accept → valida e persiste; decline/cancel → encerram sem efeitos colaterais.
  */
 export function ElicitationContactForm() {
   const [state, formAction, pending] = useActionState(submitRecruiterSignal, initial);
@@ -117,6 +117,16 @@ export function ElicitationContactForm() {
           className="px-3 py-1 rounded bg-white/10 text-white/70 hover:bg-white/20 cursor-pointer"
         >
           decline
+        </button>
+        <button
+          type="submit"
+          name="decision"
+          value="cancel"
+          formNoValidate
+          disabled={pending}
+          className="px-3 py-1 rounded border border-white/10 text-white/50 hover:bg-white/10 cursor-pointer"
+        >
+          cancel
         </button>
       </div>
     </form>

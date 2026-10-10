@@ -9,6 +9,14 @@ const tool = (name, description, properties = {}, required = []) => ({
   annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
 });
 
+const contact = {
+  ...tool(
+    "portfolio_request_contact",
+    "Open a consent elicitation for a contact request. This tool writes no data unless the visitor accepts.",
+  ),
+  annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+};
+
 const approved = [
   tool(
     "portfolio_list_projects",
@@ -20,6 +28,7 @@ const approved = [
     { projectId: { type: "string", minLength: 1, maxLength: 100 } },
     ["projectId"],
   ),
+  contact,
 ];
 
 test("accepts exactly the pinned read-only portfolio tool set", () => {

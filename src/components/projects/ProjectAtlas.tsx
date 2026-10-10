@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { startTransition, useMemo, useState, type CSSProperties } from "react";
 import { ArrowUpRight, Orbit, Workflow } from "lucide-react";
 import { SYSTEMS_DATA } from "@/data/systems";
 import { SemanticGravityField } from "@/components/console/SemanticGravityField";
 import { buildProjectGravityScores } from "./projectAtlasModel.mjs";
+import { projectTransitionName } from "./projectTransition.mjs";
 import type { FieldLayout } from "@/workers/fieldLayouts.mjs";
 
 const PROJECT_IDS = SYSTEMS_DATA.map((project) => project.id);
@@ -28,6 +29,9 @@ export function ProjectAtlas() {
     () => buildProjectGravityScores(SYSTEMS_DATA, selected.id),
     [selected.id],
   );
+  const selectProject = (projectId: string) => {
+    startTransition(() => setSelectedId(projectId));
+  };
 
   return (
     <div className="w-full min-h-[min(68vh,700px)] p-3 sm:p-6 flex flex-col gap-4 animate-in fade-in duration-500">
@@ -73,7 +77,7 @@ export function ProjectAtlas() {
           shape="card"
           layout={layout}
           cardInfo={PROJECT_CARD_INFO}
-          onSelect={setSelectedId}
+          onSelect={selectProject}
         />
       </div>
 
@@ -87,7 +91,12 @@ export function ProjectAtlas() {
               <span className="text-white/30">/</span>
               <span>{selected.period}</span>
             </div>
-            <h3 className="text-lg sm:text-2xl font-bold text-white mt-1">{selected.title}</h3>
+            <h3
+              style={{ viewTransitionName: projectTransitionName(selected.id) } as CSSProperties}
+              className="text-lg sm:text-2xl font-bold text-white mt-1"
+            >
+              {selected.title}
+            </h3>
             <p className="text-sm leading-relaxed text-[#CBD5E1] mt-2">{selected.summary}</p>
           </div>
 

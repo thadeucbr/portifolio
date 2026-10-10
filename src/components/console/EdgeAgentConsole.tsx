@@ -3,14 +3,17 @@
 import React, { useMemo, useRef, useEffect, useState } from "react";
 import { Bot, Send, Cpu, Loader2, AlertTriangle } from "lucide-react";
 import { useEdgeEmbeddings, type RankResult } from "@/hooks/useEdgeEmbeddings";
-import { usePortfolioMcp, type PortfolioMcpTool } from "@/hooks/usePortfolioMcp";
+import { usePortfolioMcp, type PortfolioContactResult, type PortfolioMcpTool } from "@/hooks/usePortfolioMcp";
 import { useLocalAssistant } from "@/hooks/useLocalAssistant";
 import { CONTACT_SYSTEM_ID, SYSTEM_TOOL, SYSTEM_LABEL } from "@/mcp/semanticEngine";
 import { buildPortfolioAnswerMessages, type PortfolioAnswerEvidence } from "@/mcp/answerPrompt.mjs";
+import { buildMcpToolRoutingMessages, parseMcpToolRoutingDecision, type McpToolRoutingDecision } from "@/mcp/toolRouting.mjs";
 import type { SystemProject } from "@/data/systems";
 import { GenerativeToolArtifact } from "./GenerativeToolArtifact";
 import { LocalModelPanel } from "./LocalModelPanel";
+import { LocalAsrPanel } from "./LocalAsrPanel";
 import { SemanticGravityField } from "./SemanticGravityField";
+import { McpContactElicitationDialog } from "./McpContactElicitationDialog";
 
 interface MessageItem {
   id: string;
@@ -22,9 +25,29 @@ interface MessageItem {
     evidence?: string;
     source: "mcp" | "local";
     definition?: PortfolioMcpTool;
-    result?: { project?: SystemProject; evidenceStatus?: string };
+    result?: {
+      project?: SystemProject;
+      projects?: PortfolioProjectSummary[];
+      contact?: PortfolioContactResult;
+      evidenceStatus?: string;
+    };
   };
-  meta?: { engine: RankResult["engine"]; ms: number; top: { id: string; score: number }[]; inferenceMs?: number };
+  meta?: {
+    engine: RankResult["engine"];
+    ms: number;
+    top: { id: string; score: number }[];
+    inferenceMs?: number;
+    routingMs?: number;
+    toolSelection?: string;
+  };
+}
+
+type PortfolioProjectSummary = Pick<SystemProject, "id" | "codename" | "title" | "category" | "period" | "summary">;
+
+interface ToolRoutingState {
+  decision: McpToolRoutingDecision | null;
+  attempted: true;
+  inferenceMs?: number;
 }
 
 const QUICK = [
@@ -36,7 +59,7 @@ const QUICK = [
 
 export function EdgeAgentConsole() {
   const { state, rank } = useEdgeEmbeddings();
-  const { state: mcpState, callTool } = usePortfolioMcp();
+  const { state: mcpState, callTool, requestContact, contactElicitation, respondToContactElicitation } = usePortfolioMcp();
   const { state: assistantState, loadModel, generate } = useLocalAssistant();
   const ids = useMemo(() => Object.keys(SYSTEM_TOOL), []);
   const [input, setInput] = useState("");
@@ -48,7 +71,7 @@ export function EdgeAgentConsole() {
       id: "boot",
       role: "agent",
       content:
-        "Pergunte em linguagem natural. Embeddings e, se você ativar, o Qwen3.5 ficam neste navegador. A busca escolhe a ficha; o MCP read-only recebe somente o ID do projeto. Sem baixar o LLM, você ainda pode abrir fichas e evidências estáticas.",
+        "Pergunte em linguagem natural. Embeddings e o Qwen3.5 opt-in ficam neste navegador. Com o modelo ativo, ele escolhe entre tools MCP read-only verificadas; contato é uma ação MCP separada que exige Elicitation accept/decline/cancel. Perguntas e evidências não seguem ao servidor; somente IDs de projeto, nenhum argumento de listagem, ou os dados de contato que você aceitar enviar.",
     },
   ]);
   const endRef = useRef<HTMLDivElement>(null);
@@ -64,18 +87,42 @@ export function EdgeAgentConsole() {
     meta?: MessageItem["meta"],
     question?: string,
     retrievedEvidence?: PortfolioAnswerEvidence[],
+    routing?: ToolRoutingState,
   ) => {
-    const toolName = SYSTEM_TOOL[systemId];
+    const toolName = routing?.decision?.name ?? SYSTEM_TOOL[systemId];
     if (!toolName) return;
 
     if (systemId === CONTACT_SYSTEM_ID) {
-      setMessages((prev) => [...prev, {
-        id: `a-${Date.now()}`,
-        role: "agent",
-        content: prefix ?? "A solicitação de contato exige consentimento explícito.",
-        tool: { name: toolName, systemId, evidence, source: "local" },
-        meta,
-      }]);
+      setBusy(true);
+      try {
+        if (mcpState.phase !== "ready") throw new Error("Servidor MCP indisponível para solicitar contato.");
+        const definition = mcpState.tools.find((tool) => tool.name === "portfolio_request_contact");
+        if (!definition) throw new Error("A ferramenta MCP de contato não está aprovada.");
+        const contact = await requestContact();
+        setMessages((prev) => [...prev, {
+          id: `a-${Date.now()}`,
+          role: "agent",
+          content: contact.message,
+          tool: {
+            name: "portfolio_request_contact",
+            systemId,
+            evidence,
+            source: "mcp",
+            definition,
+            result: { contact },
+          },
+          meta,
+        }]);
+      } catch (error) {
+        setMessages((prev) => [...prev, {
+          id: `a-${Date.now()}`,
+          role: "agent",
+          content: `A solicitação MCP de contato falhou: ${error instanceof Error ? error.message : "erro desconhecido"}.`,
+          meta,
+        }]);
+      } finally {
+        setBusy(false);
+      }
       return;
     }
 
@@ -102,24 +149,52 @@ export function EdgeAgentConsole() {
 
     setBusy(true);
     try {
-      const response = await callTool(toolName, { projectId: systemId });
-      if (response.isError) throw new Error("MCP server rejected the project lookup.");
+      const toolArguments: Record<string, unknown> = routing?.decision?.arguments ?? { projectId: systemId };
+      const response = await callTool(toolName, toolArguments);
+      if (response.isError) throw new Error("MCP server rejected the request.");
       const result = response.structuredContent as NonNullable<MessageItem["tool"]>["result"];
-      const project = result?.project;
-      if (!project || project.id !== systemId) throw new Error("MCP result did not match the requested project.");
+      let resolvedSystemId = systemId;
+      if (toolName === "portfolio_get_project") {
+        const requestedProjectId = typeof toolArguments.projectId === "string" ? toolArguments.projectId : "";
+        if (!requestedProjectId || result?.project?.id !== requestedProjectId) {
+          throw new Error("MCP result did not match the approved project ID.");
+        }
+        resolvedSystemId = requestedProjectId;
+        setTopId(resolvedSystemId);
+      } else if (toolName === "portfolio_list_projects") {
+        if (!Array.isArray(result?.projects)) throw new Error("MCP did not return a project list.");
+      } else {
+        throw new Error("The selected MCP tool is outside the local allowlist.");
+      }
       const messageId = `a-${Date.now()}`;
       const shouldGenerate = assistantState.phase === "ready" && Boolean(question?.trim());
+      const responseMeta = meta ? {
+        ...meta,
+        toolSelection: routing?.decision
+          ? `Qwen3.5 → ${toolName}`
+          : routing?.attempted
+            ? "fallback semântico (plano recusado)"
+            : "busca semântica",
+        routingMs: routing?.inferenceMs,
+      } : meta;
       setMessages((prev) => [...prev, {
         id: messageId,
         role: "agent",
-        content: shouldGenerate ? "Gerando resposta local com fontes…" : prefix ?? `Ficha recebida via MCP: ${SYSTEM_LABEL[systemId]}.`,
-        tool: { name: toolName, systemId, evidence, source: "mcp", definition, result },
-        meta,
+        content: shouldGenerate ? "Gerando resposta local com fontes…" : prefix ?? `Ficha recebida via MCP: ${SYSTEM_LABEL[resolvedSystemId]}.`,
+        tool: { name: toolName, systemId: resolvedSystemId, evidence, source: "mcp", definition, result },
+        meta: responseMeta,
       }]);
       if (shouldGenerate && question) {
+        const primaryEvidence: PortfolioAnswerEvidence = result?.projects
+          ? {
+              id: "portfolio-index",
+              title: "Índice de projetos do MCP",
+              text: result.projects.map((project) => `${project.title} (${project.codename}, ${project.category})`).join("; "),
+            }
+          : { id: resolvedSystemId, title: `${result?.project?.title ?? SYSTEM_LABEL[resolvedSystemId]} · ficha MCP`, text: JSON.stringify(result?.project ?? {}) };
         const evidenceForAnswer: PortfolioAnswerEvidence[] = [
-          { id: systemId, title: `${project.title} · ficha MCP`, text: JSON.stringify(project) },
-          ...(retrievedEvidence ?? []).filter((source) => source.id !== systemId),
+          primaryEvidence,
+          ...(retrievedEvidence ?? []).filter((source) => source.id !== primaryEvidence.id && source.id !== resolvedSystemId),
         ].slice(0, 3);
         try {
           const completion = await generate(buildPortfolioAnswerMessages(question, evidenceForAnswer), (text) => {
@@ -169,7 +244,37 @@ export function EdgeAgentConsole() {
           title: SYSTEM_LABEL[item.systemId] ?? item.systemId,
           text: item.bestChunk ?? "",
         }));
-        await invoke(top.systemId, top.bestChunk, `Maior similaridade: ${SYSTEM_LABEL[top.systemId]}.`, meta, text, retrievedEvidence);
+        const routingCandidates = r.ranking.slice(0, 3).map((item) => ({
+          id: item.systemId,
+          title: SYSTEM_LABEL[item.systemId] ?? item.systemId,
+        }));
+        let routing: ToolRoutingState | undefined;
+        if (assistantState.phase === "ready" && mcpState.phase === "ready" && top.systemId !== CONTACT_SYSTEM_ID) {
+          try {
+            const routingCompletion = await generate(buildMcpToolRoutingMessages(
+              text,
+              routingCandidates,
+              mcpState.tools,
+            ));
+            routing = {
+              decision: parseMcpToolRoutingDecision(
+                routingCompletion.answer,
+                mcpState.tools,
+                routingCandidates.map(({ id }) => id),
+              ),
+              attempted: true,
+              inferenceMs: routingCompletion.inferenceMs,
+            };
+          } catch {
+            routing = { decision: null, attempted: true };
+          }
+        }
+        const prefix = routing?.decision
+          ? `Qwen3.5 selecionou ${routing.decision.name}; o plano passou pela allowlist read-only.`
+          : routing?.attempted
+            ? `O roteamento local não passou pela allowlist; fallback seguro para ${SYSTEM_LABEL[top.systemId]}.`
+            : `Maior similaridade: ${SYSTEM_LABEL[top.systemId]}.`;
+        await invoke(top.systemId, top.bestChunk, prefix, meta, text, retrievedEvidence, routing);
       } else {
         setMessages((p) => [
           ...p,
@@ -237,6 +342,7 @@ export function EdgeAgentConsole() {
 
       <SemanticGravityField ids={ids} scores={scores} topId={topId} onSelect={(id) => invoke(id)} />
       <LocalModelPanel state={assistantState} onLoad={loadModel} />
+      <LocalAsrPanel onTranscript={setInput} />
 
       <div className="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
         {messages.map((m) => (
@@ -254,6 +360,8 @@ export function EdgeAgentConsole() {
                   {m.meta.engine === "neural" ? "embeddings neurais" : "fallback léxico (modelo ainda carregando)"} ·{" "}
                   {m.meta.ms.toFixed(1)} ms · {m.meta.top.map((t) => `${SYSTEM_LABEL[t.id]} ${t.score.toFixed(3)}`).join(" | ")}
                   {m.meta.inferenceMs !== undefined ? ` · Qwen3.5 ${m.meta.inferenceMs.toFixed(0)} ms` : ""}
+                  {m.meta.routingMs !== undefined ? ` · roteamento ${m.meta.routingMs.toFixed(0)} ms` : ""}
+                  {m.meta.toolSelection ? ` · ${m.meta.toolSelection}` : ""}
                 </div>
               )}
               {m.tool && (
@@ -310,6 +418,12 @@ export function EdgeAgentConsole() {
           <Send className="w-4 h-4" />
         </button>
       </form>
+      {contactElicitation && (
+        <McpContactElicitationDialog
+          message={contactElicitation}
+          onRespond={respondToContactElicitation}
+        />
+      )}
     </div>
   );
 }

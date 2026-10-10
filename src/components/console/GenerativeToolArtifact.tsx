@@ -6,11 +6,13 @@ import { LOCAL_ACTIONS } from "@/mcp/registry";
 import type { LocalActionDefinition } from "@/mcp/registry";
 import { SYSTEMS_DATA } from "@/data/systems";
 import { useEdgeEmbeddings } from "@/hooks/useEdgeEmbeddings";
-import { ElicitationContactForm } from "./ElicitationContactForm";
-import type { PortfolioMcpTool } from "@/hooks/usePortfolioMcp";
+import { ProjectFlowDiagram } from "@/components/projects/ProjectFlowDiagram";
+import type { PortfolioContactResult, PortfolioMcpTool } from "@/hooks/usePortfolioMcp";
 
 interface McpProjectResult {
   project?: (typeof SYSTEMS_DATA)[number];
+  projects?: Array<Pick<(typeof SYSTEMS_DATA)[number], "id" | "codename" | "title" | "category" | "period" | "summary">>;
+  contact?: PortfolioContactResult;
   evidenceStatus?: string;
 }
 
@@ -24,10 +26,7 @@ interface GenerativeToolArtifactProps {
   serverResult?: McpProjectResult;
 }
 
-/**
- * A busca semântica seleciona um artefato. Projeto e schema podem vir do MCP real;
- * não há resposta gerada por LLM nesta etapa.
- */
+/** Shows real MCP results; contact submission is separate and consent-gated. */
 export function GenerativeToolArtifact({ toolName, systemId, evidence, source = "local", serverTool, serverResult }: GenerativeToolArtifactProps) {
   const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState<"ui" | "contract">("ui");
@@ -35,7 +34,7 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence, source = 
 
   const localTool: LocalActionDefinition | undefined = LOCAL_ACTIONS[toolName];
   const tool = serverTool ?? localTool;
-  const system = serverResult?.project ?? SYSTEMS_DATA.find((s) => s.id === systemId);
+  const system = serverResult?.project ?? (toolName === "portfolio_get_project" ? SYSTEMS_DATA.find((s) => s.id === systemId) : undefined);
   if (!tool) return null;
 
   const copy = () => {
@@ -92,9 +91,35 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence, source = 
             </div>
           )}
 
-          {toolName === "requestExecutiveContact" && <ElicitationContactForm />}
+          {toolName === "portfolio_request_contact" && serverResult?.contact && (
+            <div className={`rounded-lg border p-3 ${serverResult.contact.status === "accepted" ? "border-[#07CA6B]/30 bg-[#07CA6B]/[0.06]" : "border-white/15 bg-black/20"}`}>
+              <span className="font-mono text-[9px] uppercase text-white/45">RESULTADO DA ELICITATION</span>
+              <p className="mt-1 text-xs text-white/85">{serverResult.contact.message}</p>
+              {serverResult.contact.receiptId && (
+                <span className="mt-2 block font-mono text-[9px] text-[#07CA6B]">recibo · {serverResult.contact.receiptId}</span>
+              )}
+            </div>
+          )}
 
-          {systemId === "edge-mcp-hub" && (
+          {toolName === "portfolio_list_projects" && serverResult?.projects && (
+            <div className="space-y-2" aria-label="Projetos retornados pelo servidor MCP">
+              <span className="font-mono text-[9px] uppercase text-[#38BDF8]">Índice estático retornado pelo servidor MCP</span>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {serverResult.projects.map((project) => (
+                  <li key={project.id} className="rounded-lg border border-white/10 bg-white/[0.04] p-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-semibold text-white">{project.title}</span>
+                      <span className="font-mono text-[8px] text-white/40">{project.period}</span>
+                    </div>
+                    <span className="font-mono text-[9px] text-[#38BDF8]/80">{project.codename} · {project.category}</span>
+                    <p className="mt-1 text-[10px] leading-relaxed text-white/55">{project.summary}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {systemId === "edge-mcp-hub" && toolName === "portfolio_get_project" && (
             <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
               {[
                 { icon: Layers, k: "modelo", v: rt?.model ?? "carregando…" },
@@ -129,16 +154,11 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence, source = 
                 ))}
               </div>
 
-              <ol className="flex flex-wrap items-center gap-1.5 font-mono text-[10px]">
-                {system.executionFlow.map((st, i) => (
-                  <li key={st.step} className="flex items-center gap-1.5">
-                    <span className="px-2 py-1 rounded bg-white/[0.06] border border-white/10 text-white/85" title={st.description}>
-                      <span className="text-white/40">{st.step}</span> {st.title}
-                    </span>
-                    {i < system.executionFlow.length - 1 && <span className="text-white/30">→</span>}
-                  </li>
-                ))}
-              </ol>
+              <ProjectFlowDiagram
+                key={system.id}
+                steps={system.executionFlow}
+                evidenceStatus={serverResult?.evidenceStatus ?? "static-portfolio-content"}
+              />
 
               <div className="text-[11px] text-white/70 p-2 rounded bg-[#EA2143]/[0.06] border border-[#EA2143]/20">
                 <span className="font-mono text-[9px] text-[#EA2143] block">FAILURE HANDLING</span>

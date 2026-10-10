@@ -1,13 +1,34 @@
+const READ_ONLY_ANNOTATIONS = Object.freeze({
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: false,
+});
+const CONTACT_ANNOTATIONS = Object.freeze({
+  readOnlyHint: false,
+  destructiveHint: true,
+  idempotentHint: false,
+  openWorldHint: false,
+});
+
 const APPROVED = Object.freeze({
   portfolio_list_projects: {
     description: "List public project summaries from the static portfolio profile. This tool does not query production systems.",
     properties: {},
     required: [],
+    annotations: READ_ONLY_ANNOTATIONS,
   },
   portfolio_get_project: {
     description: "Return a single project description from the public static portfolio profile; values are not live telemetry.",
     properties: { projectId: { type: "string", minLength: 1, maxLength: 100 } },
     required: ["projectId"],
+    annotations: READ_ONLY_ANNOTATIONS,
+  },
+  portfolio_request_contact: {
+    description: "Open a consent elicitation for a contact request. This tool writes no data unless the visitor accepts.",
+    properties: {},
+    required: [],
+    annotations: CONTACT_ANNOTATIONS,
   },
 });
 
@@ -34,13 +55,10 @@ export function verifyPortfolioToolManifest(tools) {
       return { ok: false, reason: `Tool definition changed: ${name} description drift.` };
     }
     const annotations = tool.annotations ?? {};
-    if (
-      annotations.readOnlyHint !== true ||
-      annotations.destructiveHint !== false ||
-      annotations.idempotentHint !== true ||
-      annotations.openWorldHint !== false
-    ) {
-      return { ok: false, reason: `Tool definition changed: ${name} safety annotations drift.` };
+    for (const [annotationName, expectedValue] of Object.entries(expected.annotations)) {
+      if (annotations[annotationName] !== expectedValue) {
+        return { ok: false, reason: `Tool definition changed: ${name} safety annotations drift.` };
+      }
     }
 
     const properties = tool.inputSchema?.properties ?? {};

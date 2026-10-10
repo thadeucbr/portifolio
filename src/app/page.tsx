@@ -3,6 +3,7 @@ import { Mail } from "lucide-react";
 import { PROFILE_DATA } from "@/data/systems";
 import { SynapticNeuralMesh } from "@/components/neural/SynapticNeuralMesh";
 import { StageShell } from "@/components/stage/StageShell";
+import { ElicitationContactForm } from "@/components/console/ElicitationContactForm";
 
 export const metadata: Metadata = {
   title: "Thadeu Ramos | Senior Software Engineer & AI Systems Architect",
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 /** Server-rendered page shell; only the interactive canvas and stage are client islands. */
 export default function Home() {
   return (
-    <main className="relative min-h-dvh w-full overflow-x-hidden bg-[#060810] text-[#F8FAFC] font-sans flex flex-col">
+    <main className="relative min-h-dvh w-full overflow-x-hidden bg-[#060810] text-[#FFFFFF] font-sans flex flex-col">
       <div aria-hidden="true" className="ambient-glow-primary top-10 -left-20 opacity-20" />
       <div aria-hidden="true" className="ambient-glow-secondary top-40 right-0 opacity-25" />
       <div aria-hidden="true" className="ambient-glow-primary bottom-10 right-1/4 opacity-20" />
@@ -51,6 +52,12 @@ export default function Home() {
       </header>
 
       <StageShell />
+      <noscript>
+        <section className="relative z-50 mx-auto w-full max-w-2xl px-4 pb-8" aria-label="Contato acessível sem JavaScript">
+          <h2 className="mb-3 text-lg font-semibold text-white">Contato sem JavaScript</h2>
+          <ElicitationContactForm />
+        </section>
+      </noscript>
     </main>
   );
 }

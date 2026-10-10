@@ -1,11 +1,12 @@
 /// <reference lib="webworker" />
 // Guideline linhas 46-48, 51-53, 109-120: WebGPURenderer (fallback automático p/ WebGL2),
 // materiais em TSL, Bloom em TSL via RenderPipeline e todo o loop isolado num Web Worker
-// com OffscreenCanvas — a Main Thread pode travar inferindo e o fundo continua a 60fps.
+// e Web Workers isolam o loop de renderização via OffscreenCanvas; o FPS deve ser medido por dispositivo/browser.
 
 import * as THREE from "three/webgpu";
 import { float, pass, smoothstep, uniform, uv, vec3 } from "three/tsl";
 import { bloom } from "three/addons/tsl/display/BloomNode.js";
+import { createGlowSpriteCache, glowSpriteCacheKey } from "./glowSpriteCache.mjs";
 
 export type MeshIn =
   | { type: "init"; canvas: OffscreenCanvas; width: number; height: number; dpr: number; reducedMotion: boolean }
@@ -41,13 +42,58 @@ function glowMaterial(core: number) {
   return m;
 }
 
-/** Orbe de luz ambiente (light leak) no Z mais profundo — linha 8 do guideline. */
+const bakedGlowSpriteCache = createGlowSpriteCache(
+  (size) => new OffscreenCanvas(size, size),
+  (canvas, { color, size, shadowBlur, opacity }) => {
+    if (typeof color !== "number") return;
+    const context = canvas.getContext("2d", { alpha: true, desynchronized: true, willReadFrequently: false });
+    if (!context) return;
+    const rgba = (alpha: number) => `rgba(${(color >> 16) & 255}, ${(color >> 8) & 255}, ${color & 255}, ${Math.max(0, Math.min(1, alpha))})`;
+    const center = size / 2;
+
+    // Bake the expensive diffuse shadow and radial glow once in an isolated 2D buffer.
+    context.shadowColor = rgba(opacity * 0.45);
+    context.shadowBlur = shadowBlur;
+    context.fillStyle = rgba(opacity * 0.35);
+    context.beginPath();
+    context.arc(center, center, size * 0.2, 0, Math.PI * 2);
+    context.fill();
+    context.shadowBlur = 0;
+
+    const gradient = context.createRadialGradient(center, center, 0, center, center, size * 0.5);
+    gradient.addColorStop(0, `rgba(255, 255, 255, ${opacity * 0.4})`);
+    gradient.addColorStop(0.16, rgba(opacity));
+    gradient.addColorStop(0.55, rgba(opacity * 0.6));
+    gradient.addColorStop(1, rgba(0));
+    context.fillStyle = gradient;
+    context.beginPath();
+    context.arc(center, center, size * 0.5, 0, Math.PI * 2);
+    context.fill();
+  },
+);
+const glowSpriteTextures = new Map<string, THREE.CanvasTexture<OffscreenCanvas>>();
+
+/** Reuses a cached, pre-baked sprite for each ambient light-leak material. */
 function orb(hex: number, size: number, x: number, y: number) {
-  const m = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
-  const d = uv().sub(0.5).length().mul(2);
-  m.colorNode = vec3(new THREE.Color(hex).r, new THREE.Color(hex).g, new THREE.Color(hex).b);
-  m.opacityNode = smoothstep(float(1), float(0), d).pow(3).mul(0.35);
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(size, size), m);
+  const spriteParams = { color: hex, size: 512, shadowBlur: 44, opacity: 0.35 };
+  const cacheKey = glowSpriteCacheKey(spriteParams);
+  let texture = glowSpriteTextures.get(cacheKey);
+  if (!texture) {
+    const createdTexture = new THREE.CanvasTexture<OffscreenCanvas>(bakedGlowSpriteCache(spriteParams));
+    createdTexture.colorSpace = THREE.SRGBColorSpace;
+    createdTexture.needsUpdate = true;
+    glowSpriteTextures.set(cacheKey, createdTexture);
+    texture = createdTexture;
+  }
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    opacity: 1,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    toneMapped: false,
+  });
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(size, size), material);
   mesh.position.set(x, y, -220);
   return mesh;
 }

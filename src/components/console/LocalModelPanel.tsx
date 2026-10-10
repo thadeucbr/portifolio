@@ -21,7 +21,7 @@ export function LocalModelPanel({ state, onLoad }: { state: LocalAssistantSnapsh
           <div className="min-w-0">
             <div className="text-[10px] font-semibold tracking-wide text-violet-200">RESPOSTAS LOCAIS · QWEN3.5 0.8B</div>
             <p className="text-[9px] leading-relaxed text-white/50">
-              Opt-in: ~437 MB (WebGPU q4f16) ou ~485 MB (WASM q4), mais tokenizer. Pergunta e evidências ficam no navegador; só o ID do projeto segue ao MCP read-only.
+              Opt-in: ~437 MB (WebGPU q4f16) ou ~485 MB (WASM q4), mais tokenizer. Pergunta/evidências ficam no navegador; consulta de projetos envia só ID ou argumentos vazios. Contato é uma ferramenta separada e só envia campos após Accept explícito.
               {" "}
               <a href={MODEL_URL} target="_blank" rel="noreferrer" className="underline decoration-white/30 hover:text-white/80">modelo Apache-2.0</a>
             </p>

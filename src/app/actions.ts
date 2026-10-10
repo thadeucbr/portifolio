@@ -6,6 +6,7 @@
 import { appendFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { PROFILE_DATA } from "@/data/systems";
+import { classifyContactDecision } from "./contactDecision.mjs";
 
 export interface SignalState {
   status: "idle" | "error" | "accepted";
@@ -28,11 +29,17 @@ export async function submitRecruiterSignal(_prev: SignalState, formData: FormDa
   const email = String(formData.get("email") ?? "").trim().toLowerCase().slice(0, 200);
   const company = String(formData.get("company") ?? "").trim().slice(0, 120);
   const intent = String(formData.get("intent") ?? "");
-  const decision = String(formData.get("decision") ?? "accept");
+  const decision = classifyContactDecision(String(formData.get("decision") ?? "accept"));
 
-  // Elicitation: decline/cancel são respostas válidas e encerram o fluxo sem efeitos colaterais.
+  // Decline/cancel/invalid decisions exit before validation or persistence.
   if (decision === "decline") {
     return { status: "idle", message: "Elicitation recusada. Nenhum dado foi enviado ou armazenado." };
+  }
+  if (decision === "cancel") {
+    return { status: "idle", message: "Elicitation cancelada. Nenhum dado foi enviado ou armazenado." };
+  }
+  if (decision !== "accept") {
+    return { status: "error", message: "Decisão de contato inválida." };
   }
 
   const fieldErrors: SignalState["fieldErrors"] = {};

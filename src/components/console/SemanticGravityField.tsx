@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import type { FieldIn, FieldOut } from "@/workers/semanticField.worker";
 import { createThrowImpulse, type FieldLayout, type FieldShape } from "@/workers/fieldLayouts.mjs";
 import { SYSTEM_LABEL } from "@/mcp/semanticEngine";
+import { projectTransitionName } from "@/components/projects/projectTransition.mjs";
 
 interface Props {
   ids: string[];
@@ -222,6 +223,9 @@ export function SemanticGravityField({
         const isTop = id === topId;
         const label = SYSTEM_LABEL[id] ?? id;
         const info = cardInfo?.[id];
+        const transitionStyle = shape === "card" && !isTop
+          ? { viewTransitionName: projectTransitionName(id) } as React.CSSProperties
+          : undefined;
         return (
           <button
             key={id}
@@ -243,6 +247,7 @@ export function SemanticGravityField({
               ? `${info?.title ?? label}${info?.subtitle ? `, ${info.subtitle}` : ""}${score !== undefined ? `, relevância ${score.toFixed(2)}` : ""}. Arraste para mover e solte para arremessar.`
               : `${label}${score !== undefined ? `, relevância ${score.toFixed(2)}` : ""}`}
             aria-keyshortcuts={shape === "card" ? "ArrowLeft ArrowRight ArrowUp ArrowDown" : undefined}
+            style={transitionStyle}
             className={shape === "card"
               ? `absolute left-0 top-0 w-44 h-16 px-3 py-2 rounded-xl text-left border backdrop-blur-md cursor-grab active:cursor-grabbing touch-none will-change-transform ${isTop ? "bg-[#1856FF]/90 border-[#38BDF8] text-white shadow-[0_0_24px_rgba(24,86,255,0.45)]" : "bg-slate-950/90 border-white/20 text-white/85 shadow-xl hover:border-white/40"}`
               : `absolute left-0 top-0 px-2 py-1 rounded-full font-mono text-[10px] whitespace-nowrap border backdrop-blur-md cursor-pointer will-change-transform transition-colors ${isTop ? "bg-[#1856FF] border-[#38BDF8] text-white shadow-[0_0_18px_rgba(24,86,255,0.7)]" : "bg-white/[0.08] border-white/15 text-white/75 hover:text-white"}`

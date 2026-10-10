@@ -12,7 +12,7 @@ export const CONTACT_SYSTEM_ID = "executive-contact";
 /** Association between a retrieved project and its actual MCP tool; contact stays behind its consent action. */
 export const SYSTEM_TOOL: Record<string, string> = {
   ...Object.fromEntries(SYSTEMS_DATA.map((system) => [system.id, "portfolio_get_project"])),
-  [CONTACT_SYSTEM_ID]: "requestExecutiveContact",
+  [CONTACT_SYSTEM_ID]: "portfolio_request_contact",
 };
 
 export const SYSTEM_LABEL: Record<string, string> = {
