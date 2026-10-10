@@ -152,15 +152,21 @@ function extractAnswer(output: unknown) {
 async function runGeneration(requestId: string, messages: PortfolioChatMessage[]) {
   const model = activeModel;
   if (!model) throw new Error("Local model is not ready.");
+  const start = performance.now();
+  let firstTokenMs: number | undefined;
+  let generatedTokens = 0;
   const filter = createSafeAnswerStreamFilter((text) => post({ type: "token", requestId, text }));
   const streamer = new TextStreamer(model.pipeline.tokenizer, {
     skip_prompt: true,
     skip_special_tokens: true,
     callback_function: (text) => filter.push(text),
+    token_callback_function: (tokens) => {
+      generatedTokens += tokens.length;
+      if (firstTokenMs === undefined && tokens.length > 0) firstTokenMs = performance.now() - start;
+    },
   });
-  const start = performance.now();
   const output = await model.pipeline(messages, {
-    max_new_tokens: 96,
+    max_new_tokens: 64,
     do_sample: false,
     streamer,
     tokenizer_encode_kwargs: { enable_thinking: false },
@@ -171,6 +177,8 @@ async function runGeneration(requestId: string, messages: PortfolioChatMessage[]
   return {
     answer,
     inferenceMs: performance.now() - start,
+    firstTokenMs: firstTokenMs ?? performance.now() - start,
+    generatedTokens,
     model: MODEL_ID,
     revision: MODEL_REVISION,
     device: model.device,

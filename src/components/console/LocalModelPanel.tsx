@@ -70,6 +70,12 @@ export function LocalModelPanel({
           </div>
         </div>
       )}
+      {state.phase === "ready" && (
+        <p className={`mt-1 font-mono text-[9px] ${state.device === "wasm" ? "text-amber-200/80" : "text-white/45"}`}>
+          BACKEND ATIVO · {state.device?.toUpperCase() ?? "indisponível"}/{state.dtype ?? "?"}
+          {state.device === "wasm" ? " · CPU fallback, mais lento" : ""}
+        </p>
+      )}
       {state.phase === "error" && <p role="alert" className="mt-1 text-[9px] text-rose-300">{state.detail}</p>}
     </section>
   );

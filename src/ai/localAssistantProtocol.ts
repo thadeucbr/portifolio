@@ -28,6 +28,8 @@ export type LocalAssistantResponse =
       requestId: string;
       answer: string;
       inferenceMs: number;
+      firstTokenMs: number;
+      generatedTokens: number;
       model: string;
       revision: string;
       device: LocalAssistantDevice;
@@ -44,11 +46,15 @@ export interface LocalAssistantSnapshot {
   device?: LocalAssistantDevice;
   dtype?: LocalAssistantDtype;
   inferenceMs?: number;
+  firstTokenMs?: number;
+  generatedTokens?: number;
 }
 
 export interface LocalAssistantCompletion {
   answer: string;
   inferenceMs: number;
+  firstTokenMs: number;
+  generatedTokens: number;
   model: string;
   revision: string;
   device: LocalAssistantDevice;

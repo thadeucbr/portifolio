@@ -9,6 +9,7 @@ import { CONTACT_SYSTEM_ID, SYSTEM_TOOL, SYSTEM_LABEL } from "@/mcp/semanticEngi
 import { isExplicitContactRequest } from "@/mcp/contactIntent.mjs";
 import { buildPortfolioAnswerMessages, type PortfolioAnswerEvidence } from "@/mcp/answerPrompt.mjs";
 import type { SystemProject } from "@/data/systems";
+import type { LocalAssistantDevice, LocalAssistantDtype } from "@/ai/localAssistantProtocol";
 import { GenerativeToolArtifact } from "./GenerativeToolArtifact";
 import { LocalModelPanel } from "./LocalModelPanel";
 import { LocalAsrPanel } from "./LocalAsrPanel";
@@ -40,6 +41,11 @@ interface MessageItem {
     totalMs?: number;
     top: { id: string; score: number }[];
     inferenceMs?: number;
+    firstTokenMs?: number;
+    firstVisibleTokenMs?: number;
+    generatedTokens?: number;
+    assistantDevice?: LocalAssistantDevice;
+    assistantDtype?: LocalAssistantDtype;
     toolSelection?: string;
   };
 }
@@ -203,6 +209,7 @@ export function EdgeAgentConsole() {
           ...(retrievedEvidence ?? []).filter((source) => source.id !== primaryEvidence.id && source.id !== resolvedSystemId),
         ].slice(0, 3);
         const generationStartedAt = performance.now();
+        let firstVisibleTokenMs: number | undefined;
         let bufferedTokens = "";
         let tokenFlushTimer: number | null = null;
         const flushTokens = () => {
@@ -218,6 +225,7 @@ export function EdgeAgentConsole() {
             : message));
         };
         const onToken = (text: string) => {
+          if (firstVisibleTokenMs === undefined) firstVisibleTokenMs = performance.now() - generationStartedAt;
           bufferedTokens += text;
           if (tokenFlushTimer === null) tokenFlushTimer = window.setTimeout(flushTokens, 40);
         };
@@ -231,6 +239,11 @@ export function EdgeAgentConsole() {
                 meta: message.meta ? {
                   ...message.meta,
                   inferenceMs: completion.inferenceMs,
+                  firstTokenMs: completion.firstTokenMs,
+                  firstVisibleTokenMs,
+                  generatedTokens: completion.generatedTokens,
+                  assistantDevice: completion.device,
+                  assistantDtype: completion.dtype,
                   generationMs: performance.now() - generationStartedAt,
                   totalMs: requestStartedAt === undefined ? message.meta.totalMs : performance.now() - requestStartedAt,
                 } : undefined,
@@ -389,6 +402,10 @@ export function EdgeAgentConsole() {
                   busca {m.meta.ms.toFixed(1)} ms · {m.meta.top.map((t) => `${SYSTEM_LABEL[t.id]} ${t.score.toFixed(3)}`).join(" | ")}
                   {m.meta.mcpMs !== undefined ? ` · MCP ${m.meta.mcpMs.toFixed(0)} ms` : ""}
                   {m.meta.generationMs !== undefined ? ` · Qwen ${m.meta.generationMs.toFixed(0)} ms` : ""}
+                  {m.meta.assistantDevice && m.meta.assistantDtype ? ` · ${m.meta.assistantDevice.toUpperCase()}/${m.meta.assistantDtype}` : ""}
+                  {m.meta.firstTokenMs !== undefined ? ` · 1º tok ${m.meta.firstTokenMs.toFixed(0)} ms` : ""}
+                  {m.meta.firstVisibleTokenMs !== undefined ? ` · texto ${m.meta.firstVisibleTokenMs.toFixed(0)} ms` : ""}
+                  {m.meta.generatedTokens !== undefined ? ` · ${m.meta.generatedTokens} tok${m.meta.inferenceMs ? ` (${(m.meta.generatedTokens * 1000 / m.meta.inferenceMs).toFixed(1)} tok/s)` : ""}` : ""}
                   {m.meta.totalMs !== undefined ? ` · total ${m.meta.totalMs.toFixed(0)} ms` : ""}
                   {m.meta.toolSelection ? ` · ${m.meta.toolSelection}` : ""}
                 </div>

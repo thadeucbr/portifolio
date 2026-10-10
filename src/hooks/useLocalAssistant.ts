@@ -59,10 +59,14 @@ export function useLocalAssistant() {
           device: message.device,
           dtype: message.dtype,
           inferenceMs: message.inferenceMs,
+          firstTokenMs: message.firstTokenMs,
+          generatedTokens: message.generatedTokens,
         }));
         pendingRef.current.get(message.requestId)?.resolve({
           answer: message.answer,
           inferenceMs: message.inferenceMs,
+          firstTokenMs: message.firstTokenMs,
+          generatedTokens: message.generatedTokens,
           model: message.model,
           revision: message.revision,
           device: message.device,
