@@ -39,7 +39,7 @@ O portfólio possui seis estágios navegáveis (Core, Sistemas, Resiliência, Se
 
 ## Deploy
 
-A aplicação não é export estático: utiliza Server Actions e a rota MCP `/api/mcp`. Publique em um runtime Node compatível com Next.js e preserve essas rotas. Configure `CONTACT_WEBHOOK_URL` como variável secreta no provedor, nunca no cliente. Nenhum provedor ou ambiente de produção está associado automaticamente a este repositório.
+A aplicação não é export estático: utiliza Server Actions e a rota MCP `/api/mcp`. Publique em um runtime Node compatível com Next.js e preserve essas rotas. Configure `CONTACT_WEBHOOK_URL` como variável secreta no provedor, nunca no cliente. O repositório inclui uma preparação de Compose para o servidor `barbudas` em `docs/deploy-barbudas.md`; ela ainda não foi iniciada nem exposta por domínio público.
 
 ## Validação
 
