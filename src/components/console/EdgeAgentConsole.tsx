@@ -360,7 +360,7 @@ export function EdgeAgentConsole() {
             >
               <div className="whitespace-pre-wrap">{m.content}</div>
               {m.meta && (
-                <div className="mt-1.5 font-mono text-[9px] text-white/45">
+                <div className="mt-1.5 font-mono text-[9px] text-white/65">
                   {m.meta.engine === "neural" ? "embeddings neurais" : "fallback léxico"} ·{" "}
                   busca {m.meta.ms.toFixed(1)} ms · {m.meta.top.map((t) => `${SYSTEM_LABEL[t.id]} ${t.score.toFixed(3)}`).join(" | ")}
                   {m.meta.mcpMs !== undefined ? ` · MCP ${m.meta.mcpMs.toFixed(0)} ms` : ""}

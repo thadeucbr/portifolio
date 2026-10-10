@@ -82,7 +82,7 @@ export function StageShell() {
       </section>
 
       <footer className="relative z-40 px-3 sm:px-6 pb-4 no-print">
-        <nav aria-label="Navegação principal do portfólio" className="max-w-full mx-auto overflow-x-auto glass-panel rounded-2xl p-2 flex items-center gap-1.5 border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.8)] font-mono text-xs">
+        <nav aria-label="Navegação principal do portfólio" className="max-w-full mx-auto overflow-x-auto glass-panel rounded-2xl p-2 flex items-center gap-1.5 border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.8)] font-sans text-xs">
           {STAGES.map((item, index) => {
             const Icon = item.icon;
             const active = stage === item.id;
@@ -105,7 +105,7 @@ export function StageShell() {
               </button>
             );
           })}
-          <span className="hidden md:flex shrink-0 text-[10px] text-white/40 px-2">Atalhos 1–6</span>
+          <span className="hidden md:flex shrink-0 font-mono text-[10px] text-white/65 px-2">Atalhos 1–6</span>
         </nav>
       </footer>
     </>

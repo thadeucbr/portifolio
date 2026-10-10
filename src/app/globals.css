@@ -4,7 +4,7 @@
   :root {
     --color-primary: #1856FF;
     --color-secondary: #3A344E;
-    --color-surface-glass-low: rgba(255, 255, 255, 0.05);
+    --color-surface-glass-low: rgba(255, 255, 255, 0.08);
     --color-surface-glass-mid: rgba(255, 255, 255, 0.08);
     --color-surface-glass-high: rgba(255, 255, 255, 0.14);
     --color-glass-border: rgba(255, 255, 255, 0.15);
@@ -48,7 +48,7 @@ code, pre, .font-mono {
   background: var(--color-surface-glass-low);
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--color-glass-border);
 }
 
 .glass-panel-interactive {

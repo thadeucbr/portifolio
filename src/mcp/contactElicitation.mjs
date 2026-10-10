@@ -1,5 +1,5 @@
 export const PORTFOLIO_CONTACT_ELICITATION_MESSAGE =
-  "Informe nome, e-mail, empresa (opcional) e motivo. Ao aceitar, a solicitação será enviada ao webhook de contato configurado ou armazenada localmente neste servidor. Recusar ou cancelar não envia nem grava os dados.";
+  "Informe nome, e-mail, empresa (opcional) e motivo. Em desenvolvimento, pedidos aceitos são armazenados localmente; em produção, exigem um webhook seguro configurado e serão recusados sem ele. Recusar ou cancelar não envia nem grava os dados.";
 
 const EXPECTED_FIELDS = Object.freeze({
   name: { type: "string", minLength: 2, maxLength: 120 },

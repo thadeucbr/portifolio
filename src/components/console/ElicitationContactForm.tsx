@@ -51,8 +51,9 @@ export function ElicitationContactForm() {
         <ShieldQuestion className="w-4 h-4" /> CONSENTIMENTO DE CONTATO · SERVER ACTION
       </div>
       <p className="text-white/70 text-[11px] leading-relaxed">
-        Para solicitar contato, informe seus dados profissionais. Eles seguem para o servidor do portfólio e são registrados
-        localmente, salvo se o responsável tiver configurado um webhook de destino. Não inclua informações sensíveis.
+        Para solicitar contato, informe seus dados profissionais. Em desenvolvimento, são gravados localmente neste servidor;
+        em produção, é necessário um webhook seguro configurado. Sem destino em produção, o pedido é recusado sem gravação.
+        Não inclua informações sensíveis.
       </p>
 
       {/* honeypot */}

@@ -52,12 +52,17 @@ export async function submitRecruiterSignal(_prev: SignalState, formData: FormDa
     return { status: "error", message: "Revise os campos destacados.", fieldErrors };
   }
 
+  // Prevent production contact PII from falling back to an ephemeral/local file.
+  const webhook = process.env.CONTACT_WEBHOOK_URL;
+  if (process.env.NODE_ENV === "production" && !webhook) {
+    return { status: "error", message: "Canal de contato indisponível: destino seguro não configurado." };
+  }
+
+  // Persist only after explicit consent and input validation.
   const receiptId = `sig_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
   const record = { receiptId, at: new Date().toISOString(), name, email, company, intent };
 
-  // Persistência: webhook configurável (produção) ou arquivo local (desenvolvimento).
   try {
-    const webhook = process.env.CONTACT_WEBHOOK_URL;
     if (webhook) {
       const res = await fetch(webhook, {
         method: "POST",

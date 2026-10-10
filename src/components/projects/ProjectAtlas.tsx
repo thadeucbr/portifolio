@@ -128,7 +128,7 @@ export function ProjectAtlas() {
         <aside className="lg:col-span-5 glass-panel rounded-2xl border border-white/15 p-4 sm:p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between gap-2">
             <h3 className="font-mono text-[10px] uppercase tracking-wider text-[#38BDF8]">Decisões e limites</h3>
-            <span className="text-[9px] text-white/35 font-mono">FICHA ESTÁTICA</span>
+            <span className="text-[9px] text-white/65 font-mono">FICHA ESTÁTICA</span>
           </div>
           <ul className="space-y-2">
             {selected.architectureHighlights.map((highlight) => (
@@ -142,7 +142,7 @@ export function ProjectAtlas() {
             <span className="font-mono text-[9px] uppercase text-[#EA2143]">Tratamento de falhas descrito</span>
             <p className="text-[11px] leading-relaxed text-white/70 mt-1">{selected.failureHandling}</p>
           </div>
-          <p className="text-[9px] leading-relaxed text-white/35">
+          <p className="text-[10px] leading-relaxed text-white/65">
             Conteúdo e indicadores são descrições do portfólio, não telemetria ao vivo nem evidência independente do sistema original.
           </p>
         </aside>

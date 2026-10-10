@@ -7,7 +7,7 @@
 |---|---|---|
 | `--color-primary` | `#1856FF` | Electric Blue. Ações primárias, links ativos, destaques e lasers ópticos. |
 | `--color-secondary` | `#3A344E` | Deep Plum. Painéis secundários, contrastes de sombra e ambient light leaks. |
-| `--color-surface-glass-low` | `rgba(255, 255, 255, 0.05)` | Superfície de vidro mais translúcida (painéis de fundo). |
+| `--color-surface-glass-low` | `rgba(255, 255, 255, 0.08)` | Superfície de vidro mais translúcida (painéis de fundo), respeitando o mínimo do brief. |
 | `--color-surface-glass-mid` | `rgba(255, 255, 255, 0.08)` | Superfície padrão de cards e gavetas. |
 | `--color-surface-glass-high`| `rgba(255, 255, 255, 0.14)` | Superfície interativa em hover / modais ativos. |
 | `--color-glass-border` | `rgba(255, 255, 255, 0.15)` | **Light catcher** mandatório de 1px em todos os painéis de vidro. |
@@ -15,7 +15,7 @@
 | `--color-success` | `#07CA6B` | Status de agentes online, nós saudáveis, integridade de tokens. |
 | `--color-danger` | `#EA2143` | Alertas críticos, bloqueios DLP, falhas de autenticação. |
 | `--color-background-deep` | `#07090E` | Fundo abissal com ligeiro matiz azulado (nunca #000000 puro). |
-| `--color-text-main` | `#F8FAFC` | Texto de alta prioridade com máximo contraste. |
+| `--color-text-main` | `#FFFFFF` | Texto de alta prioridade com máximo contraste no modo escuro. |
 | `--color-text-muted` | `#94A3B8` | Subtítulos e metadados secundários. |
 | `--color-text-accent` | `#38BDF8` | Destaques ciano para telemetria e identificadores. |
 
@@ -35,7 +35,7 @@
 ```css
 /* Dark Glassmorphism 3.0 Standard */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(16px) saturate(150%);
   -webkit-backdrop-filter: blur(16px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.15);

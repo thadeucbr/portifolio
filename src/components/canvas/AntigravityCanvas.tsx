@@ -23,6 +23,7 @@ export function AntigravityCanvas({ className = "" }: AntigravityCanvasProps) {
 
     const width = container.clientWidth;
     const height = container.clientHeight;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // 1. Cena, Câmera e Renderizador
     const scene = new THREE.Scene();
@@ -168,6 +169,7 @@ export function AntigravityCanvas({ className = "" }: AntigravityCanvasProps) {
       camera.aspect = newWidth / newHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(newWidth, newHeight);
+      if (reducedMotion) renderer.render(scene, camera);
     };
 
     window.addEventListener("resize", handleResize);
@@ -231,6 +233,10 @@ export function AntigravityCanvas({ className = "" }: AntigravityCanvasProps) {
 
       posAttr.needsUpdate = true;
       renderer.render(scene, camera);
+      if (reducedMotion) {
+        cancelAnimationFrame(animationFrameId);
+        return;
+      }
     };
 
     animate();

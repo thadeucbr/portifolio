@@ -99,7 +99,7 @@ function orb(hex: number, size: number, x: number, y: number) {
 }
 
 async function init(msg: Extract<MeshIn, { type: "init" }>) {
-  motion = msg.reducedMotion ? 0.25 : 1;
+  motion = msg.reducedMotion ? 0 : 1;
 
   renderer = new THREE.WebGPURenderer({ canvas: msg.canvas, antialias: true, alpha: false });
   renderer.setPixelRatio(Math.min(msg.dpr, 2));
@@ -255,6 +255,7 @@ async function init(msg: Extract<MeshIn, { type: "init" }>) {
     spikes.instanceMatrix.needsUpdate = true;
 
     pipeline.render();
+    if (motion === 0) renderer.setAnimationLoop(null);
   });
 }
 
@@ -265,8 +266,11 @@ ctx.onmessage = (e: MessageEvent<MeshIn>) => {
   } else if (m.type === "resize" && renderer) {
     renderer.setPixelRatio(Math.min(m.dpr, 2));
     renderer.setSize(m.width, m.height, false);
-    camera.aspect = m.width / m.height;
-    camera.updateProjectionMatrix();
+    if (camera) {
+      camera.aspect = m.width / m.height;
+      camera.updateProjectionMatrix();
+      if (motion === 0 && pipeline) pipeline.render();
+    }
   } else if (m.type === "pointer") {
     mouse.tx = m.x;
     mouse.ty = m.y;

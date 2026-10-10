@@ -118,10 +118,10 @@ export function SystemResilienceWorkbench() {
                   <div className="flex items-start gap-3">
                     <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[#38BDF8]" aria-hidden="true" />
                     <div>
-                      <span className="font-mono text-[8px] uppercase text-white/40">{project.shortLabel}</span>
+                      <span className="font-mono text-[9px] uppercase text-white/65">{project.shortLabel}</span>
                       <h4 className="mt-1 text-xs font-semibold text-white">{project.title}</h4>
                       <p className="mt-1 text-[10px] leading-relaxed text-white/55">{project.summary}</p>
-                      <span className={`mt-2 inline-block font-mono text-[8px] uppercase ${isFocused ? "text-[#38BDF8]" : "text-white/30"}`}>{isFocused ? "EM FOCO NESTA DEMO" : "EXPERIÊNCIA PROFISSIONAL"}</span>
+                      <span className={`mt-2 inline-block font-mono text-[9px] uppercase ${isFocused ? "text-[#38BDF8]" : "text-white/65"}`}>{isFocused ? "EM FOCO NESTA DEMO" : "EXPERIÊNCIA PROFISSIONAL"}</span>
                     </div>
                   </div>
                 </article>
