@@ -47,7 +47,7 @@ export function ArchitectureInspector({ system, onClose }: ArchitectureInspector
           <div>
             <div className="flex items-center gap-2">
               <span className="font-mono text-xs uppercase text-[#38BDF8] tracking-wider">
-                {system.codename} // INSPECTOR
+                {system.codename} • INSPECTOR
               </span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.05] text-white/60 font-mono">
                 {system.category}

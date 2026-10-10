@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useSyncExternalStore } from "react";
 import type { WorkerIn, WorkerOut } from "@/workers/embedding.worker";
 import { buildCorpus, lexicalRank } from "@/mcp/semanticEngine";
+import { createSharedStore } from "./sharedEngineStore.mjs";
 
 export interface RuntimeInfo {
   model: string;
@@ -35,17 +36,23 @@ export function emitNeuralPulse(intensity: number) {
   window.dispatchEvent(new CustomEvent("neural:pulse", { detail: { intensity } }));
 }
 
-// Worker único por aba: o modelo é carregado uma vez e sobrevive à troca de telas.
 let sharedWorker: Worker | null = null;
-let sharedState: EngineState = { phase: "idle", progress: 0 };
-const listeners = new Set<(s: EngineState) => void>();
+const engineStore = createSharedStore<EngineState>({ phase: "idle", progress: 0 });
 const pending = new Map<string, (r: RankResult) => void>();
 const fileProgress = new Map<string, { loaded: number; total: number }>();
 const corpus = buildCorpus();
 
 function setShared(patch: Partial<EngineState>) {
-  sharedState = { ...sharedState, ...patch };
-  listeners.forEach((l) => l(sharedState));
+  engineStore.publish(patch);
+}
+
+function subscribeEngine(listener: () => void) {
+  ensureWorker();
+  return engineStore.subscribe(listener);
+}
+
+function getEngineSnapshot() {
+  return engineStore.getSnapshot();
 }
 
 function ensureWorker() {
@@ -95,21 +102,12 @@ function ensureWorker() {
 }
 
 export function useEdgeEmbeddings() {
-  const [state, setState] = useState<EngineState>(sharedState);
+  const state = useSyncExternalStore(subscribeEngine, getEngineSnapshot, getEngineSnapshot);
   const counter = useRef(0);
-
-  useEffect(() => {
-    ensureWorker();
-    listeners.add(setState);
-    setState(sharedState);
-    return () => {
-      listeners.delete(setState);
-    };
-  }, []);
 
   const rank = useCallback(async (text: string): Promise<RankResult> => {
     emitNeuralPulse(0.6);
-    if (sharedState.phase !== "ready" || !sharedWorker) {
+    if (engineStore.getSnapshot().phase !== "ready" || !sharedWorker) {
       const t0 = performance.now();
       const ranking = lexicalRank(text, corpus);
       return { engine: "lexical", inferenceMs: performance.now() - t0, threshold: 0.12, ranking };

@@ -162,7 +162,7 @@ export function AntigravityCanvas({ className = "" }: AntigravityCanvasProps) {
 
     // 6. Laço Cinemático (Cinemática Baseada em Molas + Campo de Repulsão)
     let animationFrameId: number;
-    let clock = new THREE.Clock();
+    const clock = new THREE.Clock();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);

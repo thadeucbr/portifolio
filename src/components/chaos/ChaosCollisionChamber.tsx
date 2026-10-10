@@ -75,7 +75,7 @@ export function ChaosCollisionChamber() {
 
           let nx = card.x + card.vx * (activeChaos ? 2.8 : 1.0);
           let ny = card.y + card.vy * (activeChaos ? 2.8 : 1.0);
-          let nrot = card.rot + card.vRot;
+          const nrot = card.rot + card.vRot;
           let nvx = card.vx;
           let nvy = card.vy;
 
@@ -309,7 +309,7 @@ export function ChaosCollisionChamber() {
       {/* Dica de Interatividade no Rodapé */}
       <div className="relative z-20 text-center pointer-events-none">
         <span className="glass-panel-subtle px-4 py-1.5 rounded-full text-[11px] font-mono text-white/60 border border-white/10">
-          ✦ Clique e arremesse qualquer cartão pelo espaço • Use o botão "Alinhar Matriz" para estabilizar
+          ✦ Clique e arremesse qualquer cartão pelo espaço • Use o botão &quot;Alinhar Matriz&quot; para estabilizar
         </span>
       </div>
 
@@ -320,7 +320,7 @@ export function ChaosCollisionChamber() {
             <div className="flex items-center justify-between pb-4 border-b border-white/10">
               <div>
                 <span className="font-mono text-xs text-[#38BDF8] uppercase">
-                  {expandedSystem.category} // {expandedSystem.period}
+                  {expandedSystem.category} • {expandedSystem.period}
                 </span>
                 <h3 className="text-2xl font-bold text-white mt-1">
                   {expandedSystem.title}

@@ -143,7 +143,7 @@ export function PipelineSimulator({ system }: PipelineSimulatorProps) {
       <div className="p-3.5 rounded-xl bg-black/60 border border-white/10 h-36 overflow-y-auto space-y-1">
         {logs.length === 0 ? (
           <div className="text-white/30 italic text-center py-8">
-            Clique em "Disparar Payload" para ver o trajeto de validação distribuída.
+            Clique em &quot;Disparar Payload&quot; para ver o trajeto de validação distribuída.
           </div>
         ) : (
           logs.map((log, index) => (
