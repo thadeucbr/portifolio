@@ -3,7 +3,7 @@
 import { startTransition, useCallback, useEffect, useState, ViewTransition, addTransitionType } from "react";
 import { Activity, FileCheck, Grid3X3, Network, ShieldCheck, Cpu } from "lucide-react";
 import { NeuralMissionHero } from "@/components/neural/NeuralMissionHero";
-import { ModeKineticGrid } from "@/components/modes/ModeKineticGrid";
+import { ProjectAtlas } from "@/components/projects/ProjectAtlas";
 import { SystemResilienceWorkbench } from "@/components/workbench/SystemResilienceWorkbench";
 import { ZeroTrustDlpInspector } from "@/components/security/ZeroTrustDlpInspector";
 import { RecruiterDossierView } from "@/components/dossier/RecruiterDossierView";
@@ -68,7 +68,7 @@ export function StageShell() {
                 onGoToSecurity={() => go("security")}
               />
             )}
-            {stage === "systems" && <ModeKineticGrid />}
+            {stage === "systems" && <ProjectAtlas />}
             {stage === "resilience" && <SystemResilienceWorkbench />}
             {stage === "security" && <ZeroTrustDlpInspector />}
             {stage === "agent" && (
