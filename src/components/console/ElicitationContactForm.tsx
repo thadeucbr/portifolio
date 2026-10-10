@@ -51,9 +51,9 @@ export function ElicitationContactForm() {
         <ShieldQuestion className="w-4 h-4" /> CONSENTIMENTO DE CONTATO · SERVER ACTION
       </div>
       <p className="text-white/70 text-[11px] leading-relaxed">
-        Para solicitar contato, informe seus dados profissionais. Em desenvolvimento, são gravados localmente neste servidor;
-        em produção, é necessário um webhook seguro configurado. Sem destino em produção, o pedido é recusado sem gravação.
-        Não inclua informações sensíveis.
+        Para solicitar contato, informe seus dados profissionais. Em desenvolvimento, sem Telegram configurado, ficam neste servidor;
+        em produção, ao aceitar, nome, e-mail, empresa e motivo são enviados ao responsável via Telegram (serviço de terceiros).
+        Sem bot e chat ID configurados, o pedido é recusado sem gravação local. Não inclua informações sensíveis.
       </p>
 
       {/* honeypot */}

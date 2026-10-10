@@ -3,7 +3,7 @@
 // Guideline linhas 90-92 e 138-141: mutação via Server Action, sem rota /api,
 // com validação no servidor e progressive enhancement (funciona mesmo sem o JS do canvas).
 
-import { appendFile, mkdir } from "node:fs/promises";
+import { appendFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { PROFILE_DATA } from "@/data/systems";
 import { classifyContactDecision } from "./contactDecision.mjs";
@@ -18,6 +18,59 @@ export interface SignalState {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const INTENTS = new Set(["vaga-senior-staff", "consultoria", "palestra", "outro"]);
+const INTENT_LABELS: Record<string, string> = {
+  "vaga-senior-staff": "Vaga Sênior / Staff",
+  consultoria: "Consultoria",
+  palestra: "Palestra",
+  outro: "Outro",
+};
+
+async function getTelegramBotToken() {
+  const tokenFile = process.env.TELEGRAM_BOT_TOKEN_FILE;
+  if (tokenFile) {
+    try {
+      return (await readFile(tokenFile, "utf8")).trim();
+    } catch {
+      return "";
+    }
+  }
+  return process.env.TELEGRAM_BOT_TOKEN?.trim() ?? "";
+}
+
+function telegramSafeField(value: string) {
+  return Array.from(value, (character) => {
+    const code = character.charCodeAt(0);
+    return code === 0 || code === 10 || code === 13 ? " " : character;
+  }).join("").trim();
+}
+
+async function sendTelegramContact(record: {
+  receiptId: string;
+  at: string;
+  name: string;
+  email: string;
+  company: string;
+  intent: string;
+}, token: string, chatId: string) {
+  const text = [
+    "Novo contato aceito pelo formulário do portfólio",
+    `Nome: ${telegramSafeField(record.name)}`,
+    `E-mail: ${telegramSafeField(record.email)}`,
+    `Empresa: ${telegramSafeField(record.company) || "não informada"}`,
+    `Motivo: ${INTENT_LABELS[record.intent] ?? "Outro"}`,
+    `Recebido: ${record.at}`,
+    `Recibo: ${record.receiptId}`,
+  ].join("\n");
+
+  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text, disable_web_page_preview: true }),
+    signal: AbortSignal.timeout(8_000),
+  });
+  const result = await response.json().catch(() => null) as { ok?: boolean } | null;
+  if (!response.ok || result?.ok !== true) throw new Error("Telegram notification rejected");
+}
 
 export async function submitRecruiterSignal(_prev: SignalState, formData: FormData): Promise<SignalState> {
   // Honeypot anti-bot: campo invisível que humanos não preenchem.
@@ -52,10 +105,19 @@ export async function submitRecruiterSignal(_prev: SignalState, formData: FormDa
     return { status: "error", message: "Revise os campos destacados.", fieldErrors };
   }
 
-  // Prevent production contact PII from falling back to an ephemeral/local file.
-  const webhook = process.env.CONTACT_WEBHOOK_URL;
-  if (process.env.NODE_ENV === "production" && !webhook) {
-    return { status: "error", message: "Canal de contato indisponível: destino seguro não configurado." };
+  const telegramToken = await getTelegramBotToken();
+  const telegramChatId = process.env.TELEGRAM_CHAT_ID?.trim() ?? "";
+  const hasTelegramToken = Boolean(telegramToken);
+  const hasTelegramChat = Boolean(telegramChatId);
+  if (hasTelegramToken !== hasTelegramChat) {
+    return { status: "error", message: "Canal de contato indisponível: configuração do Telegram incompleta." };
+  }
+  if (hasTelegramChat && !/^-?\d+$/.test(telegramChatId) && !/^@[A-Za-z0-9_]{5,}$/.test(telegramChatId)) {
+    return { status: "error", message: "Canal de contato indisponível: chat ID do Telegram inválido." };
+  }
+  // Production never persists contact PII locally or reports success without delivery.
+  if (process.env.NODE_ENV === "production" && !hasTelegramToken) {
+    return { status: "error", message: "Canal de contato indisponível: notificação segura não configurada." };
   }
 
   // Persist only after explicit consent and input validation.
@@ -63,27 +125,24 @@ export async function submitRecruiterSignal(_prev: SignalState, formData: FormDa
   const record = { receiptId, at: new Date().toISOString(), name, email, company, intent };
 
   try {
-    if (webhook) {
-      const res = await fetch(webhook, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(record),
-      });
-      if (!res.ok) throw new Error(`webhook ${res.status}`);
+    if (hasTelegramToken && hasTelegramChat) {
+      await sendTelegramContact(record, telegramToken, telegramChatId);
     } else {
       const dir = path.join(process.cwd(), ".data");
       await mkdir(dir, { recursive: true });
       await appendFile(path.join(dir, "recruiter-signals.jsonl"), JSON.stringify(record) + "\n", "utf8");
     }
-  } catch (err) {
-    console.error("[submitRecruiterSignal] persistência falhou:", err);
+  } catch (error) {
+    console.error("[submitRecruiterSignal] contato não pôde ser entregue:", error instanceof Error ? error.name : "UnknownError");
     return { status: "error", message: "Não foi possível registrar agora. Tente novamente em instantes." };
   }
 
   return {
     status: "accepted",
     receiptId,
-    message: `Obrigado, ${name.split(" ")[0]}. Canal liberado.`,
+    message: hasTelegramToken
+      ? `Obrigado, ${name.split(" ")[0]}. Seu pedido de contato foi encaminhado.`
+      : `Obrigado, ${name.split(" ")[0]}. Seu pedido foi registrado neste ambiente de desenvolvimento.`,
     channels: {
       email: PROFILE_DATA.contact.email,
       phone: PROFILE_DATA.contact.phone,

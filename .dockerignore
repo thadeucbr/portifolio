@@ -7,4 +7,5 @@ coverage
 tests
 .env*
 .data
+secrets/
 *.log

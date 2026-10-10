@@ -34,12 +34,12 @@ O portfólio possui seis estágios navegáveis (Core, Sistemas, Resiliência, Se
 - Embeddings, geração Qwen e reconhecimento de fala são opt-in; pesos grandes não são baixados automaticamente ao abrir a página.
 - A transcrição exige ativação explícita e permissão do microfone. O texto resultante pode ser revisto antes do envio.
 - O cliente MCP consulta somente o conteúdo público e estático deste portfólio; não acessa sistemas ou telemetria corporativos.
-- O pedido de contato exige aceitação explícita. Em desenvolvimento, sem `CONTACT_WEBHOOK_URL`, a Server Action grava os pedidos aceitos em `.data/recruiter-signals.jsonl`. Em produção, configure um destino de webhook seguro no ambiente do servidor e defina retenção e proteção contra abuso adequadas nesse destino.
+- O pedido de contato exige aceitação explícita. Em desenvolvimento, sem Telegram configurado, os pedidos aceitos são gravados localmente em `.data/recruiter-signals.jsonl`. Em produção, após o aceite, nome, e-mail, empresa e motivo são enviados ao responsável via Telegram (serviço de terceiros); o token fica em Docker secret e os dados não são persistidos localmente. Sem bot/chat ID, o pedido falha fechado.
 - Não há sandbox ligada a endpoints internos, nem métricas de produção ou desempenho de GPU alegadas como prova independente.
 
 ## Deploy
 
-A aplicação não é export estático: utiliza Server Actions e a rota MCP `/api/mcp`. Publique em um runtime Node compatível com Next.js e preserve essas rotas. Configure `CONTACT_WEBHOOK_URL` como variável secreta no provedor, nunca no cliente. O repositório inclui uma preparação de Compose para o servidor `barbudas` em `docs/deploy-barbudas.md`; ela ainda não foi iniciada nem exposta por domínio público.
+A aplicação não é export estático: utiliza Server Actions e a rota MCP `/api/mcp`. Publique em um runtime Node compatível com Next.js e preserve essas rotas. Em produção, configure o token do bot como Docker secret e o chat ID como variável do servidor; nunca exponha o token ao cliente/Git. O repositório inclui uma preparação de Compose para o servidor `barbudas` em `docs/deploy-barbudas.md`; ela ainda não foi iniciada nem exposta por domínio público.
 
 ## Validação
 
