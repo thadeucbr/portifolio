@@ -1,20 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { PROFILE_DATA, SYSTEMS_DATA } from "@/data/systems";
-import { 
-  FileCheck, 
-  Download, 
-  ExternalLink, 
-  ShieldCheck, 
-  Cpu, 
-  Layers, 
-  CheckCircle2, 
-  Terminal,
-  Award,
-  Sparkles,
-  Printer
-} from "lucide-react";
+import { Award, Printer } from "lucide-react";
 
 export function RecruiterDossierView() {
   const [copied, setCopied] = useState(false);
@@ -108,9 +96,9 @@ export function RecruiterDossierView() {
           <div>
             <div className="flex items-center justify-between pb-2 border-b border-white/10 font-mono text-xs">
               <span className="text-[#07CA6B] font-bold uppercase">
-                COMPROVAÇÃO DE IMPACTO ARQUITETURAL NO SETOR BANCÁRIO
+                PROJETOS DESCRITOS • CONTEXTO DE ENGENHARIA BANCÁRIA
               </span>
-              <span className="text-white/50">SAFRA PRODUÇÃO</span>
+              <span className="text-white/50">RESUMO CURRICULAR</span>
             </div>
 
             <div className="grid gap-3 mt-3">

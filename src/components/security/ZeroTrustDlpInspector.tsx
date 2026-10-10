@@ -1,19 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { 
-  ShieldCheck, 
-  ShieldAlert, 
-  Lock, 
-  Key, 
-  Terminal, 
-  CheckCircle2, 
-  AlertOctagon,
-  FileCheck,
-  Send,
-  Eye,
-  RefreshCw
-} from "lucide-react";
+import { useState } from "react";
+import { AlertOctagon, CheckCircle2, Lock, ShieldCheck } from "lucide-react";
+import { simulateSecurityInspection } from "./securitySimulation.mjs";
 
 export function ZeroTrustDlpInspector() {
   const [testPayload, setTestPayload] = useState("Cliente João da Silva, CPF 123.456.789-00, solicitando desbloqueio de PIX de R$ 15.000,00 no cartão 4111 2222 3333 4444.");
@@ -25,44 +14,19 @@ export function ZeroTrustDlpInspector() {
     cardMasked: boolean;
     m2mValid: boolean;
     rbacGranted: boolean;
-    signatureHash: string;
     decision: "ALLOWED" | "BLOCKED" | "SANITIZED_ALLOWED";
+    durationMs: number;
   } | null>(null);
 
-  const runLiveSecurityScan = () => {
-    // 1. Simulação do DLP Filter (Sanitização de CPF e Cartões em tempo real)
-    const cpfRegex = /\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/g;
-    const cardRegex = /\b(?:\d{4}[ -]?){3}\d{4}\b/g;
-
-    const cpfFound = cpfRegex.test(testPayload);
-    const cardFound = cardRegex.test(testPayload);
-
-    let cleanText = testPayload
-      .replace(cpfRegex, "[DLP_PROTECTED_CPF:***.***.***-**]")
-      .replace(cardRegex, "[DLP_PROTECTED_CARD:**** **** **** ****]");
-
-    setSanitizedResult(cleanText);
-
-    // 2. Simulação da Validação Zero Trust M2M + RBAC Active Directory
-    const isM2mOk = hasM2mToken && activeRole !== "UNTRUSTED_APP";
-    const isRbacOk = activeRole === "BANK_MANAGER";
-
-    let finalDecision: "ALLOWED" | "BLOCKED" | "SANITIZED_ALLOWED" = "ALLOWED";
-
-    if (!isM2mOk || !isRbacOk) {
-      finalDecision = "BLOCKED";
-    } else if (cpfFound || cardFound) {
-      finalDecision = "SANITIZED_ALLOWED";
-    }
-
-    setInspectionLog({
-      cpfMasked: cpfFound,
-      cardMasked: cardFound,
-      m2mValid: isM2mOk,
-      rbacGranted: isRbacOk,
-      signatureHash: isM2mOk ? "ed25519:7c9e12f0a82b3d" : "INVALID_SIGNATURE_ERROR",
-      decision: finalDecision,
+  const runLocalSecuritySimulation = () => {
+    const startedAt = performance.now();
+    const result = simulateSecurityInspection(testPayload, {
+      hasToken: hasM2mToken,
+      role: activeRole,
     });
+
+    setSanitizedResult(result.sanitizedText);
+    setInspectionLog({ ...result, durationMs: performance.now() - startedAt });
   };
 
   return (
@@ -73,21 +37,21 @@ export function ZeroTrustDlpInspector() {
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-[#07CA6B]" />
             <span className="font-mono text-xs uppercase tracking-wider text-[#38BDF8]">
-              INSPETOR DE SEGURANÇA DEFENSIVA // ZERO TRUST & DLP EM TEMPO REAL
+              INSPETOR LOCAL // DEMONSTRAÇÃO DE REGRAS DLP E AUTORIZAÇÃO
             </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight mt-0.5">
-            Testador Interativo de Sanitização DLP e Assinatura M2M
+            Playground local de mascaramento e autorização
           </h2>
           <p className="text-xs text-[#94A3B8] mt-0.5">
-            Digite ou edite o payload abaixo para testar a barreira de prevenção de vazamento de dados e autenticação mútua.
+            Regras ilustrativas executadas neste navegador; sem validação criptográfica, Active Directory ou conexão bancária.
           </p>
         </div>
 
         <div className="flex items-center gap-2 font-mono text-xs">
           <span className="text-[#07CA6B] flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[#07CA6B] animate-ping" />
-            BARREIRA DLP ATIVA
+            REGRAS LOCAIS PRONTAS
           </span>
         </div>
       </div>
@@ -113,7 +77,7 @@ export function ZeroTrustDlpInspector() {
             <div className="grid grid-cols-2 gap-3 pt-2">
               <div>
                 <label className="block text-[11px] font-mono text-white/70 mb-1">
-                  TOKEN M2M ASSINADO:
+                  CREDENCIAL DE TESTE:
                 </label>
                 <button
                   type="button"
@@ -124,23 +88,23 @@ export function ZeroTrustDlpInspector() {
                       : "bg-red-500/20 border-red-500 text-red-300"
                   }`}
                 >
-                  <span>{hasM2mToken ? "Ed25519 Presente" : "Sem Token (Anônimo)"}</span>
+                  <span>{hasM2mToken ? "Token de teste presente" : "Sem token de teste"}</span>
                   <Lock className="w-3.5 h-3.5" />
                 </button>
               </div>
 
               <div>
                 <label className="block text-[11px] font-mono text-white/70 mb-1">
-                  PAPEL RBAC (ACTIVE DIRECTORY):
+                  PAPEL DE TESTE (SEM AD):
                 </label>
                 <select
                   value={activeRole}
-                  onChange={(e) => setActiveRole(e.target.value as any)}
+                  onChange={(e) => setActiveRole(e.target.value as "BANK_MANAGER" | "GUEST" | "UNTRUSTED_APP")}
                   className="w-full py-2 px-3 rounded-xl bg-black/40 border border-white/15 font-mono text-xs text-white focus:outline-none focus:border-[#1856FF]"
                 >
-                  <option value="BANK_MANAGER">Gerente Safra (Autorizado)</option>
-                  <option value="GUEST">Convidado / Leitura</option>
-                  <option value="UNTRUSTED_APP">App Não Homologado</option>
+                  <option value="BANK_MANAGER">BANK_MANAGER (permitido nesta demo)</option>
+                  <option value="GUEST">GUEST (sem autorização)</option>
+                  <option value="UNTRUSTED_APP">UNTRUSTED_APP (bloqueado)</option>
                 </select>
               </div>
             </div>
@@ -148,11 +112,11 @@ export function ZeroTrustDlpInspector() {
 
           <div className="pt-4 border-t border-white/10 flex justify-end">
             <button
-              onClick={runLiveSecurityScan}
+              onClick={runLocalSecuritySimulation}
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#1856FF] to-[#38BDF8] hover:opacity-90 text-white font-mono text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-lg shadow-[#1856FF]/30 transition-all"
             >
               <ShieldCheck className="w-4 h-4" />
-              <span>Executar Verificação Zero Trust & DLP</span>
+              <span>Executar simulação local</span>
             </button>
           </div>
         </div>
@@ -162,9 +126,9 @@ export function ZeroTrustDlpInspector() {
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-white/10 font-mono text-xs">
               <span className="text-[#38BDF8] uppercase font-bold">
-                DIAGNÓSTICO DA MALHA DE SEGURANÇA
+                RESULTADO DA SIMULAÇÃO LOCAL
               </span>
-              <span className="text-white/40">AUDITORIA EM MILISSEGUNDOS</span>
+              <span className="text-white/40">EXECUÇÃO NO NAVEGADOR</span>
             </div>
 
             {inspectionLog ? (
@@ -197,7 +161,7 @@ export function ZeroTrustDlpInspector() {
                     </div>
                   </div>
                   <span className="text-[10px] uppercase font-bold px-2 py-1 rounded bg-black/40">
-                    LATÊNCIA: 14ms
+                    {`EXECUÇÃO LOCAL: ${inspectionLog.durationMs.toFixed(2)} ms`}
                   </span>
                 </div>
 
@@ -216,13 +180,13 @@ export function ZeroTrustDlpInspector() {
                     </strong>
                   </div>
                   <div className="p-3 rounded-xl bg-black/40 border border-white/[0.06]">
-                    <span className="text-white/50 block mb-0.5">AUTENTICAÇÃO M2M:</span>
+                    <span className="text-white/50 block mb-0.5">TOKEN DE TESTE:</span>
                     <strong className={inspectionLog.m2mValid ? "text-[#07CA6B]" : "text-red-400"}>
-                      {inspectionLog.m2mValid ? "VÁLIDA (Ed25519)" : "REJEITADA"}
+                      {inspectionLog.m2mValid ? "PRESENTE (SIMULADO)" : "AUSENTE / NÃO CONFIÁVEL"}
                     </strong>
                   </div>
                   <div className="p-3 rounded-xl bg-black/40 border border-white/[0.06]">
-                    <span className="text-white/50 block mb-0.5">RBAC ACTIVE DIRECTORY:</span>
+                    <span className="text-white/50 block mb-0.5">PAPEL LOCAL (SIMULADO):</span>
                     <strong className={inspectionLog.rbacGranted ? "text-[#07CA6B]" : "text-red-400"}>
                       {inspectionLog.rbacGranted ? "PAPEL AUTORIZADO" : "SEM PERMISSÃO"}
                     </strong>
@@ -232,7 +196,7 @@ export function ZeroTrustDlpInspector() {
                 {/* Resultado Sanitizado Enviado ao Modelo de IA */}
                 <div>
                   <label className="block text-[10px] text-white/50 uppercase mb-1">
-                    Payload Sanitizado Entregue com Segurança ao Broker de IA:
+                    Payload mascarado nesta simulação local:
                   </label>
                   <div className="p-3 rounded-xl bg-black/60 border border-white/10 text-white/90 text-xs leading-relaxed font-sans">
                     {sanitizedResult}
@@ -241,14 +205,14 @@ export function ZeroTrustDlpInspector() {
               </div>
             ) : (
               <div className="text-center py-16 text-white/40 italic font-mono text-xs">
-                Clique em "Executar Verificação Zero Trust & DLP" para rodar a auditoria em tempo real.
+                Clique em &quot;Executar simulação local&quot; para ver o resultado das regras no navegador.
               </div>
             )}
           </div>
 
           <div className="pt-3 border-t border-white/10 text-[10px] font-mono text-white/50 flex items-center justify-between">
-            <span>NORMA: BACEN 4.893 & LGPD</span>
-            <span className="text-[#07CA6B]">NÃO-REPÚDIO: ATIVO</span>
+            <span>EXEMPLO DIDÁTICO • SEM INTEGRAÇÃO BACEN</span>
+            <span className="text-[#07CA6B]">CRIPTOGRAFIA REAL: NÃO IMPLEMENTADA</span>
           </div>
         </div>
       </div>

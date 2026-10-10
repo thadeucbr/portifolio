@@ -51,8 +51,8 @@ export function ElicitationContactForm() {
         <ShieldQuestion className="w-4 h-4" /> elicitation/create · requestedSchema
       </div>
       <p className="text-white/70 text-[11px] leading-relaxed">
-        Para liberar o canal direto, a ferramenta solicita sua identificação. Os dados são validados e registrados por uma
-        Server Action — nada passa por terceiros.
+        Para solicitar contato, informe seus dados profissionais. Eles seguem para o servidor do portfólio e são registrados
+        localmente, salvo se o responsável tiver configurado um webhook de destino. Não inclua informações sensíveis.
       </p>
 
       {/* honeypot */}

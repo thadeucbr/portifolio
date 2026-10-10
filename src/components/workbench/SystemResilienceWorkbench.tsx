@@ -1,110 +1,92 @@
 "use client";
 
-import React, { useState } from "react";
-import { 
-  ShieldAlert, 
-  ShieldCheck, 
-  Zap, 
-  RotateCcw, 
-  AlertTriangle, 
-  Cpu, 
-  MessageSquare, 
-  Layers, 
-  Activity,
-  CheckCircle2,
-  Lock,
-  ArrowRight
-} from "lucide-react";
+import { useState } from "react";
+import { Cpu, Layers, MessageSquare, RotateCcw, ShieldCheck } from "lucide-react";
 
 type ScenarioType = "normal" | "meta_outage" | "dlp_violation" | "pix_spike" | "unauthorized_m2m";
 
 export function SystemResilienceWorkbench() {
   const [activeScenario, setActiveScenario] = useState<ScenarioType>("normal");
-  const [isRunning, setIsRunning] = useState(false);
+
   const [simLogs, setSimLogs] = useState<Array<{ timestamp: string; level: "info" | "warn" | "error" | "success"; message: string }>>([
     {
       timestamp: "12:00:01.102",
       level: "success",
-      message: "PLATAFORMA ESTÁVEL: Broker de Mensageria, Malha Zero Trust e Agentes MCP operando nominalmente.",
+      message: "SIMULAÇÃO PRONTA: selecione um cenário ilustrativo para percorrer a sequência de eventos.",
     },
   ]);
 
   const triggerScenario = (scenario: ScenarioType) => {
     setActiveScenario(scenario);
-    setIsRunning(true);
+
 
     const now = () => new Date().toLocaleTimeString("pt-BR") + "." + Math.floor(Math.random() * 900 + 100);
 
     if (scenario === "normal") {
       setSimLogs([
-        { timestamp: now(), level: "info", message: "Disparando tráfego de rotina (WhatsApp, Telegram, Webhooks)..." },
-        { timestamp: now(), level: "success", message: "Inbound recebido. Buffer agnóstico despachou para o ecossistema de IA em 28ms." },
+        { timestamp: now(), level: "info", message: "SIMULAÇÃO DIDÁTICA: tráfego de rotina (WhatsApp, Telegram, Webhooks)." },
+        { timestamp: now(), level: "success", message: "SIMULAÇÃO DIDÁTICA: o fluxo de exemplo atravessaria o buffer e chegaria ao roteador." },
       ]);
-      setIsRunning(false);
       return;
     }
 
     if (scenario === "meta_outage") {
-      setSimLogs((prev) => [
+      setSimLogs([
         { timestamp: now(), level: "error", message: "SIMULAÇÃO: Queda repentina de Webhook da Meta (WhatsApp Cloud API timeout > 5000ms)." },
       ]);
 
       setTimeout(() => {
         setSimLogs((prev) => [
           ...prev,
-          { timestamp: now(), level: "warn", message: "CIRCUIT BREAKER ATIVADO: Broker Agnóstico isolou o canal degradado sem afetar os outros." },
-          { timestamp: now(), level: "info", message: "Buffer desacoplado enfileirou mensagens em DLQ com retry exponencial." },
-          { timestamp: now(), level: "success", message: "RESILIÊNCIA COMPROVADA: Modelos de IA e canais Telegram/Enterprise continuaram 100% online." },
+          { timestamp: now(), level: "warn", message: "SIMULAÇÃO DIDÁTICA: o circuit breaker isolaria o canal degradado." },
+          { timestamp: now(), level: "info", message: "SIMULAÇÃO DIDÁTICA: o buffer manteria mensagens em uma fila de retentativa." },
+          { timestamp: now(), level: "success", message: "SIMULAÇÃO DIDÁTICA: os canais alternativos permaneceriam disponíveis neste desenho." },
         ]);
-        setIsRunning(false);
       }, 700);
     }
 
     if (scenario === "dlp_violation") {
-      setSimLogs((prev) => [
+      setSimLogs([
         { timestamp: now(), level: "warn", message: "SIMULAÇÃO: Ingestão de mensagem com tentativa de vazamento de CPF e Chave Bancária via chat." },
       ]);
 
       setTimeout(() => {
         setSimLogs((prev) => [
           ...prev,
-          { timestamp: now(), level: "error", message: "SENTINEL DLP BLOQUEOU: Filtro heurístico em tempo real detectou dados sensíveis (LGPD/Bacen)." },
-          { timestamp: now(), level: "info", message: "Payload sanitizado antes de qualquer exposição ao modelo de linguagem." },
-          { timestamp: now(), level: "success", message: "INCIDENTE EVITADO: Sessão auditada e custódia segura gerou log imutável de compliance." },
+          { timestamp: now(), level: "error", message: "SIMULAÇÃO DIDÁTICA: regras DLP de exemplo identificariam campos sensíveis." },
+          { timestamp: now(), level: "info", message: "SIMULAÇÃO DIDÁTICA: o payload seria mascarado antes de seguir ao modelo." },
+          { timestamp: now(), level: "success", message: "SIMULAÇÃO DIDÁTICA: o fluxo prevê retenção de um registro de auditoria." },
         ]);
-        setIsRunning(false);
       }, 700);
     }
 
     if (scenario === "unauthorized_m2m") {
-      setSimLogs((prev) => [
+      setSimLogs([
         { timestamp: now(), level: "error", message: "SIMULAÇÃO: Microsserviço interno tentando chamar a API de IA sem token criptográfico assinado." },
       ]);
 
       setTimeout(() => {
         setSimLogs((prev) => [
           ...prev,
-          { timestamp: now(), level: "warn", message: "MALHA ZERO TRUST INTERCEPTOU: Handshake mTLS rejeitou a conexão na porta 8443." },
-          { timestamp: now(), level: "error", message: "TOKEN M2M AUSENTE / INVÁLIDO: Falha de assinatura Ed25519 e RBAC não localizado no Active Directory." },
-          { timestamp: now(), level: "success", message: "SEGURANÇA BLINDADA: Acesso barrado no perímetro Zero Trust sem exposição das chaves." },
+          { timestamp: now(), level: "warn", message: "SIMULAÇÃO DIDÁTICA: uma validação mTLS rejeitaria a conexão neste ponto." },
+          { timestamp: now(), level: "error", message: "SIMULAÇÃO DIDÁTICA: o exemplo não apresenta credencial nem papel autorizado." },
+          { timestamp: now(), level: "success", message: "SIMULAÇÃO DIDÁTICA: a política proposta encerraria o fluxo antes do serviço." },
         ]);
-        setIsRunning(false);
       }, 700);
     }
 
     if (scenario === "pix_spike") {
-      setSimLogs((prev) => [
+      setSimLogs([
         { timestamp: now(), level: "warn", message: "SIMULAÇÃO: Pico transacional sazonal de PIX (Salto de 3k para 65k requisições simultâneas)." },
       ]);
 
       setTimeout(() => {
         setSimLogs((prev) => [
           ...prev,
-          { timestamp: now(), level: "info", message: "Motor 100% IA do PIX escalou horizontalmente via workers assíncronos." },
-          { timestamp: now(), level: "success", message: "PNL refinado manteve taxa de assertividade em 94.2% sem filas de retenção." },
-          { timestamp: now(), level: "success", message: "OPERAÇÃO CONCLUÍDA: 0 transações perdidas. Latência estabilizada em 41ms." },
+          { timestamp: now(), level: "info", message: "SIMULAÇÃO DIDÁTICA: o desenho prevê escalonamento horizontal via workers." },
+          { timestamp: now(), level: "success", message: "SIMULAÇÃO DIDÁTICA: capacidade e assertividade precisam ser validadas com métricas reais." },
+          { timestamp: now(), level: "success", message: "SIMULAÇÃO DIDÁTICA: nenhum resultado de produção é medido neste playground." },
         ]);
-        setIsRunning(false);
       }, 700);
     }
   };
@@ -117,25 +99,25 @@ export function SystemResilienceWorkbench() {
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#07CA6B] animate-ping" />
             <span className="font-mono text-xs uppercase tracking-wider text-[#38BDF8]">
-              BANCADA DE ENGENHARIA DE RESILIÊNCIA // LIVE FAULT INJECTION
+              LABORATÓRIO LOCAL DE RESILIÊNCIA // SIMULAÇÃO DE CENÁRIOS
             </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight mt-0.5">
-            Simulador Interativo de Decisões de Arquitetura & Falhas
+            Simulador de cenários de arquitetura
           </h2>
           <p className="text-xs text-[#94A3B8] mt-0.5">
-            Escolha um cenário de estresse abaixo para testar ao vivo como a infraestrutura desenvolvida no Banco Safra reage a quedas, ataques e picos.
+            Os estados e logs abaixo são gerados localmente para explicar decisões; não injetam falhas nem consultam sistemas de produção.
           </p>
         </div>
 
         <div className="flex items-center gap-2 font-mono text-xs text-white/60">
-          <span className="text-[#07CA6B]">SISTEMA: SEGURO</span>
+          <span className="text-[#07CA6B]">MODO: DEMONSTRAÇÃO</span>
           <span>•</span>
-          <span>ZERO TRUST ATIVO</span>
+          <span>ZERO TRUST: NÃO CONECTADO</span>
         </div>
       </div>
 
-      {/* Seletor de Cenários de Estresse Real (Utilidade Prática de Avaliação) */}
+      {/* Seletor de cenários ilustrativos; nenhuma falha real é injetada. */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 my-4 shrink-0 font-mono text-xs">
         <button
           onClick={() => triggerScenario("normal")}
@@ -300,8 +282,8 @@ export function SystemResilienceWorkbench() {
           </div>
 
           <div className="pt-3 border-t border-white/10 text-[11px] font-mono text-white/50 flex items-center justify-between">
-            <span>ISOLAMENTO DE FALHAS: ATIVO</span>
-            <span className="text-[#07CA6B]">DISPONIBILIDADE: 99.99%</span>
+            <span>INTEGRAÇÕES: NENHUMA</span>
+            <span className="text-[#07CA6B]">EXECUÇÃO: LOCAL / ILUSTRATIVA</span>
           </div>
         </div>
 
@@ -311,7 +293,7 @@ export function SystemResilienceWorkbench() {
             <div className="flex items-center justify-between pb-3 border-b border-white/10 font-mono text-xs">
               <span className="text-[#07CA6B] uppercase font-bold flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#07CA6B] animate-pulse" />
-                CONCILIO DE TELEMETRIA & LOGS EM PRODUÇÃO
+                EVENTOS DA SIMULAÇÃO • LOGS LOCAIS
               </span>
               <button
                 onClick={() => triggerScenario("normal")}

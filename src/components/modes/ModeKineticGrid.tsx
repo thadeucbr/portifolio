@@ -1,21 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { SYSTEMS_DATA, SystemProject } from "@/data/systems";
-import { 
-  ShieldCheck, 
-  Layers, 
-  Cpu, 
-  Activity, 
-  ArrowUpRight, 
-  CheckCircle2, 
-  ChevronRight,
-  Lock,
-  Zap,
-  Terminal,
-  Grid,
-  AlertTriangle
-} from "lucide-react";
+import { useState } from "react";
+import { SYSTEMS_DATA, type SystemProject } from "@/data/systems";
+import { AlertTriangle, CheckCircle2, ChevronRight, Grid } from "lucide-react";
 
 export function ModeKineticGrid() {
   const [selectedSystem, setSelectedSystem] = useState<SystemProject>(SYSTEMS_DATA[0]);
@@ -38,9 +25,9 @@ export function ModeKineticGrid() {
         </div>
 
         <div className="hidden sm:flex items-center gap-2 font-mono text-xs text-white/50">
-          <span>5 MÓDULOS DE MISSÃO CRÍTICA</span>
+          <span>5 PROJETOS DESCRITOS</span>
           <span>•</span>
-          <span className="text-[#07CA6B]">STATUS: PRODUCTION</span>
+          <span className="text-[#07CA6B]">CONTEÚDO ESTÁTICO</span>
         </div>
       </div>
 
@@ -102,7 +89,7 @@ export function ModeKineticGrid() {
             <div className="flex items-center justify-between pb-4 border-b border-white/10">
               <div>
                 <span className="font-mono text-[11px] uppercase text-[#38BDF8] tracking-wider block">
-                  {selectedSystem.category} // {selectedSystem.period}
+                  {selectedSystem.category} • {selectedSystem.period}
                 </span>
                 <h3 className="text-xl font-extrabold text-white tracking-tight mt-0.5">
                   {selectedSystem.title}
@@ -155,7 +142,7 @@ export function ModeKineticGrid() {
                   {/* Fluxograma Arquitetural Único e Específico do Sistema Selecionado */}
                   <div className="p-4 rounded-2xl bg-black/50 border border-white/10 space-y-3 font-mono text-xs">
                     <div className="flex items-center justify-between text-[10px] uppercase text-[#38BDF8] pb-1 border-b border-white/5 font-bold">
-                      <span>FLUXO ESPECÍFICO DE PRODUÇÃO [{selectedSystem.codename}]:</span>
+                      <span>FLUXO DE REFERÊNCIA [{selectedSystem.codename}]:</span>
                       <span className="text-white/50">{selectedSystem.executionFlow.length} ESTÁGIOS</span>
                     </div>
 
@@ -216,7 +203,7 @@ export function ModeKineticGrid() {
               {activeTab === "telemetry" && (
                 <div className="space-y-4 font-mono">
                   <div className="text-[11px] text-[#38BDF8] uppercase">
-                    Métricas Nominais e Telemetria em Produção:
+                    Indicadores cadastrados na ficha do projeto:
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     {selectedSystem.metrics.map((m, i) => (
@@ -227,7 +214,7 @@ export function ModeKineticGrid() {
                     ))}
                   </div>
                   <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 text-xs text-[#94A3B8] font-sans">
-                    <strong>Garantia de Qualidade de Produção:</strong> Telemetria monitorada ativamente com rastreabilidade ponta a ponta e auditoria de não-repúdio.
+                    Estes valores são conteúdo estático da ficha; não representam telemetria ao vivo nem uma consulta ao sistema original.
                   </div>
                 </div>
               )}
@@ -248,7 +235,7 @@ export function ModeKineticGrid() {
             </div>
             <span className="text-xs font-mono text-[#07CA6B] flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#07CA6B] animate-pulse" />
-              SISTEMA HOMOLOGADO
+              DESCRIÇÃO DE REFERÊNCIA
             </span>
           </div>
         </div>
