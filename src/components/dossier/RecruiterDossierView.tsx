@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { PROFILE_DATA, SYSTEMS_DATA } from "@/data/systems";
-import { Award, Printer } from "lucide-react";
+import { Award, Download } from "lucide-react";
+import { ContactButtonDialog } from "@/components/contact/ContactButtonDialog";
 
 export function RecruiterDossierView() {
   const [copied, setCopied] = useState(false);
@@ -11,10 +12,6 @@ export function RecruiterDossierView() {
     navigator.clipboard.writeText("https://thadeucbr.github.io");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handlePrint = () => {
-    window.print();
   };
 
   return (
@@ -43,13 +40,17 @@ export function RecruiterDossierView() {
           >
             {copied ? "Link Copiado!" : "Compartilhar Link"}
           </button>
-          <button
-            onClick={handlePrint}
+          <a
+            href="/CV%20-%20Thadeu%20Castelo%20Branco%20Ramos%20-%202026.pdf"
+            download="CV - Thadeu Castelo Branco Ramos - 2026.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
             className="px-3.5 py-1.5 rounded-xl bg-[#1856FF] hover:bg-[#1856FF]/90 text-white flex items-center gap-1.5 cursor-pointer shadow-md transition-colors"
+            aria-label="Baixar currículo em PDF"
           >
-            <Printer className="w-3.5 h-3.5" />
+            <Download className="w-3.5 h-3.5" />
             <span>Exportar PDF</span>
-          </button>
+          </a>
         </div>
       </div>
 
@@ -139,12 +140,12 @@ export function RecruiterDossierView() {
                 Capacidade de acelerar entregas, mitigar riscos de vazamento e desenhar plataformas tolerantes a falhas.
               </p>
             </div>
-            <a
-              href={`mailto:${PROFILE_DATA.contact.email}?subject=Oportunidade%20Senior%20Engineering%20-%20Thadeu%20Ramos`}
-              className="px-4 py-2 rounded-xl bg-[#1856FF] hover:bg-[#1856FF]/90 text-white font-mono text-xs font-semibold shrink-0 cursor-pointer shadow-md"
-            >
-              Iniciar Conversa
-            </a>
+            <ContactButtonDialog
+              triggerText="Iniciar Conversa"
+              triggerClassName="px-4 py-2 rounded-xl bg-[#1856FF] hover:bg-[#1856FF]/90 text-white font-mono text-xs font-semibold shrink-0 cursor-pointer shadow-md transition-colors"
+              icon={null}
+              ariaLabel="Iniciar conversa e enviar mensagem"
+            />
           </div>
         </div>
       </div>

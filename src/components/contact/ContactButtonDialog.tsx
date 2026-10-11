@@ -5,7 +5,19 @@ import { Mail, X } from "lucide-react";
 import { ElicitationContactForm } from "@/components/console/ElicitationContactForm";
 import { PROFILE_DATA } from "@/data/systems";
 
-export function ContactButtonDialog() {
+interface ContactButtonDialogProps {
+  triggerText?: string;
+  triggerClassName?: string;
+  icon?: React.ReactNode | null;
+  ariaLabel?: string;
+}
+
+export function ContactButtonDialog({
+  triggerText = "Contato",
+  triggerClassName = "px-3.5 py-2 rounded-xl bg-[#1856FF] hover:bg-[#1856FF]/90 text-white font-sans text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-md cursor-pointer",
+  icon = <Mail aria-hidden="true" className="w-3.5 h-3.5" />,
+  ariaLabel = "Abrir formulário de contato direto",
+}: ContactButtonDialogProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -22,11 +34,11 @@ export function ContactButtonDialog() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="px-3.5 py-2 rounded-xl bg-[#1856FF] hover:bg-[#1856FF]/90 text-white font-sans text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-md cursor-pointer"
-        aria-label="Abrir formulário de contato direto"
+        className={triggerClassName}
+        aria-label={ariaLabel}
       >
-        <Mail aria-hidden="true" className="w-3.5 h-3.5" />
-        <span>Contato</span>
+        {icon}
+        <span>{triggerText}</span>
       </button>
 
       {open && (
