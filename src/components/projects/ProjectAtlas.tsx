@@ -62,8 +62,8 @@ export function ProjectAtlas() {
               </button>
             ))}
           </div>
-          <span className="shrink-0 font-mono text-[10px] sm:text-[11px] px-2.5 py-1 rounded-full border border-white/15 bg-white/[0.04] text-white/70 font-medium">
-            FÍSICA LOCAL · NENHUM SISTEMA EXTERNO CONECTADO
+          <span className="shrink-0 font-mono text-[10px] sm:text-[11px] px-2.5 py-1 rounded-full border border-sky-400/30 bg-sky-400/10 text-sky-200 font-medium">
+            SIMULAÇÃO FÍSICA · RAPIER WASM
           </span>
         </div>
       </header>
@@ -126,25 +126,18 @@ export function ProjectAtlas() {
         </article>
 
         <aside className="lg:col-span-5 glass-panel rounded-2xl border border-white/15 p-4 sm:p-5 flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="font-mono text-xs uppercase tracking-wider text-[#38BDF8] font-semibold">Decisões e limites</h3>
-            <span className="text-[11px] text-white/70 font-mono">FICHA ESTÁTICA</span>
+          <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2.5">
+            <h3 className="font-mono text-xs uppercase tracking-wider text-[#38BDF8] font-semibold">Decisões de Arquitetura</h3>
+            <span className="text-[11px] text-white/70 font-mono">DESTAQUES</span>
           </div>
-          <ul className="space-y-2.5">
+          <ul className="space-y-3 pt-1">
             {selected.architectureHighlights.map((highlight) => (
-              <li key={highlight} className="flex items-start gap-2 text-xs sm:text-sm leading-relaxed text-white/85">
+              <li key={highlight} className="flex items-start gap-2.5 text-xs sm:text-sm leading-relaxed text-white/85">
                 <ArrowUpRight aria-hidden="true" className="w-4 h-4 shrink-0 text-[#38BDF8] mt-0.5" />
-                {highlight}
+                <span>{highlight}</span>
               </li>
             ))}
           </ul>
-          <div className="mt-auto rounded-xl border border-[#EA2143]/20 bg-[#EA2143]/[0.08] p-3">
-            <span className="font-mono text-[11px] uppercase font-bold text-[#EA2143]">Tratamento de falhas descrito</span>
-            <p className="text-xs leading-relaxed text-white/85 mt-1">{selected.failureHandling}</p>
-          </div>
-          <p className="text-[11px] leading-relaxed text-white/60">
-            Conteúdo e indicadores são descrições do portfólio, não telemetria ao vivo nem evidência independente do sistema original.
-          </p>
         </aside>
       </section>
     </div>
