@@ -48,31 +48,32 @@ export function ContactButtonDialog({
           aria-labelledby="contact-modal-title"
           className="fixed inset-0 z-[100] grid place-items-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-200"
         >
-          <div className="relative w-full max-w-xl rounded-2xl glass-panel border border-white/20 p-5 shadow-2xl bg-[#0b0e17]/90 my-8">
-            <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
+          <div className="relative w-full max-w-lg rounded-2xl glass-panel border border-white/20 p-5 shadow-2xl bg-[#0b0e17]/95 my-8 animate-in fade-in zoom-in-95 duration-200">
+            <div className="mb-4 flex items-start justify-between gap-4">
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-wider text-[#38BDF8]">
-                  Canal Direto · Notificação em Tempo Real
+                <p className="font-mono text-[10px] uppercase tracking-widest text-[#38BDF8]">
+                  MCP · ELICITATION/CREATE
                 </p>
-                <h2 id="contact-modal-title" className="text-base font-bold text-white">
-                  Fale com {PROFILE_DATA.name.split(" ")[0]}
-                </h2>
+                <div className="flex items-center gap-2 mt-1">
+                  <h2 id="contact-modal-title" className="text-lg font-semibold text-white">
+                    Solicitar contato
+                  </h2>
+                  <span className="font-mono text-[10px] px-2 py-0.5 rounded border border-[#1856FF]/40 bg-[#1856FF]/10 text-[#38BDF8]">
+                    CONTATO 1.00
+                  </span>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="p-1.5 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                className="rounded-lg px-2 py-1 text-white/70 hover:bg-white/10 hover:text-white transition-colors cursor-pointer text-lg leading-none"
                 aria-label="Fechar formulário"
               >
-                <X aria-hidden="true" className="w-4 h-4" />
+                ×
               </button>
             </div>
 
-            <p className="text-xs text-white/70 mb-4 leading-relaxed">
-              Preencha o formulário abaixo. Os dados são validados no servidor e despachados instantaneamente via bot do Telegram para alerta imediato.
-            </p>
-
-            <ElicitationContactForm />
+            <ElicitationContactForm onCancel={() => setOpen(false)} />
           </div>
         </div>
       )}
