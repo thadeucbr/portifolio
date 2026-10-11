@@ -5,6 +5,7 @@
 
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import { headers } from "next/headers";
 import { PROFILE_DATA } from "@/data/systems";
 import { classifyContactDecision } from "./contactDecision.mjs";
 
@@ -17,6 +18,7 @@ export interface SignalState {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const TELEGRAM_TOKEN_RE = /^\d+:[A-Za-z0-9_-]{35,}$/;
 const INTENTS = new Set(["vaga-senior-staff", "consultoria", "palestra", "outro"]);
 const INTENT_LABELS: Record<string, string> = {
   "vaga-senior-staff": "Vaga Sênior / Staff",
@@ -24,6 +26,38 @@ const INTENT_LABELS: Record<string, string> = {
   palestra: "Palestra",
   outro: "Outro",
 };
+
+// Rate limiting: máx. 5 requisições por IP a cada 10 minutos
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const MAX_REQUESTS_PER_WINDOW = 5;
+const ipRequestHistory = new Map<string, number[]>();
+
+async function getClientIp(): Promise<string> {
+  try {
+    const headerStore = await headers();
+    const forwarded = headerStore.get("x-forwarded-for");
+    if (forwarded) return forwarded.split(",")[0].trim();
+    const realIp = headerStore.get("x-real-ip");
+    if (realIp) return realIp.trim();
+    const cfIp = headerStore.get("cf-connecting-ip");
+    if (cfIp) return cfIp.trim();
+  } catch {
+    // Chamada fora de contexto HTTP (testes ou CLI)
+  }
+  return "127.0.0.1";
+}
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const timestamps = (ipRequestHistory.get(ip) ?? []).filter((time) => now - time < RATE_LIMIT_WINDOW_MS);
+  if (timestamps.length >= MAX_REQUESTS_PER_WINDOW) {
+    ipRequestHistory.set(ip, timestamps);
+    return false;
+  }
+  timestamps.push(now);
+  ipRequestHistory.set(ip, timestamps);
+  return true;
+}
 
 async function getTelegramBotToken() {
   const tokenFile = process.env.TELEGRAM_BOT_TOKEN_FILE;
@@ -80,6 +114,15 @@ export async function submitRecruiterSignal(_prev: SignalState, formData: FormDa
     return { status: "error", message: "Requisição rejeitada." };
   }
 
+  // Rate limiting por IP: previne spam de notificações e exaustão da cota do Telegram
+  const clientIp = await getClientIp();
+  if (!checkRateLimit(clientIp)) {
+    return {
+      status: "error",
+      message: "Muitas tentativas em pouco tempo. Por favor, aguarde alguns minutos antes de enviar novamente.",
+    };
+  }
+
   const name = String(formData.get("name") ?? "").trim().slice(0, 120);
   const email = String(formData.get("email") ?? "").trim().toLowerCase().slice(0, 200);
   const phone = String(formData.get("phone") ?? "").trim().slice(0, 40);
@@ -114,6 +157,9 @@ export async function submitRecruiterSignal(_prev: SignalState, formData: FormDa
   const hasTelegramChat = Boolean(telegramChatId);
   if (hasTelegramToken !== hasTelegramChat) {
     return { status: "error", message: "Canal de contato indisponível: configuração do Telegram incompleta." };
+  }
+  if (hasTelegramToken && !TELEGRAM_TOKEN_RE.test(telegramToken)) {
+    return { status: "error", message: "Canal de contato indisponível: formato do token do Telegram inválido." };
   }
   if (hasTelegramChat && !/^-?\d+$/.test(telegramChatId) && !/^@[A-Za-z0-9_]{5,}$/.test(telegramChatId)) {
     return { status: "error", message: "Canal de contato indisponível: chat ID do Telegram inválido." };
