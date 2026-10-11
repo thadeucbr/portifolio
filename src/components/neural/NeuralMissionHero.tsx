@@ -1,19 +1,19 @@
-﻿"use client";
+"use client";
 
 import React from "react";
-import { Zap, ShieldCheck, Sparkles, ChevronRight } from "lucide-react";
+import { Zap, Cpu, Sparkles, ChevronRight } from "lucide-react";
 import { LiveRuntimeHud } from "./LiveRuntimeHud";
 
 interface NeuralMissionHeroProps {
   onGoToSystems: () => void;
   onGoToResilience: () => void;
-  onGoToSecurity: () => void;
+  onGoToAgent: () => void;
 }
 
 export function NeuralMissionHero({
   onGoToSystems,
   onGoToResilience,
-  onGoToSecurity,
+  onGoToAgent,
 }: NeuralMissionHeroProps) {
 
   return (
@@ -61,11 +61,11 @@ export function NeuralMissionHero({
           </button>
 
           <button
-            onClick={onGoToSecurity}
-            className="px-6 py-3.5 rounded-2xl glass-panel hover:bg-white/[0.12] text-[#07CA6B] border border-[#07CA6B]/30 flex items-center gap-2 cursor-pointer transition-all shadow-[0_0_20px_rgba(7,202,107,0.15)]"
+            onClick={onGoToAgent}
+            className="px-6 py-3.5 rounded-2xl glass-panel hover:bg-white/[0.12] text-[#38BDF8] border border-[#38BDF8]/30 flex items-center gap-2 cursor-pointer transition-all shadow-[0_0_20px_rgba(56,189,248,0.15)]"
           >
-            <ShieldCheck className="w-4 h-4 text-[#07CA6B]" />
-            <span>Scanner Zero Trust & DLP</span>
+            <Cpu className="w-4 h-4 text-[#38BDF8]" />
+            <span>Agente Edge & Playground</span>
           </button>
         </div>
       </div>

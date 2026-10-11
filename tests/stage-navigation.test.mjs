@@ -2,10 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { stageForShortcut, transitionDirection } from "../src/components/stage/stageNavigation.mjs";
 
-test("shortcuts 1–6 select the six portfolio stages", () => {
+test("shortcuts 1–5 select the five portfolio stages", () => {
   assert.deepEqual(
-    ["1", "2", "3", "4", "5", "6"].map((key) => stageForShortcut(key)),
-    ["hero", "systems", "resilience", "security", "agent", "dossier"],
+    ["1", "2", "3", "4", "5"].map((key) => stageForShortcut(key)),
+    ["hero", "systems", "resilience", "agent", "dossier"],
   );
 });
 
@@ -16,6 +16,7 @@ test("keyboard shortcuts do not steal digits while a field is being edited", () 
 
 test("non-navigation keys and out-of-range digits do not select a stage", () => {
   assert.equal(stageForShortcut("0"), null);
+  assert.equal(stageForShortcut("6"), null);
   assert.equal(stageForShortcut("7"), null);
   assert.equal(stageForShortcut("ArrowRight"), null);
 });

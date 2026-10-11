@@ -44,6 +44,7 @@ export default function Home() {
           <div className="flex items-center gap-3 sm:gap-4 text-xs font-sans shrink-0">
             <a href={PROFILE_DATA.contact.github} target="_blank" rel="noreferrer" className="text-white/70 hover:text-white transition-colors">GitHub</a>
             <a href={PROFILE_DATA.contact.linkedin} target="_blank" rel="noreferrer" className="hidden sm:inline text-white/70 hover:text-white transition-colors">LinkedIn</a>
+            <a href={PROFILE_DATA.contact.medium} target="_blank" rel="noreferrer" className="hidden sm:inline text-white/70 hover:text-white transition-colors">Medium</a>
             <ContactButtonDialog />
           </div>
         </div>

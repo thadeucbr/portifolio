@@ -80,6 +80,9 @@ export function RecruiterDossierView() {
             </span>
             <div className="text-white/80">E-mail: {PROFILE_DATA.contact.email}</div>
             <div className="text-white/80">Tel: {PROFILE_DATA.contact.phone}</div>
+            <div className="text-white/80">
+              Medium: <a href={PROFILE_DATA.contact.medium} target="_blank" rel="noreferrer" className="text-[#38BDF8] hover:underline">@thadeucbr</a>
+            </div>
             <div className="text-white/80">Inglês: C2 Proficient (EF SET 75/100)</div>
           </div>
 

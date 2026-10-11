@@ -1,8 +1,8 @@
-export const STAGE_IDS = Object.freeze(["hero", "systems", "resilience", "security", "agent", "dossier"]);
+export const STAGE_IDS = Object.freeze(["hero", "systems", "resilience", "agent", "dossier"]);
 
 /** Resolve numbered navigation shortcuts without hijacking text entry. */
 export function stageForShortcut(key, editing = false) {
-  if (editing || !/^[1-6]$/.test(key)) return null;
+  if (editing || !/^[1-5]$/.test(key)) return null;
   return STAGE_IDS[Number(key) - 1];
 }
 

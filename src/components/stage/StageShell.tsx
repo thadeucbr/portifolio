@@ -1,11 +1,10 @@
 "use client";
 
 import { startTransition, useCallback, useEffect, useState, ViewTransition, addTransitionType } from "react";
-import { Activity, FileCheck, Grid3X3, Network, ShieldCheck, Cpu } from "lucide-react";
+import { Activity, FileCheck, Grid3X3, Network, Cpu } from "lucide-react";
 import { NeuralMissionHero } from "@/components/neural/NeuralMissionHero";
 import { ProjectAtlas } from "@/components/projects/ProjectAtlas";
 import { SystemResilienceWorkbench } from "@/components/workbench/SystemResilienceWorkbench";
-import { ZeroTrustDlpInspector } from "@/components/security/ZeroTrustDlpInspector";
 import { RecruiterDossierView } from "@/components/dossier/RecruiterDossierView";
 import { EdgeAgentConsole } from "@/components/console/EdgeAgentConsole";
 import { stageForShortcut, transitionDirection, type StageId } from "./stageNavigation.mjs";
@@ -14,7 +13,6 @@ const STAGES = [
   { id: "hero", label: "Core", icon: Network, tint: "text-[#38BDF8]" },
   { id: "systems", label: "Sistemas", icon: Grid3X3, tint: "" },
   { id: "resilience", label: "Resiliência", icon: Activity, tint: "text-amber-400" },
-  { id: "security", label: "Zero Trust & DLP", icon: ShieldCheck, tint: "text-[#07CA6B]" },
   { id: "agent", label: "Agente Edge", icon: Cpu, tint: "text-[#38BDF8]" },
   { id: "dossier", label: "Dossiê", icon: FileCheck, tint: "text-purple-300" },
 ] as const;
@@ -65,12 +63,11 @@ export function StageShell() {
               <NeuralMissionHero
                 onGoToSystems={() => go("systems")}
                 onGoToResilience={() => go("resilience")}
-                onGoToSecurity={() => go("security")}
+                onGoToAgent={() => go("agent")}
               />
             )}
             {stage === "systems" && <ProjectAtlas />}
             {stage === "resilience" && <SystemResilienceWorkbench />}
-            {stage === "security" && <ZeroTrustDlpInspector />}
             {stage === "agent" && (
               <div className="w-full max-w-3xl">
                 <EdgeAgentConsole />
@@ -105,7 +102,7 @@ export function StageShell() {
               </button>
             );
           })}
-          <span className="hidden md:flex shrink-0 font-mono text-[10px] text-white/65 px-2">Atalhos 1–6</span>
+          <span className="hidden md:flex shrink-0 font-mono text-[10px] text-white/65 px-2">Atalhos 1–5</span>
         </nav>
       </footer>
     </>

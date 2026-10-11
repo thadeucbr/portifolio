@@ -42,6 +42,7 @@ export const PROFILE_DATA = {
     phone: "+55 (11) 97170-4940",
     linkedin: "https://linkedin.com/in/thadeucbr",
     github: "https://github.com/thadeucbr",
+    medium: "https://medium.com/@thadeucbr",
     portfolio: "https://thadeucbr.github.io",
   },
   summary: "Engenheiro de Software Sênior com experiência em mensageria distribuída, segurança corporativa e integração de IA no setor financeiro.",
