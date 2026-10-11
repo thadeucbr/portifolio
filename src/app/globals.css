@@ -112,28 +112,6 @@ code, pre, .font-mono {
 .neon-glow-success {
   box-shadow: 0 0 25px rgba(7, 202, 107, 0.35), inset 0 0 15px rgba(7, 202, 107, 0.15);
 }
-
-/* Ambient Neon Orbs / Light Leaks (Z-Index Negativo) */
-.ambient-glow-primary {
-  position: absolute;
-  width: 550px;
-  height: 550px;
-  background: radial-gradient(circle, rgba(24, 86, 255, 0.18) 0%, rgba(24, 86, 255, 0) 70%);
-  filter: blur(70px);
-  pointer-events: none;
-  z-index: -1;
-}
-
-.ambient-glow-secondary {
-  position: absolute;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(58, 52, 78, 0.35) 0%, rgba(58, 52, 78, 0) 70%);
-  filter: blur(90px);
-  pointer-events: none;
-  z-index: -1;
-}
-
 /* Scrollbar refinada no tema Dark Glass */
 ::-webkit-scrollbar {
   width: 6px;
@@ -225,8 +203,6 @@ code, pre, .font-mono {
   header,
   footer,
   canvas,
-  .ambient-glow-primary,
-  .ambient-glow-secondary,
   .no-print {
     display: none !important;
   }

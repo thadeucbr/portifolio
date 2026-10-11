@@ -16,9 +16,6 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <main className="relative min-h-dvh w-full overflow-x-hidden bg-[#060810] text-[#FFFFFF] font-sans flex flex-col">
-      <div aria-hidden="true" className="ambient-glow-primary top-10 -left-20 opacity-20" />
-      <div aria-hidden="true" className="ambient-glow-secondary top-40 right-0 opacity-25" />
-      <div aria-hidden="true" className="ambient-glow-primary bottom-10 right-1/4 opacity-20" />
       <SynapticNeuralMesh />
 
       <header className="relative z-40 w-full px-3 sm:px-6 pt-3 sm:pt-4">

@@ -6,7 +6,6 @@
 import * as THREE from "three/webgpu";
 import { float, pass, smoothstep, uniform, uv, vec3 } from "three/tsl";
 import { bloom } from "three/addons/tsl/display/BloomNode.js";
-import { createGlowSpriteCache, glowSpriteCacheKey } from "./glowSpriteCache.mjs";
 
 export type MeshIn =
   | { type: "init"; canvas: OffscreenCanvas; width: number; height: number; dpr: number; reducedMotion: boolean }
@@ -42,62 +41,6 @@ function glowMaterial(core: number) {
   return m;
 }
 
-const bakedGlowSpriteCache = createGlowSpriteCache(
-  (size) => new OffscreenCanvas(size, size),
-  (canvas, { color, size, shadowBlur, opacity }) => {
-    if (typeof color !== "number") return;
-    const context = canvas.getContext("2d", { alpha: true, desynchronized: true, willReadFrequently: false });
-    if (!context) return;
-    const rgba = (alpha: number) => `rgba(${(color >> 16) & 255}, ${(color >> 8) & 255}, ${color & 255}, ${Math.max(0, Math.min(1, alpha))})`;
-    const center = size / 2;
-
-    // Bake the expensive diffuse shadow and radial glow once in an isolated 2D buffer.
-    context.shadowColor = rgba(opacity * 0.45);
-    context.shadowBlur = shadowBlur;
-    context.fillStyle = rgba(opacity * 0.35);
-    context.beginPath();
-    context.arc(center, center, size * 0.2, 0, Math.PI * 2);
-    context.fill();
-    context.shadowBlur = 0;
-
-    const gradient = context.createRadialGradient(center, center, 0, center, center, size * 0.5);
-    gradient.addColorStop(0, `rgba(255, 255, 255, ${opacity * 0.4})`);
-    gradient.addColorStop(0.16, rgba(opacity));
-    gradient.addColorStop(0.55, rgba(opacity * 0.6));
-    gradient.addColorStop(1, rgba(0));
-    context.fillStyle = gradient;
-    context.beginPath();
-    context.arc(center, center, size * 0.5, 0, Math.PI * 2);
-    context.fill();
-  },
-);
-const glowSpriteTextures = new Map<string, THREE.CanvasTexture<OffscreenCanvas>>();
-
-/** Reuses a cached, pre-baked sprite for each ambient light-leak material. */
-function orb(hex: number, size: number, x: number, y: number) {
-  const spriteParams = { color: hex, size: 512, shadowBlur: 44, opacity: 0.35 };
-  const cacheKey = glowSpriteCacheKey(spriteParams);
-  let texture = glowSpriteTextures.get(cacheKey);
-  if (!texture) {
-    const createdTexture = new THREE.CanvasTexture<OffscreenCanvas>(bakedGlowSpriteCache(spriteParams));
-    createdTexture.colorSpace = THREE.SRGBColorSpace;
-    createdTexture.needsUpdate = true;
-    glowSpriteTextures.set(cacheKey, createdTexture);
-    texture = createdTexture;
-  }
-  const material = new THREE.MeshBasicMaterial({
-    map: texture,
-    transparent: true,
-    opacity: 1,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    toneMapped: false,
-  });
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(size, size), material);
-  mesh.position.set(x, y, -220);
-  return mesh;
-}
-
 async function init(msg: Extract<MeshIn, { type: "init" }>) {
   motion = msg.reducedMotion ? 0 : 1;
 
@@ -114,9 +57,6 @@ async function init(msg: Extract<MeshIn, { type: "init" }>) {
 
   camera = new THREE.PerspectiveCamera(50, msg.width / msg.height, 0.1, 1000);
   camera.position.z = 180;
-
-  const orbs = [orb(0x1856ff, 420, -170, 90), orb(0x3a344e, 520, 200, -40), orb(0x0ea5e9, 300, 60, -120)];
-  orbs.forEach((o) => scene.add(o));
 
   // Neurônios (instanciados — um draw call)
   const palette = [0x1856ff, 0x38bdf8, 0x07ca6b, 0x3a344e].map((h) => new THREE.Color(h));
@@ -185,11 +125,6 @@ async function init(msg: Extract<MeshIn, { type: "init" }>) {
     camera.position.x = mouse.x * 12;
     camera.position.y = mouse.y * 8;
     camera.lookAt(0, 0, 0);
-
-    orbs.forEach((o, i) => {
-      o.position.x += Math.sin(t * 0.05 + i * 2) * 0.05 * motion;
-      o.position.y += Math.cos(t * 0.04 + i) * 0.04 * motion;
-    });
 
     const mwx = mouse.x * 150;
     const mwy = mouse.y * 90;
