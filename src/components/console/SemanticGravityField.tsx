@@ -215,7 +215,7 @@ export function SemanticGravityField({
       className={`relative ${shape === "card" ? "h-64 sm:h-72 touch-pan-y" : "h-36"} border-b border-white/10 bg-[radial-gradient(circle_at_center,rgba(24,86,255,0.18),transparent_60%)] overflow-hidden`}
     >
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border border-[#1856FF]/40 pointer-events-none" />
-      <span className="absolute left-3 top-2 z-10 font-mono text-[9px] text-white/40 pointer-events-none">
+      <span className="absolute left-3 top-2 z-10 font-mono text-[11px] text-white/50 pointer-events-none">
         RAPIER · {modeLabel} · {LAYOUT_NAMES[layout]} {workerError ? "(falha · modo estático)" : ready ? "" : "(inicializando WASM…)"}
       </span>
       {ids.map((id, index) => {
@@ -249,19 +249,19 @@ export function SemanticGravityField({
             aria-keyshortcuts={shape === "card" ? "ArrowLeft ArrowRight ArrowUp ArrowDown" : undefined}
             style={transitionStyle}
             className={shape === "card"
-              ? `absolute left-0 top-0 w-44 h-16 px-3 py-2 rounded-xl text-left border backdrop-blur-md cursor-grab active:cursor-grabbing touch-none will-change-transform ${isTop ? "bg-[#1856FF]/90 border-[#38BDF8] text-white shadow-[0_0_24px_rgba(24,86,255,0.45)]" : "bg-slate-950/90 border-white/20 text-white/85 shadow-xl hover:border-white/40"}`
-              : `absolute left-0 top-0 px-2 py-1 rounded-full font-mono text-[10px] whitespace-nowrap border backdrop-blur-md cursor-pointer will-change-transform transition-colors ${isTop ? "bg-[#1856FF] border-[#38BDF8] text-white shadow-[0_0_18px_rgba(24,86,255,0.7)]" : "bg-white/[0.08] border-white/15 text-white/75 hover:text-white"}`
+              ? `absolute left-0 top-0 w-48 sm:w-52 h-16 sm:h-18 px-3 py-2 rounded-xl text-left border backdrop-blur-md cursor-grab active:cursor-grabbing touch-none will-change-transform ${isTop ? "bg-[#1856FF]/90 border-[#38BDF8] text-white shadow-[0_0_24px_rgba(24,86,255,0.45)]" : "bg-slate-950/90 border-white/20 text-white/85 shadow-xl hover:border-white/40"}`
+              : `absolute left-0 top-0 px-2.5 py-1 rounded-full font-mono text-xs whitespace-nowrap border backdrop-blur-md cursor-pointer will-change-transform transition-colors ${isTop ? "bg-[#1856FF] border-[#38BDF8] text-white shadow-[0_0_18px_rgba(24,86,255,0.7)]" : "bg-white/[0.08] border-white/15 text-white/75 hover:text-white"}`
             }
           >
             {shape === "card" ? (
               <span className="flex h-full items-center justify-between gap-2 overflow-hidden">
                 <span className="min-w-0">
-                  <span className="block truncate text-[10px] font-semibold">{info?.title ?? label}</span>
-                  <span className="mt-1 block truncate font-mono text-[8px] text-white/55">
+                  <span className="block truncate text-xs font-bold text-white">{info?.title ?? label}</span>
+                  <span className="mt-0.5 block truncate font-mono text-[10px] text-white/70">
                     {info?.subtitle ?? label}{score !== undefined ? ` · ${score.toFixed(2)}` : ""}
                   </span>
                 </span>
-                <span aria-hidden="true" className="shrink-0 font-mono text-[8px] text-white/35">⠿</span>
+                <span aria-hidden="true" className="shrink-0 font-mono text-xs text-white/40">⠿</span>
               </span>
             ) : (
               <>{label}{score !== undefined && <span className="ml-1 opacity-70">{score.toFixed(2)}</span>}</>

@@ -37,32 +37,32 @@ export function ProjectAtlas() {
     <div className="w-full min-h-[min(68vh,700px)] p-3 sm:p-6 flex flex-col gap-4 animate-in fade-in duration-500">
       <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-3 border-b border-white/10">
         <div>
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#38BDF8]">
+          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.18em] text-[#38BDF8]">
             <Orbit aria-hidden="true" className="w-4 h-4" />
             Project Atlas · campo físico local
           </div>
           <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-white mt-1">
             Sistemas que convergem
           </h2>
-          <p className="text-xs text-[#94A3B8] mt-1 max-w-2xl">
+          <p className="text-sm text-[#94A3B8] mt-1 max-w-2xl">
             Arraste e arremesse cartões; colisões e molas rodam em Rapier no worker. Setas do teclado também movem o cartão focado.
           </p>
         </div>
         <div className="flex flex-col items-start sm:items-end gap-2">
-          <div role="group" aria-label="Alinhamento dos cartões" className="flex flex-wrap gap-1">
+          <div role="group" aria-label="Alinhamento dos cartões" className="flex flex-wrap gap-1.5">
             {LAYOUTS.map((option) => (
               <button
                 key={option.id}
                 type="button"
                 aria-pressed={layout === option.id}
                 onClick={() => setLayout(option.id)}
-                className={`rounded-lg border px-2 py-1 font-mono text-[9px] ${layout === option.id ? "border-[#38BDF8]/70 bg-[#1856FF]/20 text-[#BAE6FD]" : "border-white/10 bg-white/[0.03] text-white/55 hover:text-white"}`}
+                className={`rounded-lg border px-2.5 py-1 font-mono text-xs font-medium cursor-pointer transition-colors ${layout === option.id ? "border-[#38BDF8]/70 bg-[#1856FF]/20 text-[#BAE6FD]" : "border-white/10 bg-white/[0.03] text-white/70 hover:text-white"}`}
               >
                 {option.label}
               </button>
             ))}
           </div>
-          <span className="shrink-0 font-mono text-[9px] px-2.5 py-1 rounded-full border border-white/15 bg-white/[0.04] text-white/55">
+          <span className="shrink-0 font-mono text-[10px] sm:text-[11px] px-2.5 py-1 rounded-full border border-white/15 bg-white/[0.04] text-white/70 font-medium">
             FÍSICA LOCAL · NENHUM SISTEMA EXTERNO CONECTADO
           </span>
         </div>
@@ -84,7 +84,7 @@ export function ProjectAtlas() {
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
         <article className="lg:col-span-7 glass-panel rounded-2xl border border-white/15 p-4 sm:p-5 flex flex-col justify-between gap-4">
           <div>
-            <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase text-[#38BDF8]">
+            <div className="flex flex-wrap items-center gap-2 font-mono text-xs uppercase text-[#38BDF8] font-medium">
               <span>{selected.shortLabel}</span>
               <span className="text-white/30">/</span>
               <span>{selected.category}</span>
@@ -93,7 +93,7 @@ export function ProjectAtlas() {
             </div>
             <h3
               style={{ viewTransitionName: projectTransitionName(selected.id) } as CSSProperties}
-              className="text-lg sm:text-2xl font-bold text-white mt-1"
+              className="text-lg sm:text-2xl font-bold text-white mt-1.5"
             >
               {selected.title}
             </h3>
@@ -101,16 +101,16 @@ export function ProjectAtlas() {
           </div>
 
           <div>
-            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-white/55 mb-2">
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-white/70 font-semibold mb-2">
               <Workflow aria-hidden="true" className="w-3.5 h-3.5" />
               Fluxo arquitetural de referência
             </div>
             <ol className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {selected.executionFlow.map((step, index) => (
                 <li key={step.step} className="rounded-xl bg-black/30 border border-white/10 p-3">
-                  <span className="font-mono text-[9px] text-[#38BDF8]">0{index + 1} · {step.step}</span>
+                  <span className="font-mono text-[11px] font-semibold text-[#38BDF8]">0{index + 1} · {step.step}</span>
                   <h4 className="text-xs font-semibold text-white mt-1">{step.title}</h4>
-                  <p className="text-[10px] leading-relaxed text-white/55 mt-1">{step.description}</p>
+                  <p className="text-[11px] leading-relaxed text-white/70 mt-1">{step.description}</p>
                 </li>
               ))}
             </ol>
@@ -118,7 +118,7 @@ export function ProjectAtlas() {
 
           <div className="flex flex-wrap gap-1.5" aria-label="Tecnologias descritas">
             {selected.stack.map((technology) => (
-              <span key={technology} className="px-2 py-1 rounded-lg bg-white/[0.05] border border-white/10 text-[10px] font-mono text-white/70">
+              <span key={technology} className="px-2.5 py-1 rounded-lg bg-white/[0.05] border border-white/10 text-xs font-mono text-white/80">
                 {technology}
               </span>
             ))}
@@ -127,22 +127,22 @@ export function ProjectAtlas() {
 
         <aside className="lg:col-span-5 glass-panel rounded-2xl border border-white/15 p-4 sm:p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="font-mono text-[10px] uppercase tracking-wider text-[#38BDF8]">Decisões e limites</h3>
-            <span className="text-[9px] text-white/65 font-mono">FICHA ESTÁTICA</span>
+            <h3 className="font-mono text-xs uppercase tracking-wider text-[#38BDF8] font-semibold">Decisões e limites</h3>
+            <span className="text-[11px] text-white/70 font-mono">FICHA ESTÁTICA</span>
           </div>
-          <ul className="space-y-2">
+          <ul className="space-y-2.5">
             {selected.architectureHighlights.map((highlight) => (
-              <li key={highlight} className="flex items-start gap-2 text-xs leading-relaxed text-white/75">
-                <ArrowUpRight aria-hidden="true" className="w-3.5 h-3.5 shrink-0 text-[#38BDF8] mt-0.5" />
+              <li key={highlight} className="flex items-start gap-2 text-xs sm:text-sm leading-relaxed text-white/85">
+                <ArrowUpRight aria-hidden="true" className="w-4 h-4 shrink-0 text-[#38BDF8] mt-0.5" />
                 {highlight}
               </li>
             ))}
           </ul>
-          <div className="mt-auto rounded-xl border border-[#EA2143]/20 bg-[#EA2143]/[0.05] p-3">
-            <span className="font-mono text-[9px] uppercase text-[#EA2143]">Tratamento de falhas descrito</span>
-            <p className="text-[11px] leading-relaxed text-white/70 mt-1">{selected.failureHandling}</p>
+          <div className="mt-auto rounded-xl border border-[#EA2143]/20 bg-[#EA2143]/[0.08] p-3">
+            <span className="font-mono text-[11px] uppercase font-bold text-[#EA2143]">Tratamento de falhas descrito</span>
+            <p className="text-xs leading-relaxed text-white/85 mt-1">{selected.failureHandling}</p>
           </div>
-          <p className="text-[10px] leading-relaxed text-white/65">
+          <p className="text-[11px] leading-relaxed text-white/60">
             Conteúdo e indicadores são descrições do portfólio, não telemetria ao vivo nem evidência independente do sistema original.
           </p>
         </aside>

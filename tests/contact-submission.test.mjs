@@ -12,6 +12,7 @@ test("maps an accepted MCP form into the existing Server Action contract", async
   const result = await submit({
     name: "Ada Visitor",
     email: "ada@example.test",
+    phone: "+55 11 99999-9999",
     company: "Analytical Engine",
     intent: "vaga-senior-staff",
   });
@@ -20,6 +21,7 @@ test("maps an accepted MCP form into the existing Server Action contract", async
   assert.equal(received.formData.get("decision"), "accept");
   assert.equal(received.formData.get("name"), "Ada Visitor");
   assert.equal(received.formData.get("email"), "ada@example.test");
+  assert.equal(received.formData.get("phone"), "+55 11 99999-9999");
   assert.equal(received.formData.get("company"), "Analytical Engine");
   assert.equal(received.formData.get("intent"), "vaga-senior-staff");
   assert.equal(received.formData.get("website"), "");

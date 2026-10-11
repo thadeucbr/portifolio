@@ -87,7 +87,7 @@ export function SystemResilienceWorkbench() {
           <h2 className="mt-1 text-xl font-bold text-white sm:text-2xl">Engenharia e resiliência</h2>
           <p className="mt-1 max-w-3xl text-xs leading-relaxed text-white/55">Demonstrações locais de conceitos de engenharia. Não conectam a sistemas internos, não injetam falhas e não medem resultados de produção.</p>
         </div>
-        <span className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 font-mono text-[10px] text-white/60">SEM INTEGRAÇÕES</span>
+        <span className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 font-mono text-xs text-white/60">SEM INTEGRAÇÕES</span>
       </header>
 
       <div className="grid shrink-0 grid-cols-2 gap-2.5 font-mono text-xs sm:grid-cols-3 lg:grid-cols-5">
@@ -95,9 +95,9 @@ export function SystemResilienceWorkbench() {
           const item = SCENARIOS[id];
           return (
             <button key={id} onClick={() => setActiveScenario(id)} aria-pressed={activeScenario === id} className={`rounded-2xl border p-3 text-left transition-all ${activeScenario === id ? "border-[#1856FF] bg-[#1856FF]/15 text-white" : "border-white/10 bg-white/[0.03] text-white/65 hover:bg-white/[0.06]"}`}>
-              <span className="text-[9px] uppercase text-[#38BDF8]">DEMO {String(index + 1).padStart(2, "0")}</span>
-              <span className="mt-1 block text-xs font-semibold">{item.title}</span>
-              <span className="mt-0.5 block text-[9px] text-white/45">{item.subtitle}</span>
+              <span className="text-[11px] uppercase text-[#38BDF8]">DEMO {String(index + 1).padStart(2, "0")}</span>
+              <span className="mt-1 block text-sm font-semibold">{item.title}</span>
+              <span className="mt-0.5 block text-[11px] text-white/50">{item.subtitle}</span>
             </button>
           );
         })}
@@ -106,8 +106,8 @@ export function SystemResilienceWorkbench() {
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-12">
         <section className="glass-panel rounded-3xl border border-white/15 p-4 sm:p-6 lg:col-span-7" aria-labelledby="experience-themes-title">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
-            <h3 id="experience-themes-title" className="font-mono text-[10px] font-bold uppercase text-[#38BDF8]">Experiências profissionais</h3>
-            <span className="font-mono text-[9px] text-white/40">PROJETOS INDEPENDENTES · SEM TOPOLOGIA INTERNA</span>
+            <h3 id="experience-themes-title" className="font-mono text-xs font-bold uppercase text-[#38BDF8]">Experiências profissionais</h3>
+            <span className="font-mono text-[11px] text-white/50">PROJETOS INDEPENDENTES · SEM TOPOLOGIA INTERNA</span>
           </div>
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {projects.map((project, index) => {
@@ -118,10 +118,10 @@ export function SystemResilienceWorkbench() {
                   <div className="flex items-start gap-3">
                     <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[#38BDF8]" aria-hidden="true" />
                     <div>
-                      <span className="font-mono text-[9px] uppercase text-white/65">{project.shortLabel}</span>
-                      <h4 className="mt-1 text-xs font-semibold text-white">{project.title}</h4>
-                      <p className="mt-1 text-[10px] leading-relaxed text-white/55">{project.summary}</p>
-                      <span className={`mt-2 inline-block font-mono text-[9px] uppercase ${isFocused ? "text-[#38BDF8]" : "text-white/65"}`}>{isFocused ? "EM FOCO NESTA DEMO" : "EXPERIÊNCIA PROFISSIONAL"}</span>
+                      <span className="font-mono text-[11px] uppercase text-white/70">{project.shortLabel}</span>
+                      <h4 className="mt-1 text-sm font-semibold text-white">{project.title}</h4>
+                      <p className="mt-1 text-xs leading-relaxed text-white/60">{project.summary}</p>
+                      <span className={`mt-2 inline-block font-mono text-[11px] uppercase ${isFocused ? "text-[#38BDF8]" : "text-white/65"}`}>{isFocused ? "EM FOCO NESTA DEMO" : "EXPERIÊNCIA PROFISSIONAL"}</span>
                     </div>
                   </div>
                 </article>
@@ -132,12 +132,12 @@ export function SystemResilienceWorkbench() {
 
         <section className="glass-panel flex min-h-[280px] flex-col rounded-3xl border border-white/15 p-4 sm:p-6 lg:col-span-5" aria-live="polite">
           <div className="border-b border-white/10 pb-3">
-            <span className="font-mono text-[9px] uppercase text-[#07CA6B]">SAÍDA LOCAL · {scenario.title}</span>
-            <p className="mt-1 text-[10px] leading-relaxed text-white/45">Mensagens explicativas desta hipótese; não são logs, auditoria ou telemetria de sistemas do banco.</p>
+            <span className="font-mono text-[11px] uppercase text-[#07CA6B]">SAÍDA LOCAL · {scenario.title}</span>
+            <p className="mt-1 text-xs leading-relaxed text-white/55">Mensagens explicativas desta hipótese; não são logs, auditoria ou telemetria de sistemas do banco.</p>
           </div>
           <ul className="mt-3 space-y-2">
             {scenario.messages.map((entry, index) => (
-              <li key={`${activeScenario}-${index}`} className={`rounded-xl border p-3 text-[10px] leading-relaxed ${LEVEL_STYLE[entry.level]}`}>{entry.message}</li>
+              <li key={`${activeScenario}-${index}`} className={`rounded-xl border p-3 text-xs leading-relaxed ${LEVEL_STYLE[entry.level]}`}>{entry.message}</li>
             ))}
           </ul>
         </section>

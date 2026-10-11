@@ -12,6 +12,7 @@ export function McpContactElicitationDialog({ message, onRespond }: Props) {
   const titleId = useId();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [company, setCompany] = useState("");
   const [intent, setIntent] = useState("");
 
@@ -46,16 +47,22 @@ export function McpContactElicitationDialog({ message, onRespond }: Props) {
 
         <form onSubmit={(event) => {
           event.preventDefault();
-          onRespond(buildPortfolioContactAcceptResponse({ name, email, company, intent }));
+          onRespond(buildPortfolioContactAcceptResponse({ name, email, phone, company, intent }));
         }} className="space-y-3">
           <label className="block text-xs text-white/80">
             Nome <span aria-hidden="true" className="text-rose-300">*</span>
             <input required minLength={2} maxLength={120} autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} className="mt-1 w-full rounded-lg border border-white/15 bg-black/35 px-3 py-2 text-white outline-none focus:border-[#1856FF]" />
           </label>
-          <label className="block text-xs text-white/80">
-            E-mail <span aria-hidden="true" className="text-rose-300">*</span>
-            <input required type="email" maxLength={200} autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full rounded-lg border border-white/15 bg-black/35 px-3 py-2 text-white outline-none focus:border-[#1856FF]" />
-          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label className="block text-xs text-white/80">
+              E-mail <span aria-hidden="true" className="text-rose-300">*</span>
+              <input required type="email" maxLength={200} autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full rounded-lg border border-white/15 bg-black/35 px-3 py-2 text-white outline-none focus:border-[#1856FF]" />
+            </label>
+            <label className="block text-xs text-white/80">
+              Telefone / WhatsApp (opcional)
+              <input type="tel" maxLength={40} autoComplete="tel" placeholder="(11) 99999-9999" value={phone} onChange={(event) => setPhone(event.target.value)} className="mt-1 w-full rounded-lg border border-white/15 bg-black/35 px-3 py-2 text-white outline-none focus:border-[#1856FF]" />
+            </label>
+          </div>
           <label className="block text-xs text-white/80">
             Empresa (opcional)
             <input maxLength={120} autoComplete="organization" value={company} onChange={(event) => setCompany(event.target.value)} className="mt-1 w-full rounded-lg border border-white/15 bg-black/35 px-3 py-2 text-white outline-none focus:border-[#1856FF]" />

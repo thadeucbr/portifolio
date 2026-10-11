@@ -43,6 +43,7 @@ const contactAnnotations = {
 const contactFormSchema = z.object({
   name: z.string().min(2).max(120),
   email: z.string().email().max(200),
+  phone: z.string().max(40).optional(),
   company: z.string().max(120).optional(),
   intent: z.enum(["vaga-senior-staff", "consultoria", "palestra", "outro"]),
 });

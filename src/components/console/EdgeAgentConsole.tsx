@@ -342,7 +342,7 @@ export function EdgeAgentConsole() {
                   ? state.detail
                   : (state.detail ?? "inicializando worker…")}
             </p>
-            <p className={`text-[9px] truncate font-mono ${mcpState.phase === "ready" ? "text-[#07CA6B]/80" : "text-white/40"}`}>
+            <p className={`text-[11px] truncate font-mono ${mcpState.phase === "ready" ? "text-[#07CA6B]/80" : "text-white/40"}`}>
               {mcpState.phase === "ready"
                 ? `MCP Streamable HTTP · ${mcpState.serverName} · ${mcpState.tools.length} tools verificadas`
                 : mcpState.phase === "error"
@@ -352,7 +352,7 @@ export function EdgeAgentConsole() {
           </div>
         </div>
         {rt ? (
-          <span className="shrink-0 font-mono text-[9px] px-2 py-1 rounded border bg-[#07CA6B]/15 text-[#07CA6B] border-[#07CA6B]/30">
+          <span className="shrink-0 font-mono text-xs px-2.5 py-1 rounded border bg-[#07CA6B]/15 text-[#07CA6B] border-[#07CA6B]/30">
             <Cpu aria-hidden="true" className="inline w-3 h-3 mr-1" />
             {rt.device.toUpperCase()} · pronto
           </span>
@@ -362,7 +362,7 @@ export function EdgeAgentConsole() {
             onClick={loadEmbeddings}
             disabled={loading}
             aria-label={loading ? "Carregando modelo de embeddings" : "Ativar busca neural local"}
-            className="shrink-0 font-mono text-[9px] px-2 py-1 rounded border border-[#1856FF]/40 bg-[#1856FF]/10 text-[#BAE6FD] hover:bg-[#1856FF]/20 disabled:cursor-wait disabled:opacity-60"
+            className="shrink-0 font-mono text-xs px-2.5 py-1 rounded border border-[#1856FF]/40 bg-[#1856FF]/10 text-[#BAE6FD] hover:bg-[#1856FF]/20 disabled:cursor-wait disabled:opacity-60"
           >
             {loading ? <Loader2 aria-hidden="true" className="inline w-3 h-3 mr-1 animate-spin" /> : state.phase === "error" ? <AlertTriangle aria-hidden="true" className="inline w-3 h-3 mr-1" /> : <Cpu aria-hidden="true" className="inline w-3 h-3 mr-1" />}
             {loading ? `${Math.round(state.progress * 100)}%` : state.phase === "error" ? "TENTAR EMBEDDINGS" : "ATIVAR BUSCA NEURAL"}
@@ -397,7 +397,7 @@ export function EdgeAgentConsole() {
             >
               <div className="whitespace-pre-wrap">{m.content}</div>
               {m.meta && (
-                <div className="mt-1.5 font-mono text-[9px] text-white/65">
+                <div className="mt-1.5 font-mono text-[10px] text-white/70">
                   {m.meta.engine === "neural" ? "embeddings neurais" : "fallback léxico"} ·{" "}
                   busca {m.meta.ms.toFixed(1)} ms · {m.meta.top.map((t) => `${SYSTEM_LABEL[t.id]} ${t.score.toFixed(3)}`).join(" | ")}
                   {m.meta.mcpMs !== undefined ? ` · MCP ${m.meta.mcpMs.toFixed(0)} ms` : ""}

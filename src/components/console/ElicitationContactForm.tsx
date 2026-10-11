@@ -59,7 +59,7 @@ export function ElicitationContactForm() {
       {/* honeypot */}
       <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div>
           <input name="name" placeholder="Nome" className={`${field} ${err.name ? "border-[#EA2143]" : "border-white/15"}`} />
           {err.name && <span className="text-[10px] text-[#EA2143]">{err.name}</span>}
@@ -73,15 +73,23 @@ export function ElicitationContactForm() {
           />
           {err.email && <span className="text-[10px] text-[#EA2143]">{err.email}</span>}
         </div>
-        <input name="company" placeholder="Empresa (opcional)" className={`${field} border-white/15`} />
         <div>
+          <input
+            name="phone"
+            type="tel"
+            placeholder="Telefone / WhatsApp (opcional)"
+            className={`${field} border-white/15`}
+          />
+        </div>
+        <input name="company" placeholder="Empresa (opcional)" className={`${field} border-white/15`} />
+        <div className="sm:col-span-2">
           <select
             name="intent"
             defaultValue=""
             className={`${field} ${err.intent ? "border-[#EA2143]" : "border-white/15"} [&>option]:bg-[#0b0f1a]`}
           >
             <option value="" disabled>
-              Motivo
+              Motivo do contato
             </option>
             <option value="vaga-senior-staff">Vaga Sênior / Staff</option>
             <option value="consultoria">Consultoria</option>

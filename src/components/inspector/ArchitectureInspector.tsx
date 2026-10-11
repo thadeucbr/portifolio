@@ -110,13 +110,13 @@ export function ArchitectureInspector({ system }: ArchitectureInspectorProps) {
             <ol className="grid gap-3 sm:grid-cols-3" aria-label="Tópicos do projeto">
               {system.executionFlow.map((stage) => (
                 <li key={stage.step} className="rounded-xl border border-white/10 bg-black/30 p-3">
-                  <span className={`inline-flex rounded border px-2 py-0.5 font-mono text-[9px] ${stage.badgeColor}`}>{stage.step}</span>
-                  <h3 className="mt-2 text-xs font-semibold text-white">{stage.title}</h3>
-                  <p className="mt-1 text-[11px] leading-relaxed text-white/65">{stage.description}</p>
+                  <span className={`inline-flex rounded border px-2 py-0.5 font-mono text-[11px] ${stage.badgeColor}`}>{stage.step}</span>
+                  <h3 className="mt-2 text-sm font-semibold text-white">{stage.title}</h3>
+                  <p className="mt-1 text-xs leading-relaxed text-white/70">{stage.description}</p>
                 </li>
               ))}
             </ol>
-            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-[11px] leading-relaxed text-white/55">
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-xs leading-relaxed text-white/60">
               Representação simplificada; não exibe topologia, controles operacionais ou estado dos sistemas internos.
             </div>
           </div>

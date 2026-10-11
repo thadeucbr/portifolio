@@ -1,9 +1,10 @@
 export const PORTFOLIO_CONTACT_ELICITATION_MESSAGE =
-  "Informe nome, e-mail, empresa (opcional) e motivo. Em desenvolvimento, pedidos aceitos são armazenados localmente; em produção, exigem um webhook seguro configurado e serão recusados sem ele. Recusar ou cancelar não envia nem grava os dados.";
+  "Informe nome, e-mail, telefone (opcional), empresa (opcional) e motivo. Em desenvolvimento, pedidos aceitos são armazenados localmente; em produção, exigem um webhook seguro configurado e serão recusados sem ele. Recusar ou cancelar não envia nem grava os dados.";
 
 const EXPECTED_FIELDS = Object.freeze({
   name: { type: "string", minLength: 2, maxLength: 120 },
   email: { type: "string", format: "email", maxLength: 200 },
+  phone: { type: "string", maxLength: 40 },
   company: { type: "string", maxLength: 120 },
   intent: { type: "string", enum: ["vaga-senior-staff", "consultoria", "palestra", "outro"] },
 });
@@ -19,6 +20,8 @@ export function buildPortfolioContactAcceptResponse(fields) {
     email: String(fields?.email ?? "").trim(),
     intent,
   };
+  const phone = String(fields?.phone ?? "").trim();
+  if (phone) content.phone = phone;
   const company = String(fields?.company ?? "").trim();
   if (company) content.company = company;
   return { action: "accept", content };

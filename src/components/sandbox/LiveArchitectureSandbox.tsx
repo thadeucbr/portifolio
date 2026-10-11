@@ -75,7 +75,7 @@ export function LiveArchitectureSandbox() {
           ))}
         </div>
 
-        <div className="rounded-xl border border-amber-400/20 bg-amber-400/[0.04] p-3 text-[10px] leading-relaxed text-amber-100/70">
+        <div className="rounded-xl border border-amber-400/20 bg-amber-400/[0.04] p-3 text-xs leading-relaxed text-amber-100/70">
           Os cartões abaixo ilustram os projetos; não são um diagrama aprovado da arquitetura interna.
         </div>
 
@@ -83,16 +83,16 @@ export function LiveArchitectureSandbox() {
           {project.executionFlow.map((step, index) => (
             <li key={step.step} className={`rounded-2xl border p-4 transition-colors ${activeStep > index ? "border-[#1856FF]/70 bg-[#1856FF]/10" : "border-white/10 bg-white/[0.03]"}`}>
               <div className="flex items-center justify-between">
-                <span className="font-mono text-[9px] uppercase text-[#38BDF8]">{String(index + 1).padStart(2, "0")} · {step.step}</span>
+                <span className="font-mono text-[11px] uppercase text-[#38BDF8]">{String(index + 1).padStart(2, "0")} · {step.step}</span>
                 <Zap className="h-3.5 w-3.5 text-white/35" />
               </div>
               <h3 className="mt-2 text-sm font-semibold text-white">{step.title}</h3>
-              <p className="mt-1 text-[11px] leading-relaxed text-white/60">{step.description}</p>
+              <p className="mt-1 text-xs leading-relaxed text-white/70">{step.description}</p>
             </li>
           ))}
         </ol>
 
-        <div className="max-h-36 space-y-1 overflow-y-auto rounded-xl border border-white/10 bg-black/50 p-3 font-mono text-[10px]" aria-live="polite">
+        <div className="max-h-36 space-y-1 overflow-y-auto rounded-xl border border-white/10 bg-black/50 p-3 font-mono text-xs" aria-live="polite">
           {logs.length ? logs.map((line, index) => <p key={`${index}-${line}`} className="leading-relaxed text-white/70">› {line}</p>) : <p className="py-3 text-center text-white/35">Nenhuma etapa executada. A demonstração é puramente local.</p>}
         </div>
       </div>

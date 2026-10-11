@@ -10,8 +10,10 @@ import type {
 
 const MODEL_ID = "onnx-community/Qwen3.5-0.8B-ONNX";
 const MODEL_REVISION = "d1ea95774d40a29f0479bf9138cdf488a0394b6b";
+type GpuAdapterLike = { features: { has(feature: string): boolean } };
+type GpuLike = { requestAdapter(options?: { powerPreference?: "high-performance" | "low-power" }): Promise<GpuAdapterLike | null> };
 const workerScope = globalThis as unknown as {
-  navigator: { gpu?: unknown };
+  navigator: { gpu?: GpuLike };
   postMessage: (message: LocalAssistantResponse) => void;
   addEventListener: (type: "message", listener: (event: MessageEvent<LocalAssistantRequest>) => void) => void;
 };
@@ -24,6 +26,9 @@ let loadPromise: Promise<void> | null = null;
 
 env.allowLocalModels = false;
 env.useBrowserCache = true;
+// Notebooks híbridos: sem isto o ONNX Runtime pode pegar a GPU integrada.
+const onnxEnv = env.backends.onnx as { webgpu?: { powerPreference?: string } };
+onnxEnv.webgpu = { ...onnxEnv.webgpu, powerPreference: "high-performance" };
 
 function post(message: LocalAssistantResponse) {
   workerScope.postMessage(message);
@@ -37,15 +42,24 @@ function safeErrorDetail(error: unknown) {
   return "O modelo não pôde ser carregado neste dispositivo. A busca semântica continua disponível.";
 }
 
-function candidates(forceWasm = false): Candidate[] {
-  const gpuPresent = typeof workerScope.navigator.gpu !== "undefined";
-  if (gpuPresent && !forceWasm) {
-    return [
-      { device: "webgpu", dtype: "q4f16" },
-      { device: "wasm", dtype: "q4" },
-    ];
+/**
+ * Ordem: WebGPU q4f16 (só se o adaptador expõe shader-f16) → WebGPU q4 → WASM q4.
+ * WASM é o último recurso: sem cross-origin isolation ele roda em uma única thread.
+ */
+async function candidates(forceWasm = false): Promise<Candidate[]> {
+  const wasm: Candidate = { device: "wasm", dtype: "q4" };
+  if (forceWasm || !workerScope.navigator.gpu) return [wasm];
+  let adapter: GpuAdapterLike | null = null;
+  try {
+    adapter = await workerScope.navigator.gpu.requestAdapter({ powerPreference: "high-performance" });
+  } catch {
+    adapter = null;
   }
-  return [{ device: "wasm", dtype: "q4" }];
+  if (!adapter) return [wasm];
+  const list: Candidate[] = [];
+  if (adapter.features.has("shader-f16")) list.push({ device: "webgpu", dtype: "q4f16" });
+  list.push({ device: "webgpu", dtype: "q4" }, wasm);
+  return list;
 }
 
 function reportProgress(event: unknown) {
@@ -85,7 +99,7 @@ async function ensureModel(forceWasm = false) {
   loadPromise = (async () => {
     post({ type: "status", phase: "probing", detail: "Verificando backend local…", model: MODEL_ID, revision: MODEL_REVISION });
     let lastError: unknown;
-    for (const candidate of candidates(forceWasm)) {
+    for (const candidate of await candidates(forceWasm)) {
       post({
         type: "status",
         phase: "downloading",
@@ -103,6 +117,14 @@ async function ensureModel(forceWasm = false) {
           progress_callback: reportProgress,
         });
         activeModel = { ...candidate, pipeline: generator };
+        
+        // Warmup rápido de 1 token para compilar shaders WebGPU sem penalizar a primeira pergunta:
+        try {
+          await generator([{ role: "user", content: "ok" }], { max_new_tokens: 1, do_sample: false });
+        } catch {
+          // Warmup é best-effort
+        }
+
         post({
           type: "status",
           phase: "ready",
@@ -166,7 +188,7 @@ async function runGeneration(requestId: string, messages: PortfolioChatMessage[]
     },
   });
   const output = await model.pipeline(messages, {
-    max_new_tokens: 64,
+    max_new_tokens: 48,
     do_sample: false,
     streamer,
     tokenizer_encode_kwargs: { enable_thinking: false },

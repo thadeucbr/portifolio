@@ -17,6 +17,7 @@ const contactRequest = {
       properties: {
         name: { type: "string", minLength: 2, maxLength: 120 },
         email: { type: "string", format: "email", maxLength: 200 },
+        phone: { type: "string", maxLength: 40 },
         company: { type: "string", maxLength: 120 },
         intent: { type: "string", enum: ["vaga-senior-staff", "consultoria", "palestra", "outro"] },
       },

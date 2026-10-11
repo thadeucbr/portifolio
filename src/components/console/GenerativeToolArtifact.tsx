@@ -51,7 +51,7 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence, source = 
         <span className="font-mono text-xs font-semibold text-white tracking-wider truncate">
           {source === "mcp" ? "MCP tools/call" : "ação local"} → <span className="text-[#38BDF8]">{tool.name}</span>
         </span>
-        <div className="flex items-center gap-1.5 font-mono text-[9px] shrink-0">
+        <div className="flex items-center gap-1.5 font-mono text-[10px] shrink-0">
           {serverTool?.annotations?.readOnlyHint && (
             <span className="px-1.5 py-0.5 rounded bg-[#07CA6B]/10 border border-[#07CA6B]/30 text-[#07CA6B]">readOnly</span>
           )}
@@ -71,7 +71,7 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence, source = 
       </div>
 
       {tab === "contract" ? (
-        <div className="p-3 bg-black/60 font-mono text-[11px] text-white/80 overflow-x-auto relative">
+        <div className="p-3 bg-black/60 font-mono text-xs text-white/80 overflow-x-auto relative">
           <button onClick={copy} className="absolute top-2 right-2 p-1.5 rounded bg-white/10 hover:bg-white/20 text-white">
             {copied ? <Check className="w-3.5 h-3.5 text-[#07CA6B]" /> : <Copy className="w-3.5 h-3.5" />}
           </button>
@@ -79,40 +79,40 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence, source = 
         </div>
       ) : (
         <div className="p-3.5 space-y-3">
-          <p className="font-mono text-[9px] text-white/40">
+          <p className="font-mono text-[11px] text-white/50">
             {source === "mcp"
               ? `SERVIDOR MCP VERIFICADO · ${serverResult?.evidenceStatus ?? "resultado estruturado"}`
               : "AÇÃO LOCAL COM CONSENTIMENTO EXPLÍCITO"}
           </p>
           {evidence && (
-            <div className="text-[11px] leading-relaxed text-white/75 border-l-2 border-[#1856FF] pl-2.5">
-              <span className="font-mono text-[9px] text-white/40 block">CONTEXTO RECUPERADO DO PERFIL</span>
+            <div className="text-xs leading-relaxed text-white/80 border-l-2 border-[#1856FF] pl-2.5">
+              <span className="font-mono text-[10px] text-white/50 block">CONTEXTO RECUPERADO DO PERFIL</span>
               {evidence}
             </div>
           )}
 
           {toolName === "portfolio_request_contact" && serverResult?.contact && (
             <div className={`rounded-lg border p-3 ${serverResult.contact.status === "accepted" ? "border-[#07CA6B]/30 bg-[#07CA6B]/[0.06]" : "border-white/15 bg-black/20"}`}>
-              <span className="font-mono text-[9px] uppercase text-white/45">RESULTADO DA ELICITATION</span>
+              <span className="font-mono text-[10px] uppercase text-white/50">RESULTADO DA ELICITATION</span>
               <p className="mt-1 text-xs text-white/85">{serverResult.contact.message}</p>
               {serverResult.contact.receiptId && (
-                <span className="mt-2 block font-mono text-[9px] text-[#07CA6B]">recibo · {serverResult.contact.receiptId}</span>
+                <span className="mt-2 block font-mono text-[11px] text-[#07CA6B]">recibo · {serverResult.contact.receiptId}</span>
               )}
             </div>
           )}
 
           {toolName === "portfolio_list_projects" && serverResult?.projects && (
             <div className="space-y-2" aria-label="Projetos retornados pelo servidor MCP">
-              <span className="font-mono text-[9px] uppercase text-[#38BDF8]">Índice estático retornado pelo servidor MCP</span>
+              <span className="font-mono text-[11px] uppercase text-[#38BDF8]">Índice estático retornado pelo servidor MCP</span>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {serverResult.projects.map((project) => (
                   <li key={project.id} className="rounded-lg border border-white/10 bg-white/[0.04] p-2.5">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] font-semibold text-white">{project.title}</span>
-                      <span className="font-mono text-[8px] text-white/40">{project.period}</span>
+                      <span className="text-xs font-semibold text-white">{project.title}</span>
+                      <span className="font-mono text-[10px] text-white/50">{project.period}</span>
                     </div>
-                    <span className="font-mono text-[9px] text-[#38BDF8]/80">{project.shortLabel} · {project.category}</span>
-                    <p className="mt-1 text-[10px] leading-relaxed text-white/55">{project.summary}</p>
+                    <span className="font-mono text-[11px] text-[#38BDF8]/90">{project.shortLabel} · {project.category}</span>
+                    <p className="mt-1 text-[11px] leading-relaxed text-white/65">{project.summary}</p>
                   </li>
                 ))}
               </ul>
@@ -120,7 +120,7 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence, source = 
           )}
 
           {systemId === "edge-mcp-hub" && toolName === "portfolio_get_project" && (
-            <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
+            <div className="grid grid-cols-2 gap-2 font-mono text-xs">
               {[
                 { icon: Layers, k: "modelo", v: rt?.model ?? "carregando…" },
                 { icon: Cpu, k: "backend", v: rt ? `${rt.device.toUpperCase()} · ${rt.dtype}` : state.phase },
@@ -134,7 +134,7 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence, source = 
                 { icon: Database, k: "indexação", v: rt ? `${Math.round(rt.indexMs)} ms` : "—" },
               ].map(({ icon: Icon, k, v }) => (
                 <div key={k} className="p-2 rounded bg-white/[0.06] border border-white/10">
-                  <span className="text-white/40 text-[9px] uppercase flex items-center gap-1">
+                  <span className="text-white/50 text-[10px] uppercase flex items-center gap-1">
                     <Icon className="w-3 h-3" /> {k}
                   </span>
                   <span className="text-white break-all">{v}</span>
@@ -148,7 +148,7 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence, source = 
               <div className="grid grid-cols-3 gap-2 text-center font-mono">
                 {system.facts.slice(0, 3).map((m) => (
                   <div key={m.label} className="p-2 rounded-lg bg-white/[0.06] border border-white/10">
-                    <div className="text-[9px] text-white/45 uppercase">{m.label}</div>
+                    <div className="text-[10px] text-white/50 uppercase">{m.label}</div>
                     <div className="text-[#38BDF8] font-bold text-xs mt-0.5">{m.value}</div>
                   </div>
                 ))}
@@ -160,8 +160,8 @@ export function GenerativeToolArtifact({ toolName, systemId, evidence, source = 
                 evidenceStatus={serverResult?.evidenceStatus ?? "static-portfolio-content"}
               />
 
-              <div className="text-[11px] text-white/70 p-2 rounded bg-[#EA2143]/[0.06] border border-[#EA2143]/20">
-                <span className="font-mono text-[9px] text-[#EA2143] block">FAILURE HANDLING</span>
+              <div className="text-xs text-white/80 p-2.5 rounded bg-[#EA2143]/[0.06] border border-[#EA2143]/20">
+                <span className="font-mono text-[10px] text-[#EA2143] block">FAILURE HANDLING</span>
                 {system.failureHandling}
               </div>
             </>

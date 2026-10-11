@@ -29,8 +29,8 @@ export function LocalModelPanel({
         <div className="flex items-start gap-2 min-w-0">
           <Sparkles className="w-3.5 h-3.5 mt-0.5 shrink-0 text-violet-300" />
           <div className="min-w-0">
-            <div className="text-[10px] font-semibold tracking-wide text-violet-200">RESPOSTAS LOCAIS · QWEN3.5 0.8B</div>
-            <p className="text-[9px] leading-relaxed text-white/50">
+            <div className="text-xs font-semibold tracking-wide text-violet-200">RESPOSTAS LOCAIS · QWEN3.5 0.8B</div>
+            <p className="text-[11px] leading-relaxed text-white/60">
               Opt-in: ~646 MB de pesos q4f16 (WebGPU) ou ~717 MB q4 (WASM), mais tokenizer (~19 MB; arquivos listados no snapshot). Pergunta/evidências ficam no navegador; consulta de projetos envia só ID ou argumentos vazios. Respostas Qwen ficam desligadas por padrão; contato só envia campos após Accept explícito.
               {" "}
               <a href={MODEL_URL} target="_blank" rel="noreferrer" className="underline decoration-white/30 hover:text-white/80">modelo Apache-2.0</a>
@@ -42,7 +42,7 @@ export function LocalModelPanel({
             type="button"
             aria-pressed={generationEnabled}
             onClick={onToggleGeneration}
-            className={`shrink-0 rounded border px-2 py-1 font-mono text-[9px] ${generationEnabled ? "border-violet-300/60 bg-violet-400/20 text-violet-100" : "border-white/15 bg-white/[0.04] text-white/60 hover:text-white"}`}
+            className={`shrink-0 rounded border px-2.5 py-1 font-mono text-xs ${generationEnabled ? "border-violet-300/60 bg-violet-400/20 text-violet-100" : "border-white/15 bg-white/[0.04] text-white/60 hover:text-white"}`}
           >
             RESPOSTAS QWEN {generationEnabled ? "ON" : "OFF"}
           </button>
@@ -51,7 +51,7 @@ export function LocalModelPanel({
             type="button"
             onClick={onLoad}
             disabled={loading}
-            className="shrink-0 flex items-center gap-1.5 rounded-lg border border-violet-400/40 bg-violet-400/10 px-2.5 py-1.5 font-mono text-[9px] text-violet-100 hover:bg-violet-400/20 disabled:cursor-wait disabled:opacity-60"
+            className="shrink-0 flex items-center gap-1.5 rounded-lg border border-violet-400/40 bg-violet-400/10 px-2.5 py-1.5 font-mono text-xs text-violet-100 hover:bg-violet-400/20 disabled:cursor-wait disabled:opacity-60"
           >
             {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
             {loading ? "CARREGANDO" : state.phase === "error" ? "TENTAR DE NOVO" : "ATIVAR MODELO"}
@@ -61,7 +61,7 @@ export function LocalModelPanel({
 
       {loading && (
         <div className="mt-2" role="status" aria-live="polite">
-          <div className="flex justify-between gap-2 font-mono text-[9px] text-white/55">
+          <div className="flex justify-between gap-2 font-mono text-[11px] text-white/60">
             <span className="truncate">{state.detail ?? "Preparando o worker local…"}{state.progress?.file ? ` · ${state.progress.file}` : ""}</span>
             <span className="shrink-0">{percent.toFixed(0)}%{state.progress?.total ? ` · ${formatMegabytes(state.progress.loaded)} / ${formatMegabytes(state.progress.total)}` : ""}</span>
           </div>
@@ -71,12 +71,12 @@ export function LocalModelPanel({
         </div>
       )}
       {state.phase === "ready" && (
-        <p className={`mt-1 font-mono text-[9px] ${state.device === "wasm" ? "text-amber-200/80" : "text-white/45"}`}>
+        <p className={`mt-1 font-mono text-[11px] ${state.device === "wasm" ? "text-amber-200/80" : "text-white/50"}`}>
           BACKEND ATIVO · {state.device?.toUpperCase() ?? "indisponível"}/{state.dtype ?? "?"}
           {state.device === "wasm" ? " · CPU fallback, mais lento" : ""}
         </p>
       )}
-      {state.phase === "error" && <p role="alert" className="mt-1 text-[9px] text-rose-300">{state.detail}</p>}
+      {state.phase === "error" && <p role="alert" className="mt-1 text-xs text-rose-300">{state.detail}</p>}
     </section>
   );
 }

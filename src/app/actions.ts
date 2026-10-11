@@ -49,6 +49,7 @@ async function sendTelegramContact(record: {
   at: string;
   name: string;
   email: string;
+  phone?: string;
   company: string;
   intent: string;
 }, token: string, chatId: string) {
@@ -56,6 +57,7 @@ async function sendTelegramContact(record: {
     "Novo contato aceito pelo formulário do portfólio",
     `Nome: ${telegramSafeField(record.name)}`,
     `E-mail: ${telegramSafeField(record.email)}`,
+    `Telefone: ${telegramSafeField(record.phone || "não informado")}`,
     `Empresa: ${telegramSafeField(record.company) || "não informada"}`,
     `Motivo: ${INTENT_LABELS[record.intent] ?? "Outro"}`,
     `Recebido: ${record.at}`,
@@ -80,6 +82,7 @@ export async function submitRecruiterSignal(_prev: SignalState, formData: FormDa
 
   const name = String(formData.get("name") ?? "").trim().slice(0, 120);
   const email = String(formData.get("email") ?? "").trim().toLowerCase().slice(0, 200);
+  const phone = String(formData.get("phone") ?? "").trim().slice(0, 40);
   const company = String(formData.get("company") ?? "").trim().slice(0, 120);
   const intent = String(formData.get("intent") ?? "");
   // Fail closed: only a submitted, explicit "accept" may persist contact data.
@@ -122,7 +125,7 @@ export async function submitRecruiterSignal(_prev: SignalState, formData: FormDa
 
   // Persist only after explicit consent and input validation.
   const receiptId = `sig_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-  const record = { receiptId, at: new Date().toISOString(), name, email, company, intent };
+  const record = { receiptId, at: new Date().toISOString(), name, email, phone, company, intent };
 
   try {
     if (hasTelegramToken && hasTelegramChat) {

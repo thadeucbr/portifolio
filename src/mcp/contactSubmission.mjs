@@ -1,4 +1,4 @@
-const CONTACT_FIELDS = ["name", "email", "company", "intent"];
+const CONTACT_FIELDS = ["name", "email", "phone", "company", "intent"];
 
 /** Adapts validated MCP elicitation data to the existing progressive Server Action. */
 export function createPortfolioContactSubmitter(submitRecruiterSignal) {

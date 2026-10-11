@@ -4,6 +4,7 @@ import { PROFILE_DATA } from "@/data/systems";
 import { SynapticNeuralMesh } from "@/components/neural/SynapticNeuralMesh";
 import { StageShell } from "@/components/stage/StageShell";
 import { ElicitationContactForm } from "@/components/console/ElicitationContactForm";
+import { ContactButtonDialog } from "@/components/contact/ContactButtonDialog";
 
 export const metadata: Metadata = {
   title: "Thadeu Ramos | Senior Software Engineer & AI Systems Architect",
@@ -43,10 +44,7 @@ export default function Home() {
           <div className="flex items-center gap-3 sm:gap-4 text-xs font-sans shrink-0">
             <a href={PROFILE_DATA.contact.github} target="_blank" rel="noreferrer" className="text-white/70 hover:text-white transition-colors">GitHub</a>
             <a href={PROFILE_DATA.contact.linkedin} target="_blank" rel="noreferrer" className="hidden sm:inline text-white/70 hover:text-white transition-colors">LinkedIn</a>
-            <a href={`mailto:${PROFILE_DATA.contact.email}`} className="px-3 py-2 rounded-xl bg-[#1856FF] hover:bg-[#1856FF]/90 text-white font-sans font-medium flex items-center gap-1.5 transition-colors shadow-md">
-              <Mail aria-hidden="true" className="w-3.5 h-3.5" />
-              <span>Contato</span>
-            </a>
+            <ContactButtonDialog />
           </div>
         </div>
       </header>
